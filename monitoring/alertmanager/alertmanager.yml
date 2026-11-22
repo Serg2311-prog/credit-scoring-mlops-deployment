@@ -1,0 +1,31 @@
+# Local Alertmanager — no SMTP/Telegram credentials required.
+# Alerts are visible in the Alertmanager UI; receiver is a local no-op webhook sink.
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: local-log
+  group_by: ["alertname", "severity"]
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 2h
+  routes:
+    - matchers:
+        - severity="critical"
+      receiver: local-log
+      continue: false
+
+inhibit_rules:
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal: ["alertname"]
+
+receivers:
+  - name: local-log
+    webhook_configs:
+      # Tiny local sink in the same compose stack (returns 200, logs payload).
+      - url: http://alert-webhook:8080/webhook
+        send_resolved: true
+        max_alerts: 20

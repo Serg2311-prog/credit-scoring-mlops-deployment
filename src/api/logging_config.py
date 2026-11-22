@@ -13,7 +13,9 @@ class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
+            "level": record.levelname,
             "log_level": record.levelname,
+            "service": "credit-scoring-api",
             "logger": record.name,
             "message": record.getMessage(),
         }

@@ -1,3 +1,6 @@
+# Inference API (Stage 2+). Observability stack: docker-compose.observability.yml
+#   docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d --build
+
 services:
   api:
     build:
@@ -37,3 +40,9 @@ services:
     cpus: 1.0
     mem_limit: 1536m
     mem_reservation: 512m
+    networks:
+      - default
+
+networks:
+  default:
+    name: credit-scoring-net

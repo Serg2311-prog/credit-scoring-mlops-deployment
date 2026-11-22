@@ -150,19 +150,19 @@
 
 ---
 
-## Этап 5. Observability (8 баллов)
+## Этап 5. Observability (8 баллов) — реализован локально 2026-11-22
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
-| 5.1 | Prometheus | scrape API `/metrics` | compose obs | `planned` |
-| 5.2 | Метрики FastAPI | latency/throughput/error rate exporters | `/metrics` | `planned` |
-| 5.3 | Grafana dashboards | JSON dashboards в репо | import/compose | `planned` |
-| 5.4 | Loki + централизованные логи | API→Loki pipeline | compose | `planned` |
-| 5.5 | Structured JSON logging | JSON fields в логах | sample log line | `planned` |
-| 5.6 | Latency / throughput / error rate | На dashboard или метриках | Grafana/Prom | `planned` |
-| 5.7 | Availability metrics | up / health probes | Prom rules | `planned` |
-| 5.8 | Alerting rules | YAML alerts | `monitoring/alerts` | `planned` |
-| 5.9 | Runbook | Типовые инциденты | `docs/runbooks/` | `planned` |
+| 5.1 | Prometheus | scrape API `/metrics` | `docker-compose.observability.yml` + Prom targets | `implemented` (verify via `scripts/observability/check.ps1`) |
+| 5.2 | Метрики FastAPI | latency/throughput/error/inference exporters | `/metrics` + tests | `implemented` |
+| 5.3 | Grafana dashboards | JSON dashboards в репо + auto provision | Grafana folder Credit Scoring | `implemented` |
+| 5.4 | Loki + централизованные логи | Alloy → Loki | Explore Loki `{service="credit-scoring-api"}` | `implemented` |
+| 5.5 | Structured JSON logging | timestamp/level/service/request_id | API stdout JSON | `implemented` |
+| 5.6 | Latency / throughput / error rate | Dashboards API Overview / Model Inference | Grafana | `implemented` |
+| 5.7 | Availability metrics | `up` + `credit_scoring_model_ready` | Prom + alerts | `implemented` |
+| 5.8 | Alerting rules | YAML + Alertmanager local webhook | `monitoring/prometheus/alerts.yml` + `promtool` | `implemented` |
+| 5.9 | Runbook | Типовые инциденты | `docs/stage5_runbook.md` | `implemented` |
 
 ---
 
@@ -213,8 +213,8 @@
 | D.7 | CI/CD инструкции | docs | файл | `planned` |
 | D.8 | Описание экспериментов | docs/metrics | файл | `planned` |
 | D.9 | Benchmark-отчёт | Только измеренные данные | `docs/model_benchmark.md` | `verified_local` |
-| D.10 | Описание мониторинга | docs | файл | `planned` |
-| D.11 | Runbook | docs/runbooks | файл | `planned` |
+| D.10 | Описание мониторинга | docs | `docs/architecture/observability.md` | `implemented` |
+| D.11 | Runbook | docs/runbooks | `docs/stage5_runbook.md` | `implemented` |
 | D.12 | Таблица соответствия заданию | Этот файл, обновлять статусы | ревью | `partial` (каркас) |
 
 ---

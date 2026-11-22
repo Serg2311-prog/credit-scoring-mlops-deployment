@@ -2,8 +2,9 @@
 
 Промышленное развертывание кредитной скоринговой системы (учебный итоговый проект).
 
-**Статус:** этапы 0–3Б и **этап 4 (CI/CD definitions)** завершены.
-Cloud `terraform apply` / Airflow / этап 5 — не начаты.
+**Статус:** этапы **0–5** реализованы в репозитории.
+Этап 4 CI/CD **проверен на GitHub Actions**. Этап 5 — **локальный** observability-стек (без облака).
+Cloud `terraform apply` / Airflow / этап 6+ — не начаты. Production в облаке **не развёрнут**.
 
 Исходный ML-проект: [credit-default-prediction](https://github.com/Serg2311-prog/credit-default-prediction).
 
@@ -11,15 +12,41 @@ Cloud `terraform apply` / Airflow / этап 5 — не начаты.
 
 - [План](docs/implementation_plan.md)
 - [Матрица требований](docs/requirements_matrix.md)
-- [API / Docker / K8s / Terraform](docs/) — см. соответствующие отчёты этапов
-- [CI/CD](docs/cicd_pipeline.md)
-- [Валидация этапа 4](docs/stage4_validation_report.md)
+- [Архитектура](docs/architecture/overview.md) · [Observability](docs/architecture/observability.md)
+- [API / Docker / K8s / Terraform](docs/) — отчёты этапов 2–3
+- [CI/CD](docs/cicd_pipeline.md) · [Валидация этапа 4](docs/stage4_validation_report.md)
+- [Stage 5 runbook](docs/stage5_runbook.md) · [Валидация этапа 5](docs/stage5_validation_report.md)
 
 ## Inference API
 
 Backend: **ONNX FP32**, threshold **0.5**.
 
-### Local CI checks (этап 4)
+```powershell
+docker compose up -d --build
+# http://127.0.0.1:8000/health/ready
+```
+
+## Observability (этап 5, локально)
+
+```powershell
+# API + Prometheus + Grafana + Loki + Alloy + Alertmanager (+ cAdvisor)
+docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d --build
+
+# Проверки
+.\scripts\observability\check.ps1
+.\scripts\observability\fire_test_alert.ps1
+```
+
+| UI | URL |
+| --- | --- |
+| Grafana | http://127.0.0.1:3000 (admin/admin) |
+| Prometheus | http://127.0.0.1:9090 |
+| Alertmanager | http://127.0.0.1:9093 |
+| API metrics | http://127.0.0.1:8000/metrics |
+
+Подробности: [docs/stage5_runbook.md](docs/stage5_runbook.md).
+
+## Local CI checks (этап 4)
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
@@ -28,23 +55,17 @@ $env:PYTHONPATH = (Get-Location).Path
 .\scripts\ci\build_images.ps1
 ```
 
-GitHub Actions: `.github/workflows/` (`ci-python`, `ci-infrastructure`, `ci-docker`, `ci-kubernetes`, `release-candidate`, `cd-staging`).
+GitHub Actions: `.github/workflows/` — см. [docs/stage4_validation_report.md](docs/stage4_validation_report.md).
 
-> В рабочей копии **нет git remote** — hosted Actions выполнятся после `git remote add` + push (не делается автоматически).
-
-### Docker / kind
+## kind / Terraform
 
 ```powershell
-docker compose up -d
 .\scripts\k8s_create.ps1; .\scripts\k8s_build_load.ps1; .\scripts\k8s_deploy.ps1; .\scripts\k8s_smoke.ps1
-```
 
-### Terraform (без apply)
-
-```powershell
 terraform -chdir=infra/terraform fmt -recursive -check
 terraform -chdir=infra/terraform/environments/staging init -backend=false
 terraform -chdir=infra/terraform/environments/staging validate
+# terraform apply — только с явным разрешением
 ```
 
 ## Baseline metrics (immutable)

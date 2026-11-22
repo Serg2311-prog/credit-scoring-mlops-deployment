@@ -38,6 +38,13 @@ INFERENCE_COUNT = Counter(
     ["endpoint"],
     registry=REGISTRY,
 )
+INFERENCE_LATENCY = Histogram(
+    "credit_scoring_inference_latency_seconds",
+    "Model inference latency in seconds (preprocess + ONNX)",
+    ["endpoint"],
+    buckets=(0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5),
+    registry=REGISTRY,
+)
 BATCH_SIZE = Histogram(
     "credit_scoring_batch_size",
     "Batch size distribution",

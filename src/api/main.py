@@ -18,6 +18,7 @@ from src.api.logging_config import configure_logging
 from src.api.metrics import (
     BATCH_SIZE,
     INFERENCE_COUNT,
+    INFERENCE_LATENCY,
     MODEL_READY,
     REQUEST_COUNT,
     REQUEST_ERRORS,
@@ -212,7 +213,9 @@ def model_info() -> ModelInfoResponse:
 def predict(payload: ClientFeatures, request: Request) -> PredictResponse:
     runtime = dependencies.get_runtime()
     request_id = getattr(request.state, "request_id", _request_id(request))
+    started = time.perf_counter()
     result = runtime.predict_records([payload.model_dump()])
+    INFERENCE_LATENCY.labels("/predict").observe(time.perf_counter() - started)
     INFERENCE_COUNT.labels("/predict").inc()
     BATCH_SIZE.observe(1)
     return PredictResponse(
@@ -243,7 +246,9 @@ def predict_batch(
     runtime = dependencies.get_runtime()
     request_id = getattr(request.state, "request_id", _request_id(request))
     records = [item.model_dump() for item in payload.items]
+    started = time.perf_counter()
     result = runtime.predict_records(records)
+    INFERENCE_LATENCY.labels("/predict/batch").observe(time.perf_counter() - started)
     INFERENCE_COUNT.labels("/predict/batch").inc()
     BATCH_SIZE.observe(len(records))
     responses = [

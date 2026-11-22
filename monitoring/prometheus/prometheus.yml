@@ -1,0 +1,35 @@
+# Local Prometheus scrape config (Stage 5). No cloud endpoints.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    project: credit-scoring-mlops
+    env: local
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: credit-scoring-api
+    metrics_path: /metrics
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["api:8000"]
+        labels:
+          service: credit-scoring-api
+
+  - job_name: cadvisor
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["cadvisor:8080"]
+        labels:
+          service: cadvisor

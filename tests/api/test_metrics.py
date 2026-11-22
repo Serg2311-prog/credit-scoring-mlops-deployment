@@ -34,6 +34,7 @@ def test_metrics_endpoint(api_client):
     assert "credit_scoring_http_requests_total" in text
     assert "credit_scoring_http_request_latency_seconds" in text
     assert "credit_scoring_inference_requests_total" in text
+    assert "credit_scoring_inference_latency_seconds" in text
     assert "credit_scoring_model_ready" in text
     # No high-cardinality client data labels.
     assert "LIMIT_BAL" not in text
