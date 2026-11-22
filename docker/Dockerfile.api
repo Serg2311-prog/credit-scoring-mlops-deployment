@@ -14,11 +14,17 @@ COPY requirements-api.txt constraints-docker.txt .
 # Upgrade pip/setuptools, install runtime deps, then drop pip's vendored CycloneDX
 # SBOM (pip/_vendor/bom.cdx.json). Trivy otherwise treats that build-time metadata
 # as an installed setuptools@70.3.0 and fails the HIGH gate on CVE-2025-47273.
+# Drop pip/wheel + bytecode caches from the venv to shrink the kind-load footprint
+# (inference does not need pip at runtime).
 RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
     && /opt/venv/bin/pip install -c constraints-docker.txt -r requirements-api.txt \
+    && /opt/venv/bin/python -c "import importlib.metadata as m; v=m.version('setuptools'); assert tuple(map(int, v.split('.')[:3])) >= (78, 1, 1), v" \
     && find /opt/venv -path '*/pip/_vendor/bom.cdx.json' -delete \
-    && /opt/venv/bin/python -c "import importlib.metadata as m; v=m.version('setuptools'); assert tuple(map(int, v.split('.')[:3])) >= (78, 1, 1), v"
+    && /opt/venv/bin/pip uninstall -y pip wheel \
+    && find /opt/venv -type d -name '__pycache__' -prune -exec rm -rf {} + \
+    && find /opt/venv -type f -name '*.py[co]' -delete \
+    && find /opt/venv -type d -name 'tests' -path '*/site-packages/*' -prune -exec rm -rf {} +
 
 
 FROM python:3.12-slim-bookworm AS runtime

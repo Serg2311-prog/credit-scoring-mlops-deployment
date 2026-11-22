@@ -22,6 +22,8 @@ env:
   KUBECONFORM_VERSION: "v0.6.7"
   # Schema target close to kindest/node v1.33.1 from stage 3A.
   KUBECONFORM_K8S_VERSION: "1.33.0"
+  API_IMAGE: credit-scoring-api:stage3a
+  MODELS_IMAGE: credit-scoring-models:stage3a
 
 jobs:
   manifests:
@@ -90,15 +92,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Disk report (before cleanup)
+        run: bash scripts/ci/disk_report.sh before-cleanup
+
+      - name: Free disk on GitHub-hosted runner
+        run: bash scripts/ci/free_runner_disk.sh
+
+      - name: Disk report (after cleanup)
+        run: bash scripts/ci/disk_report.sh after-cleanup
+
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
 
-      - name: Install Python deps
+      - name: Install Python deps (CPU torch only; no API stack)
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -r requirements-api.txt -r requirements-nn.txt
+          # Synthetic artifacts need project + torch/onnx; avoid pulling CUDA wheels.
+          pip install -r requirements.txt
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install "onnx>=1.16" "onnxruntime>=1.18" "onnxscript>=0.1.0"
+          pip cache purge || true
 
       - name: Generate synthetic artifacts
         run: python scripts/ci/generate_synthetic_artifacts.py --output-dir models --force
@@ -115,29 +131,82 @@ jobs:
           sudo mv ./kind /usr/local/bin/kind
           kind version
 
+      # Build images BEFORE creating kind so the kindest/node image is not
+      # competing with build cache for the same free space window.
+      - name: Build API and models images
+        run: |
+          set -euo pipefail
+          docker build -f docker/Dockerfile.api -t "${API_IMAGE}" .
+          docker build -f docker/Dockerfile.models -t "${MODELS_IMAGE}" .
+          bash scripts/ci/disk_report.sh after-docker-build
+
+      - name: Prune build cache (keep tagged images)
+        run: |
+          set -euo pipefail
+          docker builder prune -af || true
+          # Remove dangling layers only; keep credit-scoring-*:stage3a.
+          docker image prune -f || true
+          bash scripts/ci/disk_report.sh after-docker-prune
+
       - name: Create kind cluster
         run: kind create cluster --config k8s/kind/cluster.yaml --wait 120s
 
-      - name: Build and load images
+      - name: Disk report (before kind load)
+        run: bash scripts/ci/disk_report.sh before-kind-load
+
+      - name: Load images into kind
         run: |
-          docker build -f docker/Dockerfile.api -t credit-scoring-api:stage3a .
-          docker build -f docker/Dockerfile.models -t credit-scoring-models:stage3a .
-          kind load docker-image credit-scoring-api:stage3a --name credit-scoring
-          kind load docker-image credit-scoring-models:stage3a --name credit-scoring
+          set -euo pipefail
+          # Load one image at a time; kind materializes a tar into containerd.
+          kind load docker-image "${API_IMAGE}" --name credit-scoring
+          bash scripts/ci/disk_report.sh after-kind-load-api
+          kind load docker-image "${MODELS_IMAGE}" --name credit-scoring
+          bash scripts/ci/disk_report.sh after-kind-load-models
 
       - name: Deploy overlay (real kubectl apply after cluster exists)
         run: |
+          set -euo pipefail
           kubectl apply -k k8s/overlays/local
           kubectl -n credit-scoring rollout status deployment/credit-scoring-api --timeout=180s
+          kubectl -n credit-scoring get pods -o wide
+          kubectl -n credit-scoring wait --for=condition=ready pod -l app.kubernetes.io/name=credit-scoring-api --timeout=120s
 
       - name: Smoke via port-forward
         run: |
+          set -euo pipefail
           kubectl -n credit-scoring port-forward svc/credit-scoring-api 8000:8000 &
           PF_PID=$!
-          sleep 5
+          cleanup() { kill "${PF_PID}" 2>/dev/null || true; }
+          trap cleanup EXIT
+
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/health/live >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+
+          echo "== /health/live =="
           curl -fsS http://127.0.0.1:8000/health/live
+          echo
+          echo "== /health/ready =="
           curl -fsS http://127.0.0.1:8000/health/ready
-          kill $PF_PID || true
+          echo
+          echo "== /predict =="
+          curl -fsS -X POST http://127.0.0.1:8000/predict \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "LIMIT_BAL": 20000, "SEX": 2, "EDUCATION": 2, "MARRIAGE": 1, "AGE": 24,
+              "PAY_0": 2, "PAY_2": 2, "PAY_3": -1, "PAY_4": -1, "PAY_5": -2, "PAY_6": -2,
+              "BILL_AMT1": 3913, "BILL_AMT2": 3102, "BILL_AMT3": 689,
+              "BILL_AMT4": 0, "BILL_AMT5": 0, "BILL_AMT6": 0,
+              "PAY_AMT1": 0, "PAY_AMT2": 689, "PAY_AMT3": 0, "PAY_AMT4": 0, "PAY_AMT5": 0, "PAY_AMT6": 0
+            }'
+          echo
+          echo "== /metrics =="
+          curl -fsS http://127.0.0.1:8000/metrics | head -n 40
+          echo
+          echo "OK: kind smoke endpoints passed"
 
       - name: Delete kind cluster
         if: always()

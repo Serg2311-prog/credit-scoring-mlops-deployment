@@ -109,7 +109,20 @@ Security gate unchanged: `severity: CRITICAL,HIGH`, `ignore-unfixed: true`, `exi
 
 No commit/push; stage 5 not started.
 
+## Hotfix: kind smoke disk (`45015363021`)
+
+| Item | Detail |
+| --- | --- |
+| Failure | `kind load docker-image` API → `no space left on device` (containerd unpack) |
+| Root cause | Hosted runner ~14 GB free; peak = torch synth install + Docker build cache + kindest/node + **~2× API image** during kind load |
+| API image before slim | **~840 MB** |
+| API image after slim | **~595 MB** (drop pip/wheel + `__pycache__`/tests; inference deps unchanged) |
+| Models image | **~13 MB** |
+| Workflow changes | `free_runner_disk.sh` (hosted-only), `disk_report.sh` before/after key steps, build→prune→kind create→load, CPU torch only, smoke `/live` `/ready` `/predict` `/metrics`, always delete cluster |
+
+**Kubernetes E2E is NOT declared successful** until a new GitHub Actions `workflow_dispatch` with `run_kind_smoke=true` passes smoke.
+
 ## Stage 4 readiness
 
-**CI definitions corrected for hosted runners; local kubeconform + pytest + Trivy gates green.**
+**CI definitions corrected for hosted runners; local kubeconform + pytest + Trivy gates green; kind disk mitigations ready for re-run.**
 Awaiting technical acceptance before commit/push.

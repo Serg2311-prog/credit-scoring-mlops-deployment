@@ -134,3 +134,13 @@ def test_kind_smoke_is_optional():
     text = _text("ci-kubernetes.yml")
     assert "run_kind_smoke" in text
     assert "kind create cluster" in text
+    assert "free_runner_disk.sh" in text
+    assert "disk_report.sh" in text
+    assert "kind load docker-image" in text
+    assert "/health/live" in text
+    assert "/health/ready" in text
+    assert "/predict" in text
+    assert "/metrics" in text
+    # Build before kind create to reduce peak disk pressure.
+    assert text.index("Build API and models images") < text.index("Create kind cluster")
+    assert "kind delete cluster" in text

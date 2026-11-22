@@ -1,4 +1,5 @@
 .git
+.github
 .venv
 __pycache__
 **/__pycache__
@@ -8,18 +9,24 @@ __pycache__
 .ruff_cache
 mlruns
 mlartifacts
-data/raw
-data/processed
+data
 artifacts
-models/*.pt
-models/*.quant.onnx
-models/*.pkl
 notebooks
 docs
 tests
+tools
+infra
+k8s
+scripts
 _source_audit
 *.md
 .env
 .env.*
 !.env.example
 docker-compose.override.yml
+# Training / non-serving model artifacts (models image copies only onnx+joblib).
+models/*.pt
+models/*.quant.onnx
+models/*.pkl
+models/*.pth
+models/CI_SYNTHETIC_ARTIFACTS.json
