@@ -36,6 +36,8 @@ def test_metrics_endpoint(api_client):
     assert "credit_scoring_inference_requests_total" in text
     assert "credit_scoring_inference_latency_seconds" in text
     assert "credit_scoring_model_ready" in text
+    assert "ml_data_drift_share" in text
+    assert "ml_data_drift_detected" in text
     # No high-cardinality client data labels.
     assert "LIMIT_BAL" not in text
     assert "request_id" not in text

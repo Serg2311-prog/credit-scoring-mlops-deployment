@@ -170,14 +170,14 @@
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
-| 6.1 | Evidently data drift | Отчёт HTML/JSON | скрипт + артефакт | `planned` |
-| 6.2 | Model performance decay при метках | Метрики vs baseline при наличии y | код + отчёт | `planned` |
-| 6.3 | Обоснованный approach к concept drift | Документ: когда можно/нельзя утверждать | docs | `planned` |
-| 6.4 | Не утверждать concept drift без данных | Нет ложных claims | ревью отчётов | `planned` |
-| 6.5 | Сравнение моделей | RF baseline vs NN/ONNX таблица | artifacts | `planned` |
-| 6.6 | A/B routing двух версий | API router + конфиг долей | тесты API | `planned` |
-| 6.7 | Учёт версий моделей | metadata/version registry файл или MLflow | артефакты | `planned` |
-| 6.8 | Отчёты мониторинга | Сохранённые drift/performance reports | `artifacts/monitoring/` | `planned` |
+| 6.1 | Evidently data drift | Отчёт HTML/JSON | `python -m src.monitoring.cli data-drift` / demo | `implemented` |
+| 6.2 | Model performance decay при метках | Метрики vs baseline при наличии y | `concept-drift` CLI + tests | `implemented` |
+| 6.3 | Обоснованный approach к concept drift | Документ: когда можно/нельзя утверждать | `docs/stage6_runbook.md` | `implemented` |
+| 6.4 | Не утверждать concept drift без данных | Нет ложных claims; только signal | код `confirmed_concept_drift=False` | `implemented` |
+| 6.5 | Сравнение моделей | Offline A/B + stage1 RF/NN benchmark | `ab-offline` + `docs/model_benchmark.md` | `implemented` |
+| 6.6 | A/B routing двух версий | API router + конфиг долей (AB off by default) | `ab_router` + settings + tests | `implemented` |
+| 6.7 | Учёт версий моделей | `models/model_registry.json` | CLI demo | `implemented` |
+| 6.8 | Отчёты мониторинга | Сохранённые drift/performance reports | `artifacts/monitoring/` | `implemented` |
 
 Опционально: Seldon, shadow deployment — вне обязательного объёма.
 

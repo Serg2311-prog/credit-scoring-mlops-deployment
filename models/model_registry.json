@@ -1,0 +1,11 @@
+{
+  "updated_at_utc": "2026-11-22T13:45:02+00:00",
+  "production_champion": "mlp-onnx-fp32-v1",
+  "challenger_candidate": "challenger-candidate-v1",
+  "ab_enabled_default": false,
+  "traffic_challenger_share": 0.2,
+  "hash_salt": "credit-scoring-ab-v1",
+  "auto_promote": false,
+  "rollback_target": "mlp-onnx-fp32-v1",
+  "notes": "Promotion is manual. Set AB_ENABLED only after review; rollback = disable challenger and serve champion."
+}

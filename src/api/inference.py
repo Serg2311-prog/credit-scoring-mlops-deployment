@@ -30,6 +30,8 @@ def _sigmoid(logits: np.ndarray) -> np.ndarray:
 class PredictionResult:
     probabilities: np.ndarray
     predictions: np.ndarray
+    model_versions: list[str] | None = None
+    ab_groups: list[str] | None = None
 
 
 class OnnxInferenceRuntime:
@@ -44,6 +46,8 @@ class OnnxInferenceRuntime:
         self.backend = settings.model_backend
         self._preprocessor = None
         self._session = None
+        self._challenger_session = None
+        self._challenger_ready = False
         self._input_name: str | None = None
         self._input_dim: int | None = None
         self._ready = False
@@ -120,6 +124,7 @@ class OnnxInferenceRuntime:
             # Smoke transform/infer with zeros to fail fast.
             probe = np.zeros((1, pre_dim), dtype=np.float32)
             _ = self._session.run(None, {self._input_name: probe})
+            self._load_challenger_session(ort, so, probe)
             self._ready = True
             LOGGER.info(
                 "Model runtime loaded",
@@ -134,6 +139,36 @@ class OnnxInferenceRuntime:
             LOGGER.exception("Failed to load model runtime")
             raise
 
+    def _load_challenger_session(self, ort: Any, so: Any, probe: np.ndarray) -> None:
+        """Optional challenger ONNX. Missing path keeps A/B labels on champion only."""
+        self._challenger_session = None
+        self._challenger_ready = False
+        if not self.settings.ab_enabled:
+            return
+        if self.settings.challenger_model_path is None:
+            LOGGER.warning(
+                "AB_ENABLED but CHALLENGER_MODEL_PATH unset; "
+                "routing falls back to champion"
+            )
+            return
+        challenger_path = self.settings.resolve_path(
+            self.settings.challenger_model_path
+        )
+        if not challenger_path.is_file():
+            LOGGER.warning(
+                "Challenger ONNX missing (%s); A/B falls back to champion",
+                challenger_path.name,
+            )
+            return
+        session = ort.InferenceSession(
+            str(challenger_path),
+            sess_options=so,
+            providers=["CPUExecutionProvider"],
+        )
+        _ = session.run(None, {self._input_name: probe})
+        self._challenger_session = session
+        self._challenger_ready = True
+
     def require_ready(self) -> None:
         if not self._ready or self._session is None or self._preprocessor is None:
             raise ModelNotReadyError(self._load_error or "Model runtime is not ready")
@@ -147,27 +182,94 @@ class OnnxInferenceRuntime:
             )
         return frame.loc[:, list(RAW_FEATURE_COLUMNS)]
 
-    def predict_records(self, records: list[dict[str, Any]]) -> PredictionResult:
+    def predict_records(
+        self,
+        records: list[dict[str, Any]],
+        *,
+        request_id: str | None = None,
+    ) -> PredictionResult:
         self.require_ready()
         assert self._preprocessor is not None
         assert self._session is not None
         assert self._input_name is not None
         try:
+            from src.monitoring.ab_router import decide_route, unit_id_from_record
+
             frame = self._frame_from_records(records)
             matrix = transform_features(self._preprocessor, frame)
             if matrix.dtype != np.float32:
                 matrix = matrix.astype(np.float32, copy=False)
             if matrix.ndim != 2 or matrix.shape[1] != self._input_dim:
                 raise InferenceError(f"Unexpected feature matrix shape: {matrix.shape}")
-            outputs = self._session.run(None, {self._input_name: matrix})
-            logits = np.asarray(outputs[0], dtype=np.float64).reshape(-1)
-            if logits.shape[0] != len(records):
-                raise InferenceError("ONNX output batch size mismatch")
-            probabilities = _sigmoid(logits)
+
+            routes = []
+            for index, record in enumerate(records):
+                unit = request_id if (request_id and len(records) == 1) else None
+                unit = unit or unit_id_from_record(record, index)
+                routes.append(
+                    decide_route(
+                        unit_id=unit,
+                        ab_enabled=bool(self.settings.ab_enabled),
+                        challenger_share=float(self.settings.ab_challenger_share),
+                        hash_salt=str(self.settings.ab_hash_salt),
+                        champion_version=self.model_version,
+                        challenger_version=self.settings.challenger_model_version,
+                    )
+                )
+
+            use_split = bool(
+                self.settings.ab_enabled
+                and self._challenger_ready
+                and self._challenger_session is not None
+            )
+            if use_split:
+                probabilities = np.zeros(len(records), dtype=np.float64)
+                champ_idx = [
+                    i for i, route in enumerate(routes) if route.ab_group == "champion"
+                ]
+                chall_idx = [
+                    i
+                    for i, route in enumerate(routes)
+                    if route.ab_group == "challenger"
+                ]
+                if champ_idx:
+                    out = self._session.run(None, {self._input_name: matrix[champ_idx]})
+                    probabilities[champ_idx] = _sigmoid(
+                        np.asarray(out[0], dtype=np.float64).reshape(-1)
+                    )
+                if chall_idx:
+                    out = self._challenger_session.run(
+                        None, {self._input_name: matrix[chall_idx]}
+                    )
+                    probabilities[chall_idx] = _sigmoid(
+                        np.asarray(out[0], dtype=np.float64).reshape(-1)
+                    )
+            else:
+                outputs = self._session.run(None, {self._input_name: matrix})
+                logits = np.asarray(outputs[0], dtype=np.float64).reshape(-1)
+                if logits.shape[0] != len(records):
+                    raise InferenceError("ONNX output batch size mismatch")
+                probabilities = _sigmoid(logits)
+
+            # If challenger ONNX is unavailable, scores come from champion;
+            # still record intended ab_group for experiment accounting.
+            versions: list[str] = []
+            for route in routes:
+                if (
+                    route.ab_group == "challenger"
+                    and self.settings.ab_enabled
+                    and self._challenger_ready
+                ):
+                    versions.append(route.model_version)
+                else:
+                    versions.append(self.model_version)
+
             predictions = (probabilities >= self.threshold).astype(int)
             return PredictionResult(
                 probabilities=probabilities,
                 predictions=predictions,
+                model_versions=versions,
+                ab_groups=[route.ab_group for route in routes],
             )
         except (ModelNotReadyError, InferenceError):
             raise
@@ -185,4 +287,7 @@ class OnnxInferenceRuntime:
             "threshold": self.threshold,
             "max_batch_size": int(self.settings.max_batch_size),
             "ready": self._ready,
+            "ab_enabled": bool(self.settings.ab_enabled),
+            "challenger_ready": bool(self._challenger_ready),
+            "auto_promote": False,
         }

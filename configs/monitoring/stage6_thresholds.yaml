@@ -1,0 +1,28 @@
+# Stage 6 monitoring thresholds (local / offline). Not cloud credentials.
+data_drift:
+  share_threshold: 0.3
+  # Fraction of features with detected drift that flips dataset-level flag.
+  min_rows: 30
+  psi_moderate: 0.1
+  psi_high: 0.25
+
+concept_drift:
+  min_rows: 50
+  min_positives: 5
+  min_negatives: 5
+  # Absolute drop vs reference that raises a degradation SIGNAL (not auto-proof of concept drift).
+  roc_auc_drop: 0.03
+  pr_auc_drop: 0.03
+  f1_drop: 0.05
+  require_metric_drops: 2
+
+ab_testing:
+  traffic_challenger_share: 0.2
+  hash_salt: "credit-scoring-ab-v1"
+  min_rows_offline: 40
+  # Offline comparison uses the SAME labeled holdout for both models.
+  significance_alpha: 0.05
+
+versions:
+  champion: "mlp-onnx-fp32-v1"
+  challenger: "challenger-candidate-v1"

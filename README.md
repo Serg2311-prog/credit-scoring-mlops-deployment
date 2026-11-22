@@ -2,9 +2,10 @@
 
 Промышленное развертывание кредитной скоринговой системы (учебный итоговый проект).
 
-**Статус:** этапы **0–5** реализованы в репозитории.
+**Статус:** этапы **0–6** реализованы в репозитории.
 Этап 4 CI/CD **проверен на GitHub Actions**. Этап 5 — **локальный** observability-стек (без облака).
-Cloud `terraform apply` / Airflow / этап 6+ — не начаты. Production в облаке **не развёрнут**.
+Этап 6 — offline drift / quality signal / A/B (Evidently `0.7.23`, без auto-promote).
+Cloud `terraform apply` / Airflow — не начаты. Production в облаке **не развёрнут**.
 
 Исходный ML-проект: [credit-default-prediction](https://github.com/Serg2311-prog/credit-default-prediction).
 
@@ -16,6 +17,7 @@ Cloud `terraform apply` / Airflow / этап 6+ — не начаты. Productio
 - [API / Docker / K8s / Terraform](docs/) — отчёты этапов 2–3
 - [CI/CD](docs/cicd_pipeline.md) · [Валидация этапа 4](docs/stage4_validation_report.md)
 - [Stage 5 runbook](docs/stage5_runbook.md) · [Валидация этапа 5](docs/stage5_validation_report.md)
+- [Stage 6 runbook](docs/stage6_runbook.md) · [Валидация этапа 6](docs/stage6_validation_report.md)
 
 ## Inference API
 
@@ -45,6 +47,25 @@ docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d -
 | API metrics | http://127.0.0.1:8000/metrics |
 
 Подробности: [docs/stage5_runbook.md](docs/stage5_runbook.md).
+
+## Monitoring Stage 6 (drift / A/B)
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+$env:PYTHONPATH = (Get-Location).Path
+$env:OMP_NUM_THREADS = "1"
+.\.venv\Scripts\python.exe -m src.monitoring.cli demo
+# reports → artifacts/monitoring/
+```
+
+| Command | Purpose |
+| --- | --- |
+| `data-drift` | Evidently feature drift (target excluded) |
+| `concept-drift` | Labeled quality degradation **signal** |
+| `ab-offline` | Same-holdout champion vs challenger |
+| `demo` | Synthetic end-to-end artifacts |
+
+Пороги: `configs/monitoring/stage6_thresholds.yaml`. Runbook: [docs/stage6_runbook.md](docs/stage6_runbook.md).
 
 ## Local CI checks (этап 4)
 

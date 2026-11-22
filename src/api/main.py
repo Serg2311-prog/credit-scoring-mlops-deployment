@@ -23,6 +23,7 @@ from src.api.metrics import (
     REQUEST_COUNT,
     REQUEST_ERRORS,
     REQUEST_LATENCY,
+    observe_ab_sample,
     render_metrics,
 )
 from src.api.schemas import (
@@ -214,14 +215,19 @@ def predict(payload: ClientFeatures, request: Request) -> PredictResponse:
     runtime = dependencies.get_runtime()
     request_id = getattr(request.state, "request_id", _request_id(request))
     started = time.perf_counter()
-    result = runtime.predict_records([payload.model_dump()])
+    result = runtime.predict_records([payload.model_dump()], request_id=request_id)
     INFERENCE_LATENCY.labels("/predict").observe(time.perf_counter() - started)
     INFERENCE_COUNT.labels("/predict").inc()
     BATCH_SIZE.observe(1)
+    version = (
+        result.model_versions[0] if result.model_versions else runtime.model_version
+    )
+    if get_settings().ab_enabled and result.ab_groups:
+        observe_ab_sample(result.ab_groups[0])
     return PredictResponse(
         probability_default=round(float(result.probabilities[0]), 6),
         prediction=int(result.predictions[0]),
-        model_version=runtime.model_version,
+        model_version=version,
         request_id=request_id,
     )
 
@@ -247,18 +253,24 @@ def predict_batch(
     request_id = getattr(request.state, "request_id", _request_id(request))
     records = [item.model_dump() for item in payload.items]
     started = time.perf_counter()
-    result = runtime.predict_records(records)
+    result = runtime.predict_records(records, request_id=request_id)
     INFERENCE_LATENCY.labels("/predict/batch").observe(time.perf_counter() - started)
     INFERENCE_COUNT.labels("/predict/batch").inc()
     BATCH_SIZE.observe(len(records))
+    versions = result.model_versions or [runtime.model_version] * len(records)
+    if settings.ab_enabled and result.ab_groups:
+        for group in result.ab_groups:
+            observe_ab_sample(group)
     responses = [
         PredictResponse(
             probability_default=round(float(prob), 6),
             prediction=int(pred),
-            model_version=runtime.model_version,
+            model_version=str(version),
             request_id=request_id,
         )
-        for prob, pred in zip(result.probabilities, result.predictions, strict=True)
+        for prob, pred, version in zip(
+            result.probabilities, result.predictions, versions, strict=True
+        )
     ]
     return BatchPredictResponse(
         results=responses,

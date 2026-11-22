@@ -15,6 +15,7 @@ data/processed/*
 !data/processed/.gitkeep
 models/*
 !models/.gitkeep
+!models/model_registry.json
 artifacts/*
 !artifacts/.gitkeep
 !artifacts/baseline_metrics.json

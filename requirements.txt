@@ -1,4 +1,5 @@
-pandas>=2.2
+# pandas 3.x breaks Evidently 0.7 on this stack; pin to 2.2.x wheels for py313.
+pandas>=2.2.3,<3
 numpy>=1.26
 scikit-learn>=1.5
 matplotlib>=3.8
@@ -12,4 +13,6 @@ pydantic-settings>=2.4
 prometheus_client>=0.20
 psutil>=5.9
 httpx>=0.27
+# Stage 6: Evidently data drift (compatible with pandas 2.2 + numpy 2.x / py313).
+evidently==0.7.23
 

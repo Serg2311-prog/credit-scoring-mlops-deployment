@@ -62,7 +62,7 @@ class FakeRuntime:
         if not self.ready:
             raise ModelNotReadyError(self.load_error or "not ready")
 
-    def predict_records(self, records):
+    def predict_records(self, records, *, request_id: str | None = None):
         from src.api.errors import InferenceError
 
         self.require_ready()
@@ -74,7 +74,14 @@ class FakeRuntime:
             dtype=np.float64,
         )
         preds = (probs >= self.threshold).astype(int)
-        return PredictionResult(probabilities=probs, predictions=preds)
+        versions = [self.model_version] * len(records)
+        groups = ["champion"] * len(records)
+        return PredictionResult(
+            probabilities=probs,
+            predictions=preds,
+            model_versions=versions,
+            ab_groups=groups,
+        )
 
     def info(self):
         return {

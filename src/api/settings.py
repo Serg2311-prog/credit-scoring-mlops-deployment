@@ -35,6 +35,19 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
     expected_input_dim: int = Field(default=47, alias="EXPECTED_INPUT_DIM", ge=1)
 
+    # Stage 6 A/B (disabled by default — no automatic production switch).
+    ab_enabled: bool = Field(default=False, alias="AB_ENABLED")
+    ab_challenger_share: float = Field(
+        default=0.2, alias="AB_CHALLENGER_SHARE", ge=0.0, le=1.0
+    )
+    ab_hash_salt: str = Field(default="credit-scoring-ab-v1", alias="AB_HASH_SALT")
+    challenger_model_version: str = Field(
+        default="challenger-candidate-v1", alias="CHALLENGER_MODEL_VERSION"
+    )
+    challenger_model_path: Path | None = Field(
+        default=None, alias="CHALLENGER_MODEL_PATH"
+    )
+
     def resolve_path(self, path: Path) -> Path:
         if path.is_absolute():
             return path
