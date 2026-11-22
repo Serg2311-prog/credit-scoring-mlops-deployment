@@ -53,7 +53,26 @@
 
 ---
 
-## Этап 2. Terraform / Cloud IaC (7 баллов)
+## Проектный этап 2. Inference API + Docker (выполнен 2026-11-22)
+
+> Нумерация проектных этапов: после модели (этап 1) реализован serving API+Docker.
+> Terraform из учебного «Этапа 2» остаётся следующим блоком (см. секцию ниже).
+
+| ID | Требование | Критерий приёмки | Как проверить | Статус |
+| --- | --- | --- | --- | --- |
+| P2.1 | FastAPI ONNX FP32 serving | `/predict` на реальных артефактах | local+docker smoke | `verified_local` |
+| P2.2 | Health live/ready | 200 / 503 | tests + smoke | `verified_local` |
+| P2.3 | Batch + validation | limit 256, 422 on bad input | `tests/api` | `verified_local` |
+| P2.4 | Prometheus `/metrics` | exporters present | smoke | `verified_local` |
+| P2.5 | JSON logging | request_id/latency without PII | logs | `verified_local` |
+| P2.6 | Multi-stage CPU Docker | no torch/CUDA | `docker/Dockerfile.api` | `verified_local` |
+| P2.7 | Compose + volume artifacts | healthy container | `docker compose` | `verified_local` |
+| P2.8 | API↔ONNX parity | integration tests | `test_integration_onnx.py` | `verified_local` |
+| P2.9 | Docs | api/docker/stage2 reports | `docs/*` | `verified_local` |
+
+---
+
+## Учебный этап 2. Terraform / Cloud IaC (7 баллов)
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
@@ -77,9 +96,9 @@
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
-| 3.1 | Multi-stage Dockerfile | Backend multi-stage | `docker/Dockerfile.backend` | `planned` |
+| 3.1 | Multi-stage Dockerfile | Backend multi-stage | `docker/Dockerfile.api` | `verified_local` |
 | 3.2 | Отдельные backend/frontend образы | Два Dockerfile | build обоих | `planned` |
-| 3.3 | FastAPI inference | `/predict` + health | compose curl | `planned` |
+| 3.3 | FastAPI inference | `/predict` + health | compose curl | `verified_local` |
 | 3.4 | Минимальный frontend | Demo UI ходит в API | browser/curl | `planned` |
 | 3.5 | DVC-интеграция артефактов | Документированный pull/repro в образе или entrypoint | docs + Dockerfile | `planned` |
 | 3.6 | K8s Deployment rolling update | `strategy: RollingUpdate` | манифест | `planned` |
@@ -89,7 +108,7 @@
 | 3.10 | Secret templates без реальных секретов | `*.secret.yaml.example` | файлы | `planned` |
 | 3.11 | readiness/liveness probes | Оба probe | манифест | `planned` |
 | 3.12 | resource requests/limits | CPU/memory заданы | манифест | `planned` |
-| 3.13 | Локальная проверка Docker Compose | `docker compose up` профиль api | локальный прогон | `planned` |
+| 3.13 | Локальная проверка Docker Compose | `docker compose up` профиль api | локальный прогон | `verified_local` |
 
 ---
 
@@ -206,7 +225,7 @@
 | --- | ---: | --- |
 | Подготовка модели | 5 | ~100% локально verified (этап 1) |
 | Cloud Infrastructure | 7 | 0% |
-| Контейнеризация и K8S | 8 | 0% |
+| Контейнеризация и K8S | 8 | ~40% (API+Docker; K8s pending) |
 | CI/CD | 5 | 0% |
 | Мониторинг | 8 | 0% |
 | Мониторинг дрифта | 7 | 0% |

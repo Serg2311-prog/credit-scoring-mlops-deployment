@@ -12,3 +12,6 @@ target-version = ["py311", "py312", "py313"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = [
+    "integration: tests that require stage-1 ONNX/preprocessor artifacts",
+]
