@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: credit-scoring-api-config
+  namespace: credit-scoring
+  labels:
+    app.kubernetes.io/name: credit-scoring-api
+    app.kubernetes.io/component: inference
+data:
+  APP_ENV: "kubernetes"
+  MODEL_BACKEND: "onnx"
+  MODEL_NAME: "credit_scoring_mlp"
+  MODEL_VERSION: "mlp-onnx-fp32-v1"
+  MODEL_PATH: "/app/models/credit_scoring_nn.onnx"
+  PREPROCESSOR_PATH: "/app/models/preprocessor.joblib"
+  PREDICTION_THRESHOLD: "0.5"
+  MAX_BATCH_SIZE: "256"
+  ORT_INTRA_OP_THREADS: "2"
+  ORT_INTER_OP_THREADS: "1"
+  EXPECTED_INPUT_DIM: "47"
+  LOG_LEVEL: "INFO"

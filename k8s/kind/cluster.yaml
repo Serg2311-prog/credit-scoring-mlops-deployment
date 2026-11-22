@@ -1,0 +1,6 @@
+# Minimal single-node kind cluster for local inference API (laptop-friendly).
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: credit-scoring
+nodes:
+  - role: control-plane

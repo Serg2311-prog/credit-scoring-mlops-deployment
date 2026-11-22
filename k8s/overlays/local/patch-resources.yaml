@@ -1,0 +1,19 @@
+# Local overlay: keep modest limits for ~8 GB RAM laptops.
+# Actual stage-2 Docker RSS was ~140–200 MiB; 512 MiB limit leaves headroom.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: credit-scoring-api
+  namespace: credit-scoring
+spec:
+  template:
+    spec:
+      containers:
+        - name: api
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi

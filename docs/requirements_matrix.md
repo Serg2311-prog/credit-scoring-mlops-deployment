@@ -92,6 +92,21 @@
 
 ---
 
+## Проектный этап 3А. Kubernetes local / kind (выполнен 2026-11-22)
+
+| ID | Требование | Критерий приёмки | Как проверить | Статус |
+| --- | --- | --- | --- | --- |
+| P3A.1 | kind cluster single-node | cluster Ready | `scripts/k8s_create.ps1` | `verified_local` |
+| P3A.2 | Kustomize base + local overlay | `kubectl kustomize` | tests/k8s + render | `verified_local` |
+| P3A.3 | Deployment + probes + securityContext | Ready Pod | deploy + smoke | `verified_local` |
+| P3A.4 | Model delivery via models image + initContainer | artifacts in Pod, no hostPath | smoke ready | `verified_local` |
+| P3A.5 | ConfigMap stage-2 env | threshold 0.5 / onnx paths | manifest | `verified_local` |
+| P3A.6 | ClusterIP + port-forward inference | predict/batch/metrics | `k8s_smoke.ps1` | `verified_local` |
+| P3A.7 | Rollout + rollback | undo works | `k8s_rollback.ps1` | `verified_local` |
+| P3A.8 | Docs + validation report | real results | `docs/stage3a_validation_report.md` | `verified_local` |
+
+---
+
 ## Этап 3. Docker и Kubernetes (8 баллов)
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
@@ -101,13 +116,13 @@
 | 3.3 | FastAPI inference | `/predict` + health | compose curl | `verified_local` |
 | 3.4 | Минимальный frontend | Demo UI ходит в API | browser/curl | `planned` |
 | 3.5 | DVC-интеграция артефактов | Документированный pull/repro в образе или entrypoint | docs + Dockerfile | `planned` |
-| 3.6 | K8s Deployment rolling update | `strategy: RollingUpdate` | манифест | `planned` |
-| 3.7 | Service | ClusterIP/LoadBalancer | манифест | `planned` |
+| 3.6 | K8s Deployment rolling update | `strategy: RollingUpdate` | манифест + kind rollout | `verified_local` |
+| 3.7 | Service | ClusterIP/LoadBalancer | манифест + port-forward | `verified_local` |
 | 3.8 | Ingress | Ingress resource | манифест | `planned` |
-| 3.9 | ConfigMap | Несекретная конфигурация | манифест | `planned` |
-| 3.10 | Secret templates без реальных секретов | `*.secret.yaml.example` | файлы | `planned` |
-| 3.11 | readiness/liveness probes | Оба probe | манифест | `planned` |
-| 3.12 | resource requests/limits | CPU/memory заданы | манифест | `planned` |
+| 3.9 | ConfigMap | Несекретная конфигурация | манифест | `verified_local` |
+| 3.10 | Secret templates без реальных секретов | `*.secret.yaml.example` | `k8s/base/secret.example.yaml` | `implemented` |
+| 3.11 | readiness/liveness probes | Оба probe | манифест + Ready Pod | `verified_local` |
+| 3.12 | resource requests/limits | CPU/memory заданы | манифест | `verified_local` |
 | 3.13 | Локальная проверка Docker Compose | `docker compose up` профиль api | локальный прогон | `verified_local` |
 
 ---

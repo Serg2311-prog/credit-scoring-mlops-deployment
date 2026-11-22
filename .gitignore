@@ -42,5 +42,9 @@ Thumbs.db
 # Docker / local compose overrides
 docker-compose.override.yml
 
+# Local portable tooling (kind.exe, etc.)
+tools/
+!tools/.gitkeep
+
 # Audit copy of source (not part of deliverable)
 _source_audit/

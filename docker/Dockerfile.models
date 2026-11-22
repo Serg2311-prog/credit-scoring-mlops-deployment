@@ -1,0 +1,13 @@
+# Trusted local model-artifacts image for kind (not for public registries).
+# Contains only ONNX FP32 + preprocessor used by stage-2 serving.
+FROM alpine:3.20
+
+RUN adduser -D -u 10001 -H appuser \
+    && mkdir -p /artifacts \
+    && chown -R 10001:10001 /artifacts
+
+COPY --chown=10001:10001 models/credit_scoring_nn.onnx /artifacts/credit_scoring_nn.onnx
+COPY --chown=10001:10001 models/preprocessor.joblib /artifacts/preprocessor.joblib
+
+USER 10001
+WORKDIR /artifacts
