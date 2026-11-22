@@ -1,8 +1,10 @@
 # Trusted local model-artifacts image for kind (not for public registries).
 # Contains only ONNX FP32 + preprocessor used by stage-2 serving.
-FROM alpine:3.20
+# alpine:3.22 ships musl >=1.2.5-r4 (fixes CVE-2026-107891); 3.20 is EOL.
+FROM alpine:3.22
 
-RUN adduser -D -u 10001 -H appuser \
+RUN apk upgrade --no-cache \
+    && adduser -D -u 10001 -H appuser \
     && mkdir -p /artifacts \
     && chown -R 10001:10001 /artifacts
 

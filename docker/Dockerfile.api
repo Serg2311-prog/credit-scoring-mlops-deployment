@@ -10,10 +10,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements-api.txt .
+COPY requirements-api.txt constraints-docker.txt .
+# Upgrade pip/setuptools, install runtime deps, then drop pip's vendored CycloneDX
+# SBOM (pip/_vendor/bom.cdx.json). Trivy otherwise treats that build-time metadata
+# as an installed setuptools@70.3.0 and fails the HIGH gate on CVE-2025-47273.
 RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip \
-    && /opt/venv/bin/pip install -r requirements-api.txt
+    && /opt/venv/bin/pip install -c constraints-docker.txt -r requirements-api.txt \
+    && find /opt/venv -path '*/pip/_vendor/bom.cdx.json' -delete \
+    && /opt/venv/bin/python -c "import importlib.metadata as m; v=m.version('setuptools'); assert tuple(map(int, v.split('.')[:3])) >= (78, 1, 1), v"
 
 
 FROM python:3.12-slim-bookworm AS runtime

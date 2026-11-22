@@ -78,7 +78,38 @@ Refuses overwrite of non-synthetic `models/` without `--force`.
 
 No ML/API/Terraform-apply changes. No auto commit/push.
 
+## Hotfix: Docker Trivy HIGH (run `45012291531`, base commit `199373e`)
+
+| Finding | Detail |
+| --- | --- |
+| CI fail step | `Trivy scan API image` |
+| Gate-blocking CVE | `CVE-2025-47273` HIGH — phantom `setuptools@70.3.0` (fix `>=78.1.1`) |
+| Root cause | After `pip install --upgrade pip`, pip 26.x vendors `pip/_vendor/bom.cdx.json`; Trivy SBOM analyzer treats that build metadata as an installed package |
+| Secondary (local rescan) | models image: `CVE-2026-107891` HIGH in `musl`/`musl-utils` on Alpine 3.20 (`1.2.5-r3` → fix `1.2.5-r4+`) |
+
+### Remediation
+
+- `docker/Dockerfile.api`: install with `constraints-docker.txt`, pin/install `setuptools>=78.1.1`, delete `pip/_vendor/bom.cdx.json`, assert setuptools floor at build time
+- `requirements-api.txt`: add `setuptools>=78.1.1`
+- `constraints-docker.txt`: new file — `setuptools>=78.1.1`
+- `docker/Dockerfile.models`: `alpine:3.20` → `alpine:3.22` + `apk upgrade --no-cache`
+
+Security gate unchanged: `severity: CRITICAL,HIGH`, `ignore-unfixed: true`, `exit-code: "1"` (no suppressions).
+
+### Local re-verification
+
+| Check | Result |
+| --- | --- |
+| setuptools in API image | **84.2.1**; `bom.cdx.json` absent |
+| Trivy API gate (CRITICAL/HIGH, ignore-unfixed) | **PASS** (exit 0) |
+| Trivy models gate | **PASS** (exit 0) |
+| pytest / flake8 / black | **93 passed** / **PASS** / **PASS** |
+| ONNX Runtime smoke in API image | **PASS** (`onnxruntime 1.32.0`, dim 47) |
+| `pip check` in API image | **PASS** |
+
+No commit/push; stage 5 not started.
+
 ## Stage 4 readiness
 
-**CI definitions corrected for hosted runners; local kubeconform + pytest gates green.**
+**CI definitions corrected for hosted runners; local kubeconform + pytest + Trivy gates green.**
 Awaiting technical acceptance before commit/push.

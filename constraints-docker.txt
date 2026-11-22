@@ -1,0 +1,4 @@
+# Docker image dependency constraints (API runtime image).
+# Keep setuptools above the CVE-2025-47273 fix floor so a real install cannot
+# regress below 78.1.1 even if a transitive pin tries to pull an older wheel.
+setuptools>=78.1.1
