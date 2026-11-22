@@ -48,10 +48,10 @@ jobs:
           python scripts/ci/verify_artifacts.py --dir models --allow-synthetic
 
       - name: Black
-        run: python -m black --check src tests scripts/ci
+        run: python -m black --check src tests scripts/ci airflow_home/dags
 
       - name: Flake8
-        run: python -m flake8 src tests scripts/ci
+        run: python -m flake8 src tests scripts/ci airflow_home/dags
 
       - name: Data schema / unit + integration (synthetic)
         run: |

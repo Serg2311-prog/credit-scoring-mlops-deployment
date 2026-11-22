@@ -1,0 +1,58 @@
+# Local Stage 7 Airflow demo stack.
+# NOT a production deployment. No Celery/Redis/Postgres. No observability stack.
+#
+# Do not start automatically on low-RAM hosts without free memory headroom.
+# Typical pull/build is heavy; prefer unit tests + CLI dry-run on Windows.
+
+services:
+  airflow:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.airflow
+    image: credit-scoring-airflow:2.9.3
+    mem_limit: 1536m
+    cpus: 1.0
+    ports:
+      - "8080:8080"
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__PARALLELISM: "1"
+      AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: "1"
+      AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: "1"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
+      AIRFLOW__WEBSERVER__RBAC: "true"
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+      PYTHONPATH: /opt/credit-scoring
+      CREDIT_SCORING_ROOT: /opt/credit-scoring
+      RETRAIN_DRY_RUN: "true"
+      RETRAIN_TRIGGER_MODES: scheduled
+      RETRAIN_SCHEDULE: "0 3 * * 1"
+    volumes:
+      - ./airflow_home/dags:/opt/airflow/dags
+      - ./airflow_home/logs:/opt/airflow/logs
+      - ./src:/opt/credit-scoring/src
+      - ./configs:/opt/credit-scoring/configs
+      - ./params.yaml:/opt/credit-scoring/params.yaml:ro
+      - ./models:/opt/credit-scoring/models
+      - ./artifacts/retraining:/opt/credit-scoring/artifacts/retraining
+      - ./data:/opt/credit-scoring/data
+      - airflow-sqlite:/opt/airflow
+    command: >
+      bash -c "airflow db migrate
+      && airflow users create --username admin --password admin
+         --firstname Admin --lastname Local --role Admin --email admin@example.com
+         || true
+      && airflow webserver --port 8080 &
+      exec airflow scheduler"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  airflow-sqlite:

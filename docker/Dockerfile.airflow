@@ -1,0 +1,33 @@
+# Local Stage 7 Airflow image (NOT production).
+# Base: official Apache Airflow on Linux. Project code mounted / copied for tasks.
+FROM apache/airflow:2.9.3-python3.12
+
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+USER airflow
+WORKDIR /opt/credit-scoring
+
+# Lightweight deps for retraining tasks (no full torch stack by default).
+COPY requirements.txt requirements-dev.txt /opt/credit-scoring/
+RUN pip install --no-cache-dir \
+        "pandas>=2.2.3,<3" \
+        "numpy>=1.26" \
+        "scikit-learn>=1.5" \
+        "PyYAML>=6.0" \
+        "pandera>=0.20" \
+        "joblib>=1.4" \
+        "evidently==0.7.23" \
+        "prometheus_client>=0.20"
+
+ENV PYTHONPATH=/opt/credit-scoring
+ENV AIRFLOW__CORE__LOAD_EXAMPLES=False
+ENV AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+ENV AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+ENV AIRFLOW__CORE__PARALLELISM=1
+ENV AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG=1
+ENV AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG=1
+ENV CREDIT_SCORING_ROOT=/opt/credit-scoring
+ENV RETRAIN_DRY_RUN=true

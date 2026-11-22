@@ -187,16 +187,16 @@
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
-| 7.1 | DAG: проверка новых данных | Task существует | `airflow/dags/*.py` | `planned` |
-| 7.2 | Валидация | Task | DAG | `planned` |
-| 7.3 | Drift detection | Task | DAG | `planned` |
-| 7.4 | Решение о переобучении | Branch/gate | DAG | `planned` |
-| 7.5 | Переобучение | Task | DAG | `planned` |
-| 7.6 | Оценка новой модели | Task | DAG | `planned` |
-| 7.7 | Сравнение с production baseline | Task; fail если хуже порога | DAG | `planned` |
-| 7.8 | Регистрация модели | Task | DAG | `planned` |
-| 7.9 | Контролируемое развертывание | Без auto-promote плохой модели | код gate | `planned` |
-| 7.10 | Retries / logging / failure handling | retries, on_failure | DAG params | `planned` |
+| 7.1 | DAG: проверка новых данных | Task существует | `airflow_home/dags/credit_scoring_retraining.py` | `implemented` |
+| 7.2 | Валидация | Task + `src.retraining.data_validation` | unit tests / DAG | `implemented` |
+| 7.3 | Drift detection | Trigger `data_drift` (Evidently stage 6) | `triggers.py` + tests | `implemented` |
+| 7.4 | Решение о переобучении | Branch skip vs train | BranchPythonOperator | `implemented` |
+| 7.5 | Переобучение | Candidate train в run dir | `trainer.py` | `implemented` |
+| 7.6 | Оценка новой модели | Holdout metrics | `evaluation.py` | `implemented` |
+| 7.7 | Сравнение с production baseline | Same-holdout gates | evaluation + tests | `implemented` |
+| 7.8 | Регистрация модели | Atomic registry, no champion overwrite | `registry.py` | `implemented` |
+| 7.9 | Контролируемое развертывание | Без auto-promote | `auto_promote=false` | `implemented` |
+| 7.10 | Retries / logging / failure handling | retries + skip branch | DAG default_args | `implemented` |
 
 ---
 

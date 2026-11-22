@@ -22,6 +22,9 @@ artifacts/*
 mlruns/
 mlartifacts/
 .onnx_cache/
+.airflow_home/
+airflow_home/logs/*
+!airflow_home/logs/.gitkeep
 
 # Secrets / local env
 .env

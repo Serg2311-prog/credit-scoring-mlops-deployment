@@ -1,0 +1,71 @@
+# Stage 7 retraining thresholds (local / offline). Not cloud credentials.
+retraining:
+  random_state: 42
+  test_size: 0.2
+  min_rows: 40
+  min_positives: 5
+  min_negatives: 5
+  min_holdout_rows: 20
+  decision_threshold: 0.5
+  # Candidate trainer backend: logistic (fast, deterministic) | mlp (torch, heavier)
+  backend: logistic
+  logistic:
+    max_iter: 500
+    C: 1.0
+  mlp:
+    # Short schedule for candidate runs; does not mutate production checkpoints.
+    epochs: 8
+    early_stopping_patience: 3
+    batch_size: 64
+    hidden_dims: [64, 32]
+    dropout: 0.2
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    num_threads: 1
+
+triggers:
+  # Comma-separated modes accepted by CLI/DAG: scheduled,data_drift,quality_drop
+  enabled_modes: [scheduled, data_drift, quality_drop]
+  # Absolute share threshold for Evidently/PSI data-drift trigger
+  data_drift_share_threshold: 0.3
+  # Quality drop uses stage-6 concept signal semantics (signal, not confirmed CD)
+  quality_require_metric_drops: 2
+  quality_roc_auc_drop: 0.03
+  quality_pr_auc_drop: 0.03
+  quality_f1_drop: 0.05
+  quality_min_rows: 50
+  quality_min_positives: 5
+  quality_min_negatives: 5
+
+gates:
+  # Absolute floor on holdout ROC-AUC / F1 for acceptance
+  min_roc_auc: 0.65
+  min_f1: 0.20
+  # Max allowed drop vs champion on the SAME holdout (candidate - champion)
+  max_roc_auc_drop_vs_champion: 0.02
+  max_f1_drop_vs_champion: 0.05
+  # Soft band: within this drop → needs_review instead of hard reject
+  review_roc_auc_drop_vs_champion: 0.01
+  bootstrap_samples: 50
+  bootstrap_alpha: 0.05
+  require_bootstrap: false
+
+artifacts:
+  root: artifacts/retraining
+  # Never write candidate into production model filenames automatically
+  auto_promote: false
+
+versions:
+  champion: mlp-onnx-fp32-v1
+  candidate_prefix: candidate-retrain
+
+mlflow:
+  enabled: false
+  tracking_uri: file:./mlruns
+  experiment_name: credit-scoring-retraining
+
+airflow:
+  schedule_cron: "0 3 * * 1"
+  max_active_runs: 1
+  retries: 1
+  retry_delay_minutes: 5
