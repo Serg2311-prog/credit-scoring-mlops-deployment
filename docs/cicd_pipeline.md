@@ -13,8 +13,8 @@
 | --- | --- | --- |
 | `ci-python.yml` | PR, push `main`, manual | black, flake8, pytest, synthetic artifacts |
 | `ci-infrastructure.yml` | PR, push `main`, manual | terraform fmt/validate, kustomize, static k8s/tf tests |
-| `ci-docker.yml` | PR, push `main`, manual | build API+models images, Trivy CRITICAL/HIGH |
-| `ci-kubernetes.yml` | PR/push (manifests); kind smoke only on manual flag | dry-run + optional kind |
+| `ci-docker.yml` | PR, push `main`, manual | build API+models images, Trivy CRITICAL/HIGH (action pinned by SHA) |
+| `ci-kubernetes.yml` | PR/push (manifests); kind smoke only on manual flag | kustomize + **kubeconform** offline; optional kind |
 | `release-candidate.yml` | manual only | package RC metadata artifact (no GitHub Release) |
 | `cd-staging.yml` | manual + confirm phrase | dry-run plan only, `SKIPPED_NO_CLOUD_CREDENTIALS` |
 
@@ -73,4 +73,8 @@ gh repo create <name> --private --source . --remote origin
 git push -u origin main
 ```
 
-Until `origin` exists, GitHub Actions status is **NOT EXECUTED** (workflows are ready).
+## Fixes after first hosted CI run (post `e04ff15`)
+
+1. **Kubernetes:** replaced `kubectl apply --dry-run=client` (needs OpenAPI / localhost:8080) with pinned **kubeconform v0.6.7** offline schema validation (`-strict`, kubernetes `1.33.0`). Real `kubectl apply` remains only in optional kind smoke after cluster create.
+2. **Docker/Trivy:** replaced non-resolving `aquasecurity/trivy-action@0.28.0` with full SHA `ed142fd0673e97e23eac54620cfb913e5ce36c25` (**v0.36.0**). Scans and JSON reports kept enabled.
+3. **Actions pinning:** checkout/setup-python/upload-artifact/setup-buildx/setup-terraform/setup-kubectl pinned to full commit SHAs (Node 20/24–compatible maintained majors).

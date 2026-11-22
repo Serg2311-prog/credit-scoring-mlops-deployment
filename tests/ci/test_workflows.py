@@ -20,15 +20,25 @@ REQUIRED_WORKFLOWS = [
     "cd-staging.yml",
 ]
 
+TRIVY_SHA = "aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25"
+
 
 def _text(name: str) -> str:
     return (WF / name).read_text(encoding="utf-8")
 
 
+def _uses_lines(text: str) -> list[str]:
+    refs: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("uses:"):
+            refs.append(stripped.split("uses:", 1)[1].strip())
+    return refs
+
+
 def test_required_workflow_files_exist():
     for name in REQUIRED_WORKFLOWS:
         assert (WF / name).is_file(), name
-        # Ensure YAML parses (PyYAML maps key "on" to True — still a dict).
         loaded = yaml.safe_load(_text(name))
         assert isinstance(loaded, dict)
 
@@ -55,19 +65,44 @@ def test_python_ci_has_quality_gates():
 
 
 def test_infra_ci_validates_terraform_and_kustomize():
-    text = (WF / "ci-infrastructure.yml").read_text(encoding="utf-8")
+    text = _text("ci-infrastructure.yml")
     assert "terraform fmt" in text
     assert "validate" in text
     assert "kustomize" in text
+    assert "kubeconform" in text
     assert "terraform apply" not in text
+    assert "kubectl apply --dry-run" not in text
+    assert "--validate=false" not in text
 
 
 def test_docker_ci_builds_and_scans():
-    text = (WF / "ci-docker.yml").read_text(encoding="utf-8")
+    text = _text("ci-docker.yml")
     assert "Dockerfile.api" in text
     assert "Dockerfile.models" in text
     assert "trivy" in text.lower()
-    assert "yandex" not in text.lower() or "push" not in text.lower()
+    uses = _uses_lines(text)
+    assert any(u.startswith(TRIVY_SHA) for u in uses)
+    assert not any(u.startswith("aquasecurity/trivy-action@0.28.0") for u in uses)
+
+
+def test_kubernetes_ci_uses_offline_kubeconform():
+    text = _text("ci-kubernetes.yml")
+    assert "kubeconform" in text
+    assert 'KUBECONFORM_VERSION: "v0.6.7"' in text
+    assert "kubectl apply --dry-run" not in text
+    assert "--validate=false" not in text
+    assert "kubectl apply -k k8s/overlays/local" in text
+    assert "kind create cluster" in text
+
+
+def test_actions_are_sha_pinned():
+    for path in WF.glob("*.yml"):
+        for ref in _uses_lines(path.read_text(encoding="utf-8")):
+            assert "@" in ref, f"unpinned action in {path.name}: {ref}"
+            version = ref.split("@", 1)[1].split()[0]
+            assert len(version) == 40 and all(
+                c in "0123456789abcdef" for c in version
+            ), f"action not pinned to full SHA in {path.name}: {ref}"
 
 
 def test_cd_staging_is_manual_and_dry_run():
@@ -75,13 +110,13 @@ def test_cd_staging_is_manual_and_dry_run():
     assert "workflow_dispatch:" in text
     assert "pull_request:" not in text
     assert "deploy-staging-dry-run" in text
-    assert "terraform apply" in text  # listed as blocked
+    assert "terraform apply" in text
     assert "SKIPPED_NO_CLOUD_CREDENTIALS" in text
     assert "environment: staging" in text
 
 
 def test_release_candidate_does_not_create_github_release():
-    text = (WF / "release-candidate.yml").read_text(encoding="utf-8")
+    text = _text("release-candidate.yml")
     assert "softprops/action-gh-release" not in text
     assert "Not a GitHub Release" in text
     assert "workflow_dispatch" in text
@@ -96,6 +131,6 @@ def test_no_cloud_credentials_in_workflows():
 
 
 def test_kind_smoke_is_optional():
-    text = (WF / "ci-kubernetes.yml").read_text(encoding="utf-8")
+    text = _text("ci-kubernetes.yml")
     assert "run_kind_smoke" in text
     assert "kind create cluster" in text

@@ -40,7 +40,8 @@ jobs:
     # Optional GitHub Environment for future required reviewers (configure in UI).
     environment: staging
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Emit deploy plan (no cloud commands)
         run: |
@@ -76,7 +77,8 @@ jobs:
           echo "::notice::CD staging cloud deploy SKIPPED (stage 4 policy)"
           echo "No credentials used. No paid resources created."
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cd-staging-plan-${{ github.sha }}
           path: artifacts/ci/cd-staging-plan.json

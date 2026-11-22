@@ -64,12 +64,21 @@ Refuses overwrite of non-synthetic `models/` without `--force`.
 
 ## Known issues
 
-1. Publish repository to GitHub before Actions can run.
-2. Synthetic preprocessor dim (≈43) ≠ production 47 — expected; marker separates them.
-3. `environment: staging` in CD requires creating the Environment in GitHub UI (optional).
-4. Trivy may fail builds on unfixed HIGH CVEs in base images — adjust allowlist only with justification.
+1. Synthetic preprocessor dim (≈43) ≠ production 47 — expected; marker separates them.
+2. `environment: staging` in CD requires creating the Environment in GitHub UI (optional).
+3. Trivy may fail builds on unfixed HIGH CVEs in base images — adjust allowlist only with justification.
+
+## Hotfix after first GitHub Actions run (commit `e04ff15`)
+
+| Failure | Fix | Local verification |
+| --- | --- | --- |
+| `kubectl apply --dry-run=client` → OpenAPI `localhost:8080` | `kubeconform v0.6.7` offline (`-strict`, k8s `1.33.0`) in `ci-kubernetes.yml` + `ci-infrastructure.yml` | **PASS** — 4/4 resources valid |
+| `aquasecurity/trivy-action@0.28.0` unresolved | Pin `aquasecurity/trivy-action@ed142fd…` (**v0.36.0**) | SHA verified via GitHub API tag object |
+| Floating action tags | Pin checkout/setup-python/upload-artifact/buildx/terraform/kubectl to full SHAs | workflow static tests assert 40-hex pins |
+
+No ML/API/Terraform-apply changes. No auto commit/push.
 
 ## Stage 4 readiness
 
-**Ready for acceptance as CI/CD definitions + local verification.**
-Hosted Actions execution awaits `git remote` + push (explicit user action; not performed here).
+**CI definitions corrected for hosted runners; local kubeconform + pytest gates green.**
+Awaiting technical acceptance before commit/push.
