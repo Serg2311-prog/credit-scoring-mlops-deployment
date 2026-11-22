@@ -1,0 +1,45 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Local data and heavy artifacts
+data/raw/*.csv
+data/processed/*
+!data/processed/.gitkeep
+models/*
+!models/.gitkeep
+artifacts/*
+!artifacts/.gitkeep
+mlruns/
+mlartifacts/
+.onnx_cache/
+
+# Secrets / local env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+infra/terraform/**/terraform.tfvars
+infra/terraform/**/*.tfstate*
+infra/terraform/**/.terraform/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Docker / local compose overrides
+docker-compose.override.yml
+
+# Audit copy of source (not part of deliverable)
+_source_audit/
