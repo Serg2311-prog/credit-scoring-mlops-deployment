@@ -110,6 +110,36 @@ def train_candidate_logistic(
     return meta
 
 
+def _score_mlp(matrix: np.ndarray, model_path: Path) -> np.ndarray:
+    try:
+        import torch
+    except ImportError as exc:  # pragma: no cover
+        raise RetrainingError(
+            "backend=mlp scoring requires torch; install requirements-nn.txt"
+        ) from exc
+
+    from src.nn.model import build_mlp_from_params
+    from src.nn.runtime import probabilities_from_logits
+
+    payload = torch.load(model_path, map_location="cpu", weights_only=False)
+    model_config = dict(payload.get("model_config") or {})
+    input_dim = int(model_config.get("input_dim") or matrix.shape[1])
+    if matrix.shape[1] != input_dim:
+        raise RetrainingError(
+            f"MLP input dim mismatch: matrix={matrix.shape[1]} meta={input_dim}"
+        )
+    nn_params = {
+        "hidden_dims": model_config.get("hidden_dims", [64, 32]),
+        "dropout": float(model_config.get("dropout", 0.0)),
+    }
+    model = build_mlp_from_params(input_dim, nn_params)
+    model.load_state_dict(payload["state_dict"])
+    model.eval()
+    with torch.no_grad():
+        logits = model(torch.from_numpy(matrix.astype(np.float32)))
+        return np.asarray(probabilities_from_logits(logits), dtype=float)
+
+
 def score_candidate(
     *,
     preprocessor_path: Path,
@@ -126,10 +156,15 @@ def score_candidate(
     x = x.loc[:, cols]
     preprocessor = joblib.load(preprocessor_path)
     matrix = transform_features(preprocessor, x)
+    backend = str(backend).lower()
     if backend == "logistic":
         model = joblib.load(model_path)
         return np.asarray(model.predict_proba(matrix)[:, 1], dtype=float)
-    raise RetrainingError(f"Unsupported scoring backend: {backend}")
+    if backend == "mlp":
+        return _score_mlp(matrix, Path(model_path))
+    raise RetrainingError(
+        f"Unsupported scoring backend: {backend}. Supported: logistic, mlp"
+    )
 
 
 def train_candidate(
@@ -146,11 +181,12 @@ def train_candidate(
             train_df, target, run_directory=run_directory, cfg=cfg
         )
     if backend == "mlp":
-        # Optional heavier path — still writes only under run_directory.
         return _train_candidate_mlp(
             train_df, target, run_directory=run_directory, cfg=cfg
         )
-    raise RetrainingError(f"Unknown retraining backend: {backend}")
+    raise RetrainingError(
+        f"Unknown retraining backend: {backend}. Supported: logistic, mlp"
+    )
 
 
 def _train_candidate_mlp(
@@ -160,14 +196,15 @@ def _train_candidate_mlp(
     run_directory: Path,
     cfg: dict[str, Any],
 ) -> dict[str, Any]:
-    """Short MLP candidate train; artifacts stay inside run_directory."""
+    """Short MLP candidate train; preprocessor and weights stay dimension-aligned."""
     try:
         import torch
         from torch import nn
         from torch.utils.data import DataLoader, TensorDataset
     except ImportError as exc:  # pragma: no cover
         raise RetrainingError(
-            "backend=mlp requires torch; install requirements-nn.txt"
+            "backend=mlp requires torch; install requirements-nn.txt "
+            "or set retraining.backend: logistic"
         ) from exc
 
     from src.nn.model import build_mlp_from_params
@@ -185,17 +222,17 @@ def _train_candidate_mlp(
     set_seed(seed)
 
     x_raw, y = _features_and_target(train_df, target)
-    x_fit_raw, x_val_raw, y_fit, y_val = train_test_split(
-        x_raw,
+    # Fit preprocessor once on full train so scoring uses the same transform.
+    final_pre = fit_preprocessor(x_raw)
+    x_all = transform_features(final_pre, x_raw)
+    input_dim = preprocessor_input_dim(final_pre)
+    x_fit, x_val, y_fit, y_val = train_test_split(
+        x_all,
         y,
         test_size=float(rt.get("test_size", 0.2)),
         random_state=seed,
         stratify=y,
     )
-    preprocessor = fit_preprocessor(x_fit_raw)
-    x_fit = transform_features(preprocessor, x_fit_raw)
-    x_val = transform_features(preprocessor, x_val_raw)
-    input_dim = preprocessor_input_dim(preprocessor)
 
     nn_params = {
         "hidden_dims": mlp_cfg.get("hidden_dims", [64, 32]),
@@ -250,8 +287,6 @@ def _train_candidate_mlp(
     if best_state is None:
         raise RetrainingError("MLP candidate training produced no improvement on val")
 
-    # Final fit preprocessor on full train; keep best weights (no production paths).
-    final_pre = fit_preprocessor(x_raw)
     run_directory.mkdir(parents=True, exist_ok=True)
     pre_path = run_directory / "candidate_preprocessor.joblib"
     ckpt_path = run_directory / "candidate_model.pt"
@@ -259,7 +294,7 @@ def _train_candidate_mlp(
     torch.save(
         {
             "state_dict": best_state,
-            "model_config": {"input_dim": input_dim, **nn_params},
+            "model_config": {"input_dim": int(input_dim), **nn_params},
             "backend": "mlp",
         },
         ckpt_path,
@@ -275,7 +310,7 @@ def _train_candidate_mlp(
         "overwrites_production": False,
         "metrics": {
             "val_selection_only": {"roc_auc": best_auc},
-            "note": "Holdout evaluation is performed separately.",
+            "note": "Holdout evaluation uses the same preprocessor + MLP weights.",
         },
     }
     dump_json(run_directory / "candidate_train_meta.json", meta)

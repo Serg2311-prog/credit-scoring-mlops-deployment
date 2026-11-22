@@ -48,11 +48,15 @@ def evaluate_triggers(
     """
     Decide whether retraining should run.
 
-    - scheduled: always fires when requested (force_scheduled or mode listed)
+    - scheduled: fires when requested
     - data_drift: feature distribution change (NOT concept drift proof)
-    - quality_drop: multi-metric degradation *signal* with labels (not confirmed CD)
+    - quality_drop: multi-metric degradation *signal* (not confirmed concept drift)
 
-    Returns status ``triggered`` or ``skipped`` with rationale JSON.
+    Returns status:
+    - ``triggered`` — at least one mode fired
+    - ``skipped`` — modes evaluated, none fired, inputs were available where needed
+    - ``unavailable`` — a requested non-scheduled mode lacked required inputs/reports
+      (callers must not treat this as a silent successful skip)
     """
     cfg = cfg or load_retraining_config()
     trig = cfg.get("triggers", {})
@@ -63,6 +67,7 @@ def evaluate_triggers(
 
     reasons: list[dict[str, Any]] = []
     fired: list[str] = []
+    unavailable: list[str] = []
 
     if TRIGGER_SCHEDULED in requested or force_scheduled:
         fired.append(TRIGGER_SCHEDULED)
@@ -70,6 +75,7 @@ def evaluate_triggers(
             {
                 "mode": TRIGGER_SCHEDULED,
                 "fired": True,
+                "availability": "ok",
                 "detail": "Scheduled / manual retraining window",
             }
         )
@@ -79,11 +85,20 @@ def evaluate_triggers(
         report = drift_report
         if report is None:
             if reference_features is None or current_features is None:
+                unavailable.append(TRIGGER_DATA_DRIFT)
                 reasons.append(
                     {
                         "mode": TRIGGER_DATA_DRIFT,
                         "fired": False,
-                        "detail": "Skipped: reference/current frames not provided",
+                        "availability": "unavailable",
+                        "detail": (
+                            "Required reference/current feature frames (or "
+                            "drift_report) were not provided; refusing silent skip"
+                        ),
+                        "note": (
+                            "Data drift = feature distribution shift only; "
+                            "not confirmed concept drift."
+                        ),
                     }
                 )
             else:
@@ -96,26 +111,43 @@ def evaluate_triggers(
                 )
         if report is not None:
             share = report.get("drift_share")
-            detected = bool(report.get("data_drift_detected"))
-            if share is None:
-                detected = False
-            elif float(share) >= share_thr:
-                detected = True
-            if detected:
-                fired.append(TRIGGER_DATA_DRIFT)
-            reasons.append(
-                {
-                    "mode": TRIGGER_DATA_DRIFT,
-                    "fired": detected,
-                    "drift_share": share,
-                    "threshold": share_thr,
-                    "note": (
-                        "Data drift = feature distribution shift only; "
-                        "not confirmed concept drift."
-                    ),
-                    "report_path": report.get("report_path"),
-                }
-            )
+            status = str(report.get("status") or "ok")
+            if status == "insufficient_data":
+                unavailable.append(TRIGGER_DATA_DRIFT)
+                reasons.append(
+                    {
+                        "mode": TRIGGER_DATA_DRIFT,
+                        "fired": False,
+                        "availability": "unavailable",
+                        "detail": report.get("message") or "insufficient_data",
+                        "drift_share": share,
+                        "report_path": report.get("report_path"),
+                        "note": (
+                            "Data drift check could not be completed; "
+                            "not confirmed concept drift."
+                        ),
+                    }
+                )
+            else:
+                detected = bool(report.get("data_drift_detected"))
+                if share is not None and float(share) >= share_thr:
+                    detected = True
+                if detected:
+                    fired.append(TRIGGER_DATA_DRIFT)
+                reasons.append(
+                    {
+                        "mode": TRIGGER_DATA_DRIFT,
+                        "fired": detected,
+                        "availability": "ok",
+                        "drift_share": share,
+                        "threshold": share_thr,
+                        "note": (
+                            "Data drift = feature distribution shift only; "
+                            "not confirmed concept drift."
+                        ),
+                        "report_path": report.get("report_path"),
+                    }
+                )
 
     if TRIGGER_QUALITY_DROP in requested:
         report = quality_report
@@ -126,19 +158,24 @@ def evaluate_triggers(
                 or current_y is None
                 or current_proba is None
             ):
+                unavailable.append(TRIGGER_QUALITY_DROP)
                 reasons.append(
                     {
                         "mode": TRIGGER_QUALITY_DROP,
                         "fired": False,
+                        "availability": "unavailable",
                         "detail": (
-                            "Skipped: labeled scores missing; "
-                            "cannot claim confirmed quality drop"
+                            "Labeled scores (y/proba for reference and current) "
+                            "or quality_report required; cannot invent a signal"
                         ),
                         "confirmed_quality_drop": False,
+                        "confirmed_concept_drift": False,
+                        "note": (
+                            "Missing inputs ≠ confirmed quality drop or concept drift"
+                        ),
                     }
                 )
             else:
-                # Align stage-6 thresholds temporarily via override dict.
                 stage6_like = {
                     "concept_drift": {
                         "min_rows": int(trig.get("quality_min_rows", 50)),
@@ -161,41 +198,70 @@ def evaluate_triggers(
                     output_name="retrain_trigger_quality",
                 )
         if report is not None:
-            signal = bool(report.get("degradation_signal"))
-            # Never treat as confirmed concept drift / hard proof.
-            confirmed = False
-            if signal and report.get("status") == "ok":
-                fired.append(TRIGGER_QUALITY_DROP)
-            reasons.append(
-                {
-                    "mode": TRIGGER_QUALITY_DROP,
-                    "fired": signal and report.get("status") == "ok",
-                    "degradation_signal": signal,
-                    "confirmed_concept_drift": confirmed,
-                    "confirmed_quality_drop": False,
-                    "status": report.get("status"),
-                    "message": report.get("message"),
-                    "note": (
-                        "Quality drop is a multi-metric signal requiring review; "
-                        "not auto-proof of concept drift."
-                    ),
-                    "report_path": report.get("report_path"),
-                }
-            )
+            q_status = str(report.get("status") or "")
+            if q_status in {"not_evaluable", "insufficient_data", "no_labels"}:
+                unavailable.append(TRIGGER_QUALITY_DROP)
+                reasons.append(
+                    {
+                        "mode": TRIGGER_QUALITY_DROP,
+                        "fired": False,
+                        "availability": "unavailable",
+                        "status": q_status,
+                        "message": report.get("message"),
+                        "confirmed_quality_drop": False,
+                        "confirmed_concept_drift": False,
+                        "note": (
+                            "Quality signal not evaluable; "
+                            "not confirmed concept drift."
+                        ),
+                        "report_path": report.get("report_path"),
+                    }
+                )
+            else:
+                signal = bool(report.get("degradation_signal"))
+                if signal and q_status == "ok":
+                    fired.append(TRIGGER_QUALITY_DROP)
+                reasons.append(
+                    {
+                        "mode": TRIGGER_QUALITY_DROP,
+                        "fired": bool(signal and q_status == "ok"),
+                        "availability": "ok",
+                        "degradation_signal": signal,
+                        "confirmed_concept_drift": False,
+                        "confirmed_quality_drop": False,
+                        "status": q_status,
+                        "message": report.get("message"),
+                        "note": (
+                            "Quality drop is a multi-metric signal requiring review; "
+                            "not auto-proof of concept drift."
+                        ),
+                        "report_path": report.get("report_path"),
+                    }
+                )
 
     triggered = len(fired) > 0
+    if triggered:
+        status = "triggered"
+        message = "Retraining trigger fired"
+    elif unavailable:
+        status = "unavailable"
+        message = (
+            "One or more requested trigger modes lack required inputs/results "
+            f"({', '.join(unavailable)}); refusing silent success"
+        )
+    else:
+        status = "skipped"
+        message = "No retraining trigger fired — workflow should skip without failure"
+
     decision = {
-        "status": "triggered" if triggered else "skipped",
+        "status": status,
         "triggered": triggered,
         "fired_modes": fired,
+        "unavailable_modes": unavailable,
         "requested_modes": requested,
         "reasons": reasons,
         "auto_promote": False,
-        "message": (
-            "Retraining trigger fired"
-            if triggered
-            else "No retraining trigger fired — workflow should skip without failure"
-        ),
+        "message": message,
     }
     if output_path is not None:
         output_path.parent.mkdir(parents=True, exist_ok=True)

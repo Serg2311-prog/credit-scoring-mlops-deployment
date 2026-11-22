@@ -1,46 +1,57 @@
 # Stage 7 Validation Report
 
-**Date:** 2026-11-22  
-**Environment:** Windows 11, PowerShell 5.1, Python 3.13 venv, 8 GB RAM, no GPU  
-**Docker / Airflow E2E:** **not executed** (resource constraint; intentionally skipped)
+**Date:** 2026-11-22 (stabilization pass)
+**Environment:** Windows 11, PowerShell 5.1, Python 3.13 venv, 8 GB RAM, no GPU
+**Docker / Airflow E2E:** **not executed** (compose `config` validated; full `up` not run)
 
-## Audit summary (pre-implementation)
+## Defects confirmed (pre-fix audit)
 
-| Area | Finding |
+| Defect | Impact |
 | --- | --- |
-| Training | `src.nn.train_nn.train_mlp` writes production checkpoints — not called for candidates |
-| Preprocessing | Reused `fit_preprocessor` / `transform_features` |
-| Metrics | Reused `compute_metrics` |
-| Validation | Reused Pandera `validate_dataframe` |
-| Stage 6 | Reused data-drift + quality-signal for triggers |
-| Registry | Extended `models/model_registry.json` without champion overwrite |
-| MLflow / DVC | No working in-repo server/remote — file fallback + optional MLflow flag |
-| Airflow in venv | Not installed (by design) |
+| Fragile compose command (`&&` / `|| true` / `&`) | Unreliable DB/user/webserver/scheduler ordering and error handling |
+| No reproducible demo input path | DAG could hit missing CSV without a documented prep step |
+| Drift/quality triggers soft-skipped when inputs missing | Silent “success” without a real signal |
+| MLP train vs score preprocessor / checkpoint mismatch risk | Candidate train could succeed while evaluation failed |
+| Docs risk of implying Docker E2E without running it | Misleading validation status |
 
-## Checks executed locally
+## Fixes applied
+
+| Area | Change |
+| --- | --- |
+| Compose / image | `scripts/airflow/entrypoint.sh`: migrate → user → webserver + health wait → scheduler; Dockerfile `ENTRYPOINT`; compose demo CSV path |
+| Demo data | `src/retraining/demo_data.py` + CLI `prepare-demo-input`; DAG fails if input missing |
+| Triggers | Status `unavailable` when frames/reports missing or not evaluable; `TriggerUnavailable`; DAG `AirflowFailException` |
+| MLP | Single full-train preprocessor; checkpoint `model_config`; aligned `_score_mlp`; unknown backends rejected at train |
+| Docs | Runbook documents prep/launch; this report does **not** claim Docker E2E |
+
+## Checks executed (stabilization)
 
 | Check | Result |
 | --- | --- |
-| `pytest tests/retraining` | **PASS** 22 + 1 skipped (Airflow import) |
-| `pytest` (full) | **PASS** 137 + 1 skipped |
-| `black --check` (stage 7 paths) | **PASS** |
-| `flake8` (stage 7 paths) | **PASS** |
+| `pytest -q -x` (full) | **PASS** 148 passed, 1 skipped |
+| `black --check src/retraining tests/retraining` | **PASS** (after format) |
+| `flake8 src/retraining tests/retraining` | **PASS** |
 | `git diff --check` | **PASS** (CRLF warnings only) |
-| CLI `python -m src.retraining.cli demo` | **PASS** (`status=needs_review`, `auto_promote=false`) |
-| Reproducibility unit test | **PASS** |
-| Docker Compose Airflow up | **NOT RUN** |
-| Linux CI DAG parse job | **NOT RUN locally** (workflow added: `ci-airflow-dag.yml`) |
+| `docker compose -f docker-compose.airflow.yml config` | **PASS** |
+| Docker Compose Airflow `up` / full DAG E2E | **NOT RUN** |
+| Production `models/model_registry.json` | **unchanged** (restored; no promote) |
 
-## Demo outcome
+## New / updated tests
 
-Synthetic dry-run produced `artifacts/retraining/dry_run/<run_id>/retraining_report.json` with:
+- Triggers: unavailable vs skipped vs fired (drift + quality), no fake concept-drift claims
+- Pipeline: `TriggerUnavailable` when drift inputs missing; `TriggerSkip` when evaluated and none fired
+- Demo input CLI/file + missing-path failure
+- MLP train→score alignment (torch); unknown backend rejection
+
+## Policy preserved
 
 - `auto_promote: false`
-- production registry status: `dry_run_skipped_production_registry`
-- decision `needs_review` (no same-holdout champion scorer in demo)
+- Production registry not mutated by this pass
+- No real credit data in Git
+- Stages 0–6 left intact unless required for Stage 7 imports
 
-## Known gaps before commit
+## Remaining limits
 
-- Confirm GitHub Action `CI Airflow DAG` on push/PR (Linux).
-- Optional manual `docker compose -f docker-compose.airflow.yml up --build` when RAM allows.
-- Review that no large binary artifacts under `artifacts/retraining/` are staged for commit (gitignored via `artifacts/*`).
+- Full Airflow-in-Docker E2E still optional / not validated here
+- MLP candidate path needs torch in the runtime image if `backend: mlp` is selected (default remains `logistic`)
+- Evidently drift on tiny synthetic frames can be non-deterministic; unit tests prefer explicit reports for hard asserts

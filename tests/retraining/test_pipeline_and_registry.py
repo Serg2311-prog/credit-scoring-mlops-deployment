@@ -11,10 +11,9 @@ import pytest
 
 from src.data.synthetic import make_synthetic_frame
 from src.retraining.evaluation import evaluate_candidate
-from src.retraining.exceptions import TriggerSkip
+from src.retraining.exceptions import RegistryError, TriggerSkip, TriggerUnavailable
 from src.retraining.pipeline import dry_run_pipeline, run_retraining_pipeline
 from src.retraining.prepare import prepare_training_splits
-from src.retraining.exceptions import RegistryError
 from src.retraining.registry import load_registry, register_candidate
 from src.retraining.trainer import train_candidate
 from src.schema import TARGET_COLUMN
@@ -66,7 +65,32 @@ def test_full_train_registers_without_promoting(synthetic_csv: Path, tmp_path: P
     assert Path(report["run_directory"]).joinpath("candidate_model.joblib").is_file()
 
 
-def test_skip_when_no_trigger(synthetic_csv: Path):
+def test_unavailable_when_drift_inputs_missing(synthetic_csv: Path):
+    with pytest.raises(TriggerUnavailable):
+        run_retraining_pipeline(
+            synthetic_csv,
+            modes="data_drift",
+            force_trigger=False,
+            dry_run=True,
+        )
+
+
+def test_skip_when_drift_report_below_threshold(synthetic_csv: Path, monkeypatch):
+    from src.retraining import pipeline as pipe_mod
+
+    def _fake_eval(**kwargs):
+        return {
+            "status": "skipped",
+            "triggered": False,
+            "fired_modes": [],
+            "unavailable_modes": [],
+            "requested_modes": ["data_drift"],
+            "reasons": [],
+            "auto_promote": False,
+            "message": "No retraining trigger fired",
+        }
+
+    monkeypatch.setattr(pipe_mod, "evaluate_triggers", _fake_eval)
     with pytest.raises(TriggerSkip):
         run_retraining_pipeline(
             synthetic_csv,

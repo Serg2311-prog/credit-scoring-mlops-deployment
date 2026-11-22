@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from airflow import DAG
+from airflow.exceptions import AirflowFailException
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import BranchPythonOperator, PythonOperator
 
@@ -23,18 +24,28 @@ from airflow.operators.python import BranchPythonOperator, PythonOperator
 PROJECT_ROOT = Path(os.environ.get("CREDIT_SCORING_ROOT", "/opt/credit-scoring"))
 DEFAULT_INPUT = os.environ.get(
     "RETRAIN_INPUT_PATH",
-    str(PROJECT_ROOT / "data" / "processed" / "train.csv"),
+    str(PROJECT_ROOT / "artifacts" / "retraining" / "demo_input" / "retrain_input.csv"),
 )
 TRIGGER_MODES = os.environ.get("RETRAIN_TRIGGER_MODES", "scheduled")
 DRY_RUN = os.environ.get("RETRAIN_DRY_RUN", "true").lower() in {"1", "true", "yes"}
+PREPARE_HINT = (
+    "Prepare synthetic demo input first: "
+    "python -m src.retraining.cli prepare-demo-input "
+    "(host) or mount artifacts/retraining/demo_input into the container."
+)
 
 
-def _run_dir_from_conf(ti) -> Path:
-    run_id = ti.xcom_pull(key="run_id", task_ids="check_input_data")
-    root = (
-        PROJECT_ROOT / "artifacts" / "retraining" / ("dry_run" if DRY_RUN else "runs")
-    )
-    return root / str(run_id)
+def _optional_csv(path_value: str | None):
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if not path.is_file():
+        raise AirflowFailException(
+            f"Configured CSV path does not exist: {path}. {PREPARE_HINT}"
+        )
+    import pandas as pd
+
+    return pd.read_csv(path)
 
 
 def check_input_data(**context):
@@ -42,12 +53,22 @@ def check_input_data(**context):
     from datetime import timezone
 
     from src.retraining.data_validation import check_input_data as _check
+    from src.retraining.exceptions import DataValidationFailed
 
-    input_path = Path(context["dag_run"].conf.get("input_path", DEFAULT_INPUT))
+    conf = context["dag_run"].conf or {}
+    input_path = Path(conf.get("input_path", DEFAULT_INPUT))
+    if not input_path.is_file():
+        raise AirflowFailException(
+            f"Retraining input missing: {input_path}. {PREPARE_HINT} "
+            "DAG will not pretend success without data."
+        )
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     digest = hashlib.sha1(str(input_path).encode("utf-8")).hexdigest()[:8]
-    run_id = context["dag_run"].conf.get("run_id") or f"af-{stamp}-{digest}"
-    result = _check(input_path)
+    run_id = conf.get("run_id") or f"af-{stamp}-{digest}"
+    try:
+        result = _check(input_path)
+    except DataValidationFailed as exc:
+        raise AirflowFailException(f"Input validation failed: {exc}") from exc
     # Persist small meta only (no DataFrame in XCom).
     out = {
         "run_id": run_id,
@@ -70,9 +91,13 @@ def check_input_data(**context):
 def validate_data(**context):
     # Re-validate from path (idempotent).
     from src.retraining.data_validation import check_input_data as _check
+    from src.retraining.exceptions import DataValidationFailed
 
     meta = context["ti"].xcom_pull(key="input_meta", task_ids="check_input_data")
-    _check(Path(meta["input_path"]))
+    try:
+        _check(Path(meta["input_path"]))
+    except DataValidationFailed as exc:
+        raise AirflowFailException(f"Re-validation failed: {exc}") from exc
     return "ok"
 
 
@@ -81,23 +106,46 @@ def check_retraining_trigger(**context):
 
     conf = context["dag_run"].conf or {}
     modes = conf.get("modes", TRIGGER_MODES)
-    force = bool(
-        conf.get("force_scheduled", True if "scheduled" in str(modes) else False)
-    )
+    modes_list = [m.strip() for m in str(modes).split(",") if m.strip()]
+    if "force_scheduled" in conf:
+        force = bool(conf["force_scheduled"])
+    else:
+        # scheduled mode means the window itself is the trigger; do not invent
+        # scheduled fire when only drift/quality modes were requested.
+        force = "scheduled" in modes_list
+
     run_id = context["ti"].xcom_pull(key="run_id", task_ids="check_input_data")
     decision_path = (
         PROJECT_ROOT / "artifacts" / "retraining" / "airflow" / f"{run_id}_trigger.json"
     )
+    ref_path = conf.get("reference_path") or os.environ.get("RETRAIN_REFERENCE_PATH")
+    cur_path = conf.get("current_path") or os.environ.get("RETRAIN_CURRENT_PATH")
+    quality_report = conf.get("quality_report")
+    drift_report = conf.get("drift_report")
+
     decision = evaluate_triggers(
         modes=modes,
         force_scheduled=force,
+        reference_features=_optional_csv(ref_path),
+        current_features=_optional_csv(cur_path),
+        drift_report=drift_report if isinstance(drift_report, dict) else None,
+        quality_report=quality_report if isinstance(quality_report, dict) else None,
         output_path=decision_path,
+        save_html=False,
     )
     context["ti"].xcom_push(key="trigger_status", value=decision["status"])
     context["ti"].xcom_push(key="trigger_path", value=str(decision_path))
+    if decision["status"] == "unavailable":
+        raise AirflowFailException(
+            f"Trigger inputs unavailable: {decision['message']}. "
+            "Provide reference/current CSVs or verified monitoring reports; "
+            "do not treat missing signals as a successful skip."
+        )
     if decision["status"] == "skipped":
         return "skip_retraining"
-    return "prepare_training_data"
+    if decision["status"] == "triggered":
+        return "prepare_training_data"
+    raise AirflowFailException(f"Unexpected trigger status: {decision['status']}")
 
 
 def prepare_training_data(**context):

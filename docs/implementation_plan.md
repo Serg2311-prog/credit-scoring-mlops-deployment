@@ -1,13 +1,31 @@
 # Implementation Plan — credit-scoring-mlops-deployment
 
-**Статус:** аудит и архитектура (этап 0). Реализация этапов 1–7 не начата.  
-**Дата аудита:** 2026-11-22  
-**Исходный репозиторий:** https://github.com/Serg2311-prog/credit-default-prediction  
+**Дата аудита (этап 0):** 2026-11-22
+**Актуализация перед сдачей:** 2026-11-22
+**Исходный репозиторий:** https://github.com/Serg2311-prog/credit-default-prediction
 **Локальная копия для аудита:** `../_source_audit/credit-default-prediction-main`
+
+### Текущий статус репозитория (не путать с аудитом исходника ниже)
+
+| Утверждение | Факт |
+| --- | --- |
+| Этапы 0–7 | **Реализованы** в этом репозитории (см. [`README.md`](../README.md)) |
+| Коммит подтверждения этапа 7 | [`65de3ad`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/65de3ad680a2fc7f3fcbe374aeb07f485d773b63) |
+| GitHub Actions на `65de3ad` | 5× SUCCESS (Python, Docker, Infrastructure, Kubernetes, Airflow DAG) |
+| Локальный pytest (этап 7) | **137 passed, 1 skipped** |
+| `terraform apply` / YC production | **`not_executed`** |
+| Полный Airflow Docker E2E | **`not_executed`** (не утверждается) |
+| Auto-promote модели | **запрещён** (`auto_promote=false`) |
+| Рабочий DVC pipeline (`dvc.yaml` + remote) | **отсутствует** в этом репо (`partial` / documented gap) |
+
+Секции §1 и §9 ниже сохраняют **исторический** аудит исходного проекта и проверки этапа 0.
+Актуальная матрица статусов: [`docs/requirements_matrix.md`](requirements_matrix.md).
 
 ---
 
 ## 1. Результаты аудита исходного проекта
+
+> Исторический снимок на момент этапа 0: что было в **credit-default-prediction**, а не текущее состояние этого репозитория.
 
 ### 1.1. Что уже реализовано и проверено в исходнике
 
@@ -34,7 +52,7 @@
 
 ### 1.2. Зафиксированный baseline (не изменять без реального переобучения)
 
-Production baseline исходного проекта — `RandomForestClassifier`  
+Production baseline исходного проекта — `RandomForestClassifier`
 (`n_estimators=80`, `max_depth=10`, `min_samples_leaf=1`, `class_weight="balanced"`):
 
 | Метрика | Значение |
@@ -47,7 +65,7 @@ Production baseline исходного проекта — `RandomForestClassifie
 | F1 | 0.5357 |
 | Accuracy | 0.7668 |
 
-Эти числа копируются в документацию нового проекта как **исторический baseline sklearn**.  
+Эти числа копируются в документацию нового проекта как **исторический baseline sklearn**.
 Метрики новой NN будут измеряться отдельно и **не подменяют** baseline.
 
 ### 1.3. Компоненты для переиспользования
@@ -114,30 +132,31 @@ Raw client features (23 cols)
 ### 2.1. Высокоуровневая архитектура целевой системы
 
 ```text
-[Data / DVC] --prepare--> train/test CSV
+[Data prepare] --CSV/scripts--> train/test
         |
-        +--> sklearn baseline train (RF) -----> models/baseline_rf.pkl
+        +--> sklearn RF baseline metrics (immutable JSON)
         |
-        +--> preprocessor fit + NN train -----> models/preprocessor.joblib
-                                              models/nn_model.pt
-                                              models/nn_model.onnx
-                                              models/nn_model.quant.onnx
+        +--> preprocessor + MLP train -----> models/preprocessor.joblib
+                                           models/credit_scoring_nn.pt|.onnx
         |
         v
-[FastAPI backend]  <--- ConfigMap/Secret
-   /predict  (A/B: baseline | onnx)
-   /metrics  (Prometheus)
-   structured JSON logs --> Loki
+[FastAPI ONNX]  <--- ConfigMap/Secret
+   /predict (+ optional A/B, AB off by default)
+   /metrics  (Prometheus; credit_scoring_* + ml_*)
+   structured JSON logs --> Loki (local obs stack)
         |
         v
-[Minimal frontend] --> Ingress --> Service --> Deployment (rolling)
+[Service] --> Deployment (rolling) on kind / Kustomize
         |
-[Observability] Prometheus + Grafana + Alertmanager
-[Drift] Evidently jobs / API reports
-[Retrain] Airflow DAG (gated promotion)
-[IaC] Terraform (Yandex Cloud): VPC, MK8s, Object Storage, Monitoring
-[CI/CD] GitHub Actions: build→test→(optional)deploy→monitor
+[Observability] Prometheus + Grafana + Loki + Alloy + Alertmanager
+[Drift] Evidently + quality signals + offline A/B
+[Retrain] src/retraining + Airflow DAG (candidate only; NO auto-promote)
+[IaC] Terraform (Yandex Cloud) — validate only; apply not executed
+[CI/CD] GitHub Actions: build→test→scans→(optional dry-run deploy)
 ```
+
+**Факт после реализации:** минимальный frontend / Ingress остаются вне обязательного объёма (`planned`).
+DVC remote в этом репозитории не настроен; prepare идёт через скрипты/`params.yaml`.
 
 ### 2.2. Выбор облачного провайдера
 
@@ -150,7 +169,7 @@ Raw client features (23 cols)
 - Terraform-провайдер `yandex-cloud/yandex` зрелый;
 - GPU node groups документированы (для отдельного сценария benchmark/infra).
 
-До появления реального аккаунта: только `terraform fmt/validate`, `tflint` (если доступен), документация.  
+До появления реального аккаунта: только `terraform fmt/validate`, `tflint` (если доступен), документация.
 `terraform apply` — **только после явного подтверждения пользователя**.
 
 ### 2.3. Модель данных и артефакты
@@ -168,7 +187,7 @@ Raw client features (23 cols)
 | `artifacts/nn_metrics.json` | реальные NN метрики после обучения |
 | `artifacts/onnx_parity.json` | сравнение PyTorch vs ORT |
 | `artifacts/benchmark_cpu.json` | latency/throughput/memory |
-| `docs/benchmarks/stage1_report.md` | честный отчёт |
+| `docs/model_benchmark.md` | честный отчёт этапа 1 |
 
 ### 2.4. Инференс-стратегия
 
@@ -185,64 +204,44 @@ Raw client features (23 cols)
 
 ---
 
-## 3. Структура каталогов (целевая)
+## 3. Структура каталогов
+
+### 3.1. Целевая структура (план этапа 0, исторический)
+
+Ниже — исходный целевой каркас этапа 0 (часть пунктов позже уточнена фактом реализации).
 
 ```text
 credit-scoring-mlops-deployment/
 ├── README.md
 ├── params.yaml
-├── requirements.txt                 # runtime core
-├── requirements-dev.txt             # pytest, black, flake8, ...
-├── requirements-nn.txt              # torch (CPU), onnx, onnxruntime
+├── requirements*.txt
 ├── pyproject.toml
-├── dvc.yaml / dvc.lock / .dvc/
-├── .env.example
-├── .github/workflows/
-│   ├── ci.yml                       # build + test + scans
-│   └── cd.yml                       # staging/prod с credential gates
-├── docker/
-│   ├── Dockerfile.backend
-│   ├── Dockerfile.frontend
-│   └── Dockerfile.airflow           # опционально позже
-├── docker-compose.yml               # local: api + frontend + prom + grafana + loki
-├── frontend/                        # минимальный demo UI
-├── src/
-│   ├── schema.py
-│   ├── config.py
-│   ├── data/
-│   ├── features/
-│   ├── models/                      # sklearn baseline + evaluate/predict
-│   ├── nn/                          # NEW: model, train, export, quantize, benchmark
-│   ├── api/                         # FastAPI + metrics + A/B
-│   ├── monitoring/                  # PSI + Evidently + performance decay
-│   └── logging_setup.py
+├── .github/workflows/               # ci-python/docker/infra/k8s + cd + airflow
+├── docker/                          # Dockerfile.api, Dockerfile.models, Dockerfile.airflow
+├── docker-compose.yml
+├── docker-compose.observability.yml
+├── docker-compose.airflow.yml
+├── src/{data,features,models,nn,api,monitoring,retraining}/
 ├── tests/
-├── k8s/
-│   ├── base/
-│   └── overlays/{staging,production}/
-├── infra/terraform/
-│   ├── modules/{network,kubernetes,storage,monitoring}/
-│   └── envs/{staging,production}/
-├── monitoring/
-│   ├── prometheus/
-│   ├── grafana/dashboards/
-│   ├── loki/
-│   └── alerts/
-├── airflow/dags/
-├── scripts/                         # PowerShell helpers
+├── k8s/{base,overlays/local,kind}/
+├── infra/terraform/{modules,environments}/
+├── monitoring/{prometheus,grafana,loki,alloy,...}/
+├── airflow_home/dags/               # не `airflow/` — чтобы не shadow'ить пакет airflow
+├── configs/{monitoring,retraining}/
+├── scripts/
 ├── docs/
-│   ├── implementation_plan.md       # этот файл
-│   ├── requirements_matrix.md
-│   ├── architecture/
-│   ├── benchmarks/
-│   └── runbooks/
 ├── data/{raw,processed}/
 ├── models/
 └── artifacts/
 ```
 
-На этапе 0 создан каркас каталогов + `.gitignore` + документы плана.  
-Код этапов 1–7 появится только после подтверждения.
+### 3.2. Факт после этапов 1–7
+
+- Каркас + код этапов **1–7 реализованы** (см. README и matrix).
+- **Нет** рабочего `dvc.yaml` / DVC remote в этом репозитории.
+- **Нет** обязательного frontend / Ingress (`planned`).
+- DAG: `airflow_home/dags/credit_scoring_retraining.py`.
+- Compose-профили разделены: API, observability, airflow (не поднимать всё сразу на 8 GB).
 
 ---
 
@@ -269,8 +268,8 @@ credit-scoring-mlops-deployment/
 
 Рекомендация по окружениям на Windows:
 
-1. `.venv` — core + API + sklearn + (опционально) torch CPU.  
-2. Docker Compose — Airflow, Prometheus, Grafana, Loki.  
+1. `.venv` — core + API + sklearn + (опционально) torch CPU.
+2. Docker Compose — Airflow, Prometheus, Grafana, Loki.
 3. Не ставить полный Airflow + torch + Evidently одновременно в один host venv.
 
 ---
@@ -315,42 +314,47 @@ credit-scoring-mlops-deployment/
 
 ---
 
-## 7. План по этапам (обзор)
+## 7. План по этапам (обзор) → факт выполнения
 
-| Этап | Содержание | Локально проверяемо | Требует доп. среды / подтверждения |
+Учебная нумерация совпадает с README: **0 → 1 → 2 (Terraform) → 3 (Docker/K8s) → 4 → 5 → 6 → 7**.
+
+| Этап | Содержание | Статус кода | Проверка |
 | --- | --- | --- | --- |
-| 0 | Аудит + план + матрица | Да | — |
-| 1 | PyTorch NN, ONNX, quant, CPU bench | Да (CPU) | GPU bench — при наличии GPU |
-| 2 | Terraform modules (YC) | `fmt`/`validate` | `apply` только с подтверждением |
-| 3 | Multi-stage Docker, FE, K8s manifests, Compose | Compose локально | Реальный cluster apply |
-| 4 | GitHub Actions build→test→deploy→monitor | CI без secrets | Staging/prod deploy |
-| 5 | Prometheus/Grafana/Loki/alerts/runbook | Compose obs-профиль | Прод-алертинг в облаке |
-| 6 | Evidently, A/B, versioning | Локальные отчёты | Прод-трафик A/B |
-| 7 | Airflow DAG retrain gated | Compose airflow-профиль | Прод-триггеры |
-| Docs | README, диаграммы, матрица соответствия | Да | Обновлять после каждого этапа |
+| 0 | Аудит + план + матрица | Готово | `verified_local` |
+| 1 | PyTorch NN, ONNX, quant, CPU bench | Готово | `verified_local` (GPU: skip) |
+| 2 | Terraform modules (YC) | Готово | fmt/validate local+CI; **apply `not_executed`** |
+| 3 | Docker, kind/Kustomize, API | Готово (DVC pipeline / frontend — gaps) | `verified_local`; DVC `partial` |
+| 4 | GitHub Actions | Готово | **verified_ci** на `65de3ad` (5 workflows); prod deploy `not_executed` |
+| 5 | Observability stack | Готово локально | `verified_local`; cloud obs `not_executed` |
+| 6 | Evidently, quality signals, A/B | Готово | `verified_local`; **no auto-promote** |
+| 7 | Airflow retraining (gated) | Engine+DAG+compose готовы | local tests + CI DAG parse; **Docker E2E `not_executed`**; **no auto-promote** |
+| Docs | README, runbooks, matrix | Готово | `verified_local` |
 
-**Правило:** после каждого этапа — тесты, краткий отчёт, стоп до разрешения пользователя.
+**Правило честности (сохранено):** static validate ≠ cloud success; skip без credentials ≠ fake green; concept drift не объявлять без оснований.
 
 ---
 
-## 8. Детальный план этапа 1 (к запуску после подтверждения)
+## 8. Детальный план этапа 1 (исторический; выполнен)
 
-### 8.1. Цели
+> Ниже — исходный план запуска этапа 1. Критерии закрыты; отчёты:
+> [`docs/stage1_audit_report.md`](stage1_audit_report.md), [`docs/model_benchmark.md`](model_benchmark.md).
+> Baseline RF test ROC-AUC **0.7771**; MLP/ONNX FP32 **0.7742**.
 
-1. Перенести/адаптировать data+FE+preprocessor из исходника.  
-2. Реализовать воспроизводимую MLP для бинарной классификации.  
-3. Сохранить checkpoint, params, метрики эксперимента.  
-4. Экспортировать в ONNX; проверить parity с PyTorch.  
-5. Dynamic quantization (ORT); сравнить size / ROC-AUC / F1 / latency / throughput / RSS.  
-6. CPU benchmarks для batch sizes `{1, 8, 32, 64}` (при OOM уменьшить).  
-7. GPU scenario как отдельный скрипт с auto-skip.  
-8. Честный `docs/benchmarks/stage1_report.md` только с измеренными числами.  
+### 8.1. Цели (план)
+
+1. Перенести/адаптировать data+FE+preprocessor из исходника.
+2. Реализовать воспроизводимую MLP для бинарной классификации.
+3. Сохранить checkpoint, params, метрики эксперимента.
+4. Экспортировать в ONNX; проверить parity с PyTorch.
+5. Dynamic quantization (ORT); сравнить size / ROC-AUC / F1 / latency / throughput / RSS.
+6. CPU benchmarks для нескольких batch sizes.
+7. GPU scenario как отдельный скрипт с auto-skip.
+8. Честный benchmark-отчёт только с измеренными числами.
 9. Pytest на NN forward, export, parity threshold.
-
 ### 8.2. Предлагаемая архитектура NN
 
 - Вход: размерность после preprocessor (`n_in`).
-- Скрытые слои: `Linear → BatchNorm1d → ReLU → Dropout` × 2  
+- Скрытые слои: `Linear → BatchNorm1d → ReLU → Dropout` × 2
   размеры по умолчанию: `[128, 64]` (можно `[64, 32]` при нехватке RAM).
 - Выход: `Linear(n_in_last, 1)` + sigmoid при inference (BCEWithLogitsLoss на train).
 - Оптимизатор: Adam; early stopping по val ROC-AUC (val = stratified split **внутри train**, не test).
@@ -358,27 +362,27 @@ credit-scoring-mlops-deployment/
 
 ### 8.3. Последовательность работ этапа 1
 
-1. Bootstrap репозитория: скопировать переиспользуемые модули, `params.yaml`, тесты данных.  
-2. Зафиксировать `artifacts/baseline_metrics.json` с историческими RF метриками (без пересчёта «улучшений»).  
-3. Реализовать `src/nn/model.py`, `train_nn.py`, `export_onnx.py`, `quantize.py`, `benchmark.py`, `parity.py`.  
-4. Расширить `params.yaml` секцией `nn` / `onnx` / `benchmark`.  
-5. Добавить DVC-стадии (или scripts) для nn train/export/bench.  
-6. Написать тесты на синтетике (без обязательного полного UCI в CI).  
-7. При наличии `data/raw/UCI_Credit_Card.csv` — полный прогон и заполнение benchmark-отчёта.  
+1. Bootstrap репозитория: скопировать переиспользуемые модули, `params.yaml`, тесты данных.
+2. Зафиксировать `artifacts/baseline_metrics.json` с историческими RF метриками (без пересчёта «улучшений»).
+3. Реализовать `src/nn/model.py`, `train_nn.py`, `export_onnx.py`, `quantize.py`, `benchmark.py`, `parity.py`.
+4. Расширить `params.yaml` секцией `nn` / `onnx` / `benchmark`.
+5. Добавить DVC-стадии (или scripts) для nn train/export/bench.
+6. Написать тесты на синтетике (без обязательного полного UCI в CI).
+7. При наличии `data/raw/UCI_Credit_Card.csv` — полный прогон и заполнение benchmark-отчёта.
 8. Технический отчёт этапа 1: что измерено / что skip.
 
 ### 8.4. Критерии готовности этапа 1
 
-- [ ] NN обучается воспроизводимо на том же split.  
-- [ ] Test не использован для подбора гиперпараметров.  
-- [ ] ONNX parity: max|Δp| и MAE в пределах порога из `params.yaml`.  
-- [ ] Есть FP32 и quantized артефакты + сравнение размеров.  
-- [ ] CPU benchmark JSON + markdown отчёт без выдуманных цифр.  
-- [ ] GPU bench либо выполнен, либо явно `skipped: no GPU`.  
-- [ ] Pytest по NN/ONNX зелёный на доступных данных/синтетике.  
-- [ ] Baseline RF метрики не переписаны.
+- [x] NN обучается воспроизводимо на том же split.
+- [x] Test не использован для подбора гиперпараметров.
+- [x] ONNX parity в пределах порога.
+- [x] Есть FP32 и quantized артефакты + сравнение размеров.
+- [x] CPU benchmark JSON + markdown отчёт без выдуманных цифр.
+- [x] GPU bench явно skipped без GPU.
+- [x] Pytest по NN/ONNX на синтетике/доступных данных.
+- [x] Baseline RF метрики не переписаны.
 
-### 8.5. Команды проверки (план; выполнять на этапе 1)
+### 8.5. Команды проверки (исторический план этапа 1)
 
 ```powershell
 cd "C:\Users\Sergey\Documents\Личное\Учеба\3 Семестр\Автоматизация процессов доставки и развертывания ML-моделей\ИТОГОВЫЙ ПРОЕКТ\credit-scoring-mlops-deployment"
@@ -403,20 +407,30 @@ black --check src tests
 
 ---
 
-## 9. Что реально проверено на этапе 0
+## 9. Что реально проверено на этапе 0 (история)
 
-| Проверка | Результат |
+| Проверка | Результат на этапе 0 |
 | --- | --- |
 | Скачивание исходного репозитория (ZIP) | Успешно |
 | `git clone` исходника | Неуспешно (`fatal: '$GIT_DIR' too big`) — использован ZIP |
 | Чтение README, params, dvc, train, pipeline, FE, schema, API, CI, Dockerfile, drift | Выполнено |
 | Наличие локального UCI CSV в новом проекте | Не проверялось / не копировалось |
-| Обучение моделей / benchmarks | **Не выполнялось** |
-| Docker / Terraform / K8s | **Не выполнялось** |
-| Создание облачных ресурсов | **Не выполнялось** |
+| Обучение моделей / benchmarks | **На этапе 0 не выполнялось** (выполнено позже, этап 1) |
+| Docker / Terraform / K8s | **На этапе 0 не выполнялось** (выполнено позже) |
+| Создание облачных ресурсов | **Не выполнялось** (и к сдаче тоже `not_executed`) |
 
 ---
 
-## 10. Следующее действие
+## 10. Итог перед сдачей
 
-Ожидание явного разрешения пользователя на **реализацию этапа 1** (PyTorch NN + ONNX + quantization + CPU benchmarks).
+Этапы **0–7 реализованы** в репозитории. Актуальная точка входа — [`README.md`](../README.md) и [`docs/requirements_matrix.md`](requirements_matrix.md).
+
+Остаются намеренные ограничения:
+
+1. **Нет** cloud `terraform apply` и **нет** production в Yandex Cloud.
+2. **Нет** утверждения полного Airflow Docker E2E.
+3. **Нет** auto-promote candidate/challenger в production.
+4. **Нет** подтверждённого рабочего DVC pipeline/remote в этом репо.
+5. Frontend / Ingress остаются `planned`, если не появятся отдельно.
+
+Дальнейшие действия (вне обязательного DoD сдачи): ручной promotion модели после review; опциональный Airflow compose при свободной RAM; cloud apply только после явного подтверждения.

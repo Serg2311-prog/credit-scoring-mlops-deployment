@@ -3,6 +3,9 @@
 #
 # Do not start automatically on low-RAM hosts without free memory headroom.
 # Typical pull/build is heavy; prefer unit tests + CLI dry-run on Windows.
+#
+# Prepare demo input BEFORE starting (synthetic, no real credit PII):
+#   .\.venv\Scripts\python.exe -m src.retraining.cli prepare-demo-input
 
 services:
   airflow:
@@ -30,6 +33,7 @@ services:
       RETRAIN_DRY_RUN: "true"
       RETRAIN_TRIGGER_MODES: scheduled
       RETRAIN_SCHEDULE: "0 3 * * 1"
+      RETRAIN_INPUT_PATH: /opt/credit-scoring/artifacts/retraining/demo_input/retrain_input.csv
     volumes:
       - ./airflow_home/dags:/opt/airflow/dags
       - ./airflow_home/logs:/opt/airflow/logs
@@ -40,19 +44,13 @@ services:
       - ./artifacts/retraining:/opt/credit-scoring/artifacts/retraining
       - ./data:/opt/credit-scoring/data
       - airflow-sqlite:/opt/airflow
-    command: >
-      bash -c "airflow db migrate
-      && airflow users create --username admin --password admin
-         --firstname Admin --lastname Local --role Admin --email admin@example.com
-         || true
-      && airflow webserver --port 8080 &
-      exec airflow scheduler"
+    # Entrypoint from Dockerfile handles ordered init (no fragile && / || true / & chains).
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8080/health || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 10
-      start_period: 60s
+      retries: 12
+      start_period: 120s
 
 volumes:
   airflow-sqlite:

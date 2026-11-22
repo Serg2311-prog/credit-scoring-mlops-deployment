@@ -14,7 +14,7 @@ from src.config import dump_json
 from src.retraining.config import load_retraining_config, run_dir
 from src.retraining.data_validation import check_input_data
 from src.retraining.evaluation import evaluate_candidate
-from src.retraining.exceptions import TriggerSkip
+from src.retraining.exceptions import TriggerSkip, TriggerUnavailable
 from src.retraining.mlflow_tracking import log_run
 from src.retraining.prepare import prepare_training_splits
 from src.retraining.registry import register_candidate
@@ -115,6 +115,17 @@ def run_retraining_pipeline(
         output_path=directory / "trigger_decision.json",
         save_html=False,
     )
+    if trigger["status"] == "unavailable":
+        report = {
+            "run_id": rid,
+            "status": "unavailable",
+            "dry_run": dry_run,
+            "trigger": trigger,
+            "auto_promote": False,
+            "run_directory": str(directory),
+        }
+        generate_report(directory, report)
+        raise TriggerUnavailable(trigger["message"])
     if not trigger["triggered"]:
         report = {
             "run_id": rid,

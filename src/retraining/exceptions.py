@@ -15,6 +15,10 @@ class TriggerSkip(RetrainingError):
     """No retraining trigger fired — workflow should skip (not fail)."""
 
 
+class TriggerUnavailable(RetrainingError):
+    """Trigger mode lacks required inputs/results — must not silent-succeed."""
+
+
 class ChampionUnavailable(RetrainingError):
     """Champion artifacts missing; comparison limited."""
 

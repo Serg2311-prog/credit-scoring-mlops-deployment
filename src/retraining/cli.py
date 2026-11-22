@@ -13,9 +13,24 @@ from src.config import dump_json
 from src.data.synthetic import make_synthetic_frame
 from src.retraining.config import load_retraining_config
 from src.retraining.data_validation import check_input_data
-from src.retraining.exceptions import DataValidationFailed, TriggerSkip
+from src.retraining.demo_data import prepare_demo_input
+from src.retraining.exceptions import (
+    DataValidationFailed,
+    TriggerSkip,
+    TriggerUnavailable,
+)
 from src.retraining.pipeline import dry_run_pipeline, run_retraining_pipeline
 from src.retraining.triggers import evaluate_triggers
+
+
+def cmd_prepare_demo(args: argparse.Namespace) -> int:
+    meta = prepare_demo_input(
+        output_path=Path(args.output) if args.output else None,
+        rows=int(args.rows),
+        seed=int(args.seed),
+    )
+    print(json.dumps(meta, ensure_ascii=False, indent=2))
+    return 0
 
 
 def cmd_validate(args: argparse.Namespace) -> int:
@@ -43,7 +58,12 @@ def cmd_triggers(args: argparse.Namespace) -> int:
         save_html=False,
     )
     print(json.dumps(decision, ensure_ascii=False, indent=2))
-    return 0 if decision["status"] in {"triggered", "skipped"} else 1
+    if decision["status"] == "triggered":
+        return 0
+    if decision["status"] == "skipped":
+        return 0
+    # unavailable / unexpected → non-zero (not silent success)
+    return 3
 
 
 def cmd_dry_run(args: argparse.Namespace) -> int:
@@ -58,6 +78,9 @@ def cmd_dry_run(args: argparse.Namespace) -> int:
     except TriggerSkip as exc:
         print(f"SKIPPED: {exc}")
         return 0
+    except TriggerUnavailable as exc:
+        print(f"TRIGGER_UNAVAILABLE: {exc}")
+        return 3
     except DataValidationFailed as exc:
         print(f"VALIDATION_FAILED: {exc}")
         return 2
@@ -82,6 +105,9 @@ def cmd_train(args: argparse.Namespace) -> int:
     except TriggerSkip as exc:
         print(f"SKIPPED: {exc}")
         return 0
+    except TriggerUnavailable as exc:
+        print(f"TRIGGER_UNAVAILABLE: {exc}")
+        return 3
     except DataValidationFailed as exc:
         print(f"VALIDATION_FAILED: {exc}")
         return 2
@@ -138,6 +164,15 @@ def build_parser() -> argparse.ArgumentParser:
         description="Stage 7 retraining CLI (no Airflow required)",
     )
     sub = parser.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser(
+        "prepare-demo-input",
+        help="Write synthetic DAG/CLI input CSV under artifacts/retraining/demo_input",
+    )
+    p.add_argument("--output", default=None)
+    p.add_argument("--rows", type=int, default=120)
+    p.add_argument("--seed", type=int, default=7)
+    p.set_defaults(func=cmd_prepare_demo)
 
     p = sub.add_parser("validate-data", help="Validate input CSV/Parquet")
     p.add_argument("--input", required=True)
