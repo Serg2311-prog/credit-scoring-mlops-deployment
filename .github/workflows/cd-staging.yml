@@ -1,0 +1,82 @@
+name: CD Staging (manual gate)
+
+# Stage 4: prepare a safe CD path WITHOUT cloud apply / image push.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type deploy-staging-dry-run to acknowledge no cloud apply"
+        required: true
+        default: ""
+      image_digest_api:
+        description: "Optional API image digest (informational)"
+        required: false
+        default: ""
+      image_digest_models:
+        description: "Optional models image digest (informational)"
+        required: false
+        default: ""
+
+jobs:
+  guard:
+    name: Confirm dry-run only
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate confirmation phrase
+        run: |
+          if [ "${{ inputs.confirm }}" != "deploy-staging-dry-run" ]; then
+            echo "Refusing CD. Set confirm=deploy-staging-dry-run"
+            echo "Stage 4 does not perform terraform apply or registry push."
+            exit 1
+          fi
+          echo "Confirmation accepted — dry-run path only"
+
+  plan-only:
+    name: Document intended staging deploy
+    needs: guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Optional GitHub Environment for future required reviewers (configure in UI).
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Emit deploy plan (no cloud commands)
+        run: |
+          mkdir -p artifacts/ci
+          cat > artifacts/ci/cd-staging-plan.json <<EOF
+          {
+            "mode": "dry-run",
+            "environment": "staging",
+            "git_sha": "${{ github.sha }}",
+            "api_digest": "${{ inputs.image_digest_api }}",
+            "models_digest": "${{ inputs.image_digest_models }}",
+            "blocked_actions": [
+              "terraform apply",
+              "terraform destroy",
+              "yc container image push",
+              "kubectl apply to Yandex MK8s",
+              "upload models to Object Storage"
+            ],
+            "next_steps_after_approval": [
+              "Configure GitHub Environment secrets (no commit)",
+              "terraform plan (separate approval)",
+              "push images by digest to YCR",
+              "kubectl apply -k overlay/staging",
+              "rollout status + smoke /predict"
+            ],
+            "status": "SKIPPED_NO_CLOUD_CREDENTIALS"
+          }
+          EOF
+          cat artifacts/ci/cd-staging-plan.json
+
+      - name: Explicit skip of cloud deploy
+        run: |
+          echo "::notice::CD staging cloud deploy SKIPPED (stage 4 policy)"
+          echo "No credentials used. No paid resources created."
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cd-staging-plan-${{ github.sha }}
+          path: artifacts/ci/cd-staging-plan.json

@@ -13,6 +13,8 @@ target-version = ["py311", "py312", "py313"]
 testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
-    "integration: tests that require stage-1 ONNX/preprocessor artifacts",
+    "integration: ONNX/preprocessor contract tests (synthetic CI or real artifacts)",
+    "real_artifacts: requires non-synthetic stage-1 production artifacts",
+    "e2e: end-to-end checks against a running API process",
     "k8s: tests that require a live kind/Kubernetes cluster",
 ]

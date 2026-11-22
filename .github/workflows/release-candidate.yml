@@ -1,0 +1,78 @@
+name: Release Candidate
+
+# Manual only — avoids workflow_run cycles between CI workflows.
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_tag:
+        description: "Candidate label (not a GitHub Release)"
+        required: true
+        default: "rc-manual"
+
+jobs:
+  package:
+    name: Package RC metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-api.txt
+            requirements-nn.txt
+            requirements-dev.txt
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt -r requirements-api.txt -r requirements-nn.txt
+
+      - name: Generate synthetic artifacts + verify
+        run: |
+          python scripts/ci/generate_synthetic_artifacts.py --output-dir models --force
+          python scripts/ci/verify_artifacts.py --dir models --allow-synthetic
+
+      - name: Regression pytest (unit+integration synthetic)
+        run: |
+          mkdir -p artifacts/ci
+          python -m pytest -q -m "not k8s and not e2e" --tb=line \
+            --junitxml=artifacts/ci/rc-pytest.xml
+
+      - name: Write RC manifest
+        run: |
+          mkdir -p artifacts/ci
+          cat > artifacts/ci/release-candidate.json <<EOF
+          {
+            "status": "candidate",
+            "git_sha": "${{ github.sha }}",
+            "ref": "${{ github.ref }}",
+            "candidate_tag": "${{ inputs.candidate_tag }}",
+            "images": {
+              "api": "credit-scoring-api:ci",
+              "models": "credit-scoring-models:ci"
+            },
+            "notes": [
+              "Not a GitHub Release",
+              "Not published to Yandex Container Registry",
+              "CI-synthetic artifacts used for contract checks"
+            ],
+            "cloud_deploy": false
+          }
+          EOF
+
+      - name: Upload RC artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-${{ github.sha }}
+          path: |
+            artifacts/ci/release-candidate.json
+            artifacts/ci/rc-pytest.xml
+            artifacts/ci/manifest.json
+            models/CI_SYNTHETIC_ARTIFACTS.json

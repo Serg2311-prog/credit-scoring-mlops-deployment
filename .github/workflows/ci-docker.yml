@@ -1,0 +1,88 @@
+name: CI Docker
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-docker-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker-build-scan:
+    name: Build images + Trivy
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONPATH: ${{ github.workspace }}
+      API_IMAGE: credit-scoring-api:ci
+      MODELS_IMAGE: credit-scoring-models:ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-nn.txt
+            requirements-api.txt
+
+      - name: Install deps for synthetic artifacts
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-api.txt -r requirements-nn.txt
+
+      - name: Generate synthetic model files for models image
+        run: python scripts/ci/generate_synthetic_artifacts.py --output-dir models --force
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API image
+        run: docker build -f docker/Dockerfile.api -t "$API_IMAGE" .
+
+      - name: Build models image
+        run: docker build -f docker/Dockerfile.models -t "$MODELS_IMAGE" .
+
+      - name: Prepare report directory
+        run: mkdir -p artifacts/ci
+
+      - name: Trivy scan API image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: credit-scoring-api:ci
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Trivy JSON report (API)
+        uses: aquasecurity/trivy-action@0.28.0
+        if: always()
+        with:
+          image-ref: credit-scoring-api:ci
+          format: json
+          output: artifacts/ci/trivy-api.json
+          exit-code: "0"
+          severity: CRITICAL,HIGH,MEDIUM
+
+      - name: Trivy scan models image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: credit-scoring-models:ci
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Upload Trivy reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: artifacts/ci/trivy-*.json
+          if-no-files-found: warn

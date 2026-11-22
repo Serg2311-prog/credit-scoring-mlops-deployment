@@ -127,24 +127,24 @@
 
 ---
 
-## Этап 4. CI/CD (5 баллов)
+## Этап 4. CI/CD (5 баллов) — выполнен 2026-11-22 (definitions + local)
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
-| 4.1 | Последовательность build→test→deploy→monitor | Jobs/needs отражают цепочку | workflow YAML | `planned` |
-| 4.2 | pytest | Job step | CI log | `planned` |
-| 4.3 | black | `--check` | CI log | `planned` |
-| 4.4 | flake8 | step | CI log | `planned` |
-| 4.5 | Проверка схемы данных | validation step | CI log | `planned` |
-| 4.6 | Docker build | build без push secrets обязательно | CI log | `planned` |
-| 4.7 | Security scanning | Например Trivy/Hadolint | CI log | `planned` |
-| 4.8 | Vulnerability scanning | Отчёт сканера | CI artifact/log | `planned` |
-| 4.9 | Проверка K8s манифестов | kubeconform/kubectl dry-run | CI log | `planned` |
-| 4.10 | Проверка Terraform | fmt/validate | CI log | `planned` |
-| 4.11 | Staging deployment | Только при credentials | skipped или real | `planned` |
-| 4.12 | Production deployment с подтверждением | `environment` approval / manual gate | workflow | `planned` |
-| 4.13 | Проверка успешности rollout | `kubectl rollout status` при реальном deploy | CI log | `planned` |
-| 4.14 | Безопасный skip без credentials | Job `skipped`, не fake success | CI conclusion | `planned` |
+| 4.1 | Последовательность build→test→deploy→monitor | Jobs/needs отражают цепочку | workflow YAML | `implemented` |
+| 4.2 | pytest | Job step | `ci-python.yml` + local | `verified_local` |
+| 4.3 | black | `--check` | `ci-python.yml` + local | `verified_local` |
+| 4.4 | flake8 | step | `ci-python.yml` + local | `verified_local` |
+| 4.5 | Проверка схемы данных | validation step | pytest data tests in CI | `verified_local` |
+| 4.6 | Docker build | build без push secrets обязательно | `ci-docker.yml` + local build | `verified_local` |
+| 4.7 | Security scanning | Trivy | `ci-docker.yml` | `implemented` (GHA NOT EXECUTED — no remote) |
+| 4.8 | Vulnerability scanning | Отчёт сканера | Trivy JSON artifact | `implemented` (GHA NOT EXECUTED) |
+| 4.9 | Проверка K8s манифестов | kubectl dry-run / kustomize | `ci-infrastructure`/`ci-kubernetes` | `verified_local` |
+| 4.10 | Проверка Terraform | fmt/validate | `ci-infrastructure.yml` | `verified_local` |
+| 4.11 | Staging deployment | Только dry-run / credentials gate | `cd-staging.yml` | `implemented` (cloud SKIPPED) |
+| 4.12 | Production deployment с подтверждением | manual gate; prod CD not auto | docs (prod not in stage 4 CD) | `skipped` |
+| 4.13 | Проверка успешности rollout | kind optional / future cloud | `ci-kubernetes` kind job | `implemented` (optional) |
+| 4.14 | Безопасный skip без credentials | Job skipped, не fake success | `cd-staging` status field | `implemented` |
 
 Опционально (не блокирует баллы по ПЗ): Blue-Green/Istio, Canary, auto-rollback — статус `planned` только если будет время; иначе явно `skipped` в отчёте.
 

@@ -1,6 +1,7 @@
 # Архитектура
 
 Провайдер IaC: **Yandex Cloud** (Terraform подготовлен на этапе 3Б; **apply не выполнялся**).
+CI/CD: GitHub Actions workflows (этап 4); cloud deploy — только dry-run gate.
 Инференс: **ONNX Runtime CPU FP32**.
 Baseline качества: RandomForest (исторический).
 
@@ -54,4 +55,18 @@ flowchart TB
 - Секреты только через env / gitignored tfvars
 - Будущий scrape `/metrics` — отдельный агент/Prometheus (не автоматом Yandex Monitoring)
 
-Подробности: [`../terraform_infrastructure.md`](../terraform_infrastructure.md), [`../cloud_cost_estimate.md`](../cloud_cost_estimate.md)
+## Stage 4 — CI/CD
+
+```mermaid
+flowchart LR
+  PR[PR / push main] --> Py[ci-python]
+  PR --> Infra[ci-infrastructure]
+  PR --> Dock[ci-docker]
+  PR --> K8s[ci-kubernetes manifests]
+  Manual[workflow_dispatch] --> RC[release-candidate]
+  Manual --> CD[cd-staging dry-run]
+  Synth[synthetic ONNX/joblib] --> Py
+  Synth --> Dock
+```
+
+Подробности: [`../cicd_pipeline.md`](../cicd_pipeline.md), [`../terraform_infrastructure.md`](../terraform_infrastructure.md)

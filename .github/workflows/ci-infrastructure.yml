@@ -1,0 +1,78 @@
+name: CI Infrastructure
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-infra-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  terraform:
+    name: Terraform fmt + validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TF_VAR_cloud_id: "ci00000000000000000000"
+      TF_VAR_folder_id: "ci00000000000000000000"
+      TF_VAR_artifacts_bucket_name: "ci-credit-scoring-artifacts-validate"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.17.2"
+          terraform_wrapper: false
+
+      - name: Format check
+        run: terraform -chdir=infra/terraform fmt -recursive -check
+
+      - name: Init + validate staging
+        run: |
+          terraform -chdir=infra/terraform/environments/staging init -backend=false -input=false
+          terraform -chdir=infra/terraform/environments/staging validate
+
+      - name: Init + validate production
+        run: |
+          terraform -chdir=infra/terraform/environments/production init -backend=false -input=false
+          terraform -chdir=infra/terraform/environments/production validate
+
+  kubernetes-manifests:
+    name: Kustomize + manifest tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install Python test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "v1.34.1"
+
+      - name: Kustomize render
+        run: kubectl kustomize k8s/overlays/local > /tmp/kustomize-local.yaml
+
+      - name: kubectl server-side dry-run (no cluster → client dry-run)
+        run: kubectl apply --dry-run=client -f /tmp/kustomize-local.yaml
+
+      - name: Pytest Kubernetes static suite
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python -m pytest -v tests/k8s tests/terraform --tb=short
