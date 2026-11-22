@@ -1,0 +1,11 @@
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.5
+matplotlib>=3.8
+PyYAML>=6.0
+pandera>=0.20
+joblib>=1.4
+fastapi>=0.115
+uvicorn>=0.32
+pydantic>=2.7
+psutil>=5.9

@@ -17,6 +17,7 @@ models/*
 !models/.gitkeep
 artifacts/*
 !artifacts/.gitkeep
+!artifacts/baseline_metrics.json
 mlruns/
 mlartifacts/
 .onnx_cache/

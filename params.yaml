@@ -1,0 +1,41 @@
+prepare:
+  raw_filename: UCI_Credit_Card.csv
+  target_column: default.payment.next.month
+  test_size: 0.2
+  random_state: 42
+
+train:
+  threshold: 0.5
+  random_state: 42
+
+nn:
+  experiment_name: Credit_Scoring_MLP
+  random_state: 42
+  val_size: 0.2
+  batch_size: 256
+  epochs: 40
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  hidden_dims: [128, 64]
+  dropout: 0.2
+  early_stopping_patience: 7
+  num_threads: 2
+  threshold: 0.5
+  # max absolute probability difference PyTorch vs ONNX
+  parity_atol: 1.0e-5
+  parity_mae_atol: 1.0e-6
+
+onnx:
+  opset: 17
+  dynamic_axes: true
+
+benchmark:
+  warmup_runs: 20
+  timed_runs: 100
+  repeats: 3
+  batch_sizes: [1, 16, 64, 256]
+  device_default: cpu
+
+monitor:
+  sample_fraction: 0.5
+  bins: 10

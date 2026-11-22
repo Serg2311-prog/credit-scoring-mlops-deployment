@@ -37,19 +37,19 @@
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
-| 1.1 | Новая NN на PyTorch | Бинарная классификация, тот же датасет/схема | `python -m src.nn.train_nn` + код модели | `planned` |
-| 1.2 | Совместимая схема признаков | Те же `RAW_FEATURE_COLUMNS` + FE | unit tests features + schema | `planned` |
-| 1.3 | Воспроизводимость | Фиксированные seeds/params; повторный прогон близок | params + лог seeds | `planned` |
-| 1.4 | Сохранение модели и эксперимента | `.pt` + metadata/metrics JSON (+ MLflow run) | наличие артефактов | `planned` |
-| 1.5 | Конвертация в ONNX | Файл `.onnx` создан | `python -m src.nn.export_onnx` | `planned` |
-| 1.6 | Валидация конвертации | Сравнение вероятностей PyTorch vs ORT | `artifacts/onnx_parity.json` | `planned` |
-| 1.7 | Dynamic quantization / оптимизация | Quantized артефакт + обоснование | `python -m src.nn.quantize` | `planned` |
-| 1.8 | Сравнение size/ROC-AUC/F1/latency/throughput/memory | Таблица в отчёте с измеренными значениями | `docs/benchmarks/stage1_report.md` | `planned` |
-| 1.9 | CPU benchmarks, несколько batch sizes | JSON с batch∈{1,8,32,64} или уменьшенным набором при OOM | `artifacts/benchmark_cpu.json` | `planned` |
-| 1.10 | Честный benchmark-отчёт | Нет выдуманных цифр; baseline RF не подменён | ревью отчёта | `planned` |
-| 1.11 | GPU benchmark как отдельный сценарий | Auto-skip без GPU; без fake success | exit code 0 + `skipped` | `planned` |
-| 1.12 | Test не для подбора HP | Val только из train; test — финальная оценка | код split + отчёт | `planned` |
-| 1.13 | Тесты этапа 1 | pytest на model/export/parity | `pytest tests/test_nn*.py` | `planned` |
+| 1.1 | Новая NN на PyTorch | Бинарная классификация, тот же датасет/схема | `python -m src.nn.train_nn` + код модели | `verified_local` |
+| 1.2 | Совместимая схема признаков | Те же `RAW_FEATURE_COLUMNS` + FE | unit tests features + schema | `verified_local` |
+| 1.3 | Воспроизводимость | Фиксированные seeds/params; повторный прогон близок | params + лог seeds | `verified_local` |
+| 1.4 | Сохранение модели и эксперимента | `.pt` + metadata/metrics JSON | наличие артефактов | `verified_local` |
+| 1.5 | Конвертация в ONNX | Файл `.onnx` создан | `python -m src.nn.export_onnx` | `verified_local` |
+| 1.6 | Валидация конвертации | Сравнение вероятностей PyTorch vs ORT | `artifacts/onnx_parity.json` | `verified_local` |
+| 1.7 | Dynamic quantization / оптимизация | Quantized артефакт + обоснование | `python -m src.nn.quantize` | `verified_local` |
+| 1.8 | Сравнение size/ROC-AUC/F1/latency/throughput/memory | Таблица в отчёте с измеренными значениями | `docs/model_benchmark.md` | `verified_local` |
+| 1.9 | CPU benchmarks, несколько batch sizes | JSON с batch∈{1,16,64,256} | `artifacts/benchmark_cpu.json` | `verified_local` |
+| 1.10 | Честный benchmark-отчёт | Нет выдуманных цифр; baseline RF не подменён | `docs/model_benchmark.md` | `verified_local` |
+| 1.11 | GPU benchmark как отдельный сценарий | Auto-skip без GPU; без fake success | `artifacts/benchmark_gpu.json` SKIPPED | `verified_local` |
+| 1.12 | Test не для подбора HP | Val только из train; test — финальная оценка | код split + отчёт | `verified_local` |
+| 1.13 | Тесты этапа 1 | pytest на model/export/parity | `pytest` 34 passed | `verified_local` |
 
 ---
 
@@ -178,7 +178,7 @@
 | D.6 | Terraform инструкции | docs + no-apply warning | файл | `planned` |
 | D.7 | CI/CD инструкции | docs | файл | `planned` |
 | D.8 | Описание экспериментов | docs/metrics | файл | `planned` |
-| D.9 | Benchmark-отчёт | Только измеренные данные | файл | `planned` |
+| D.9 | Benchmark-отчёт | Только измеренные данные | `docs/model_benchmark.md` | `verified_local` |
 | D.10 | Описание мониторинга | docs | файл | `planned` |
 | D.11 | Runbook | docs/runbooks | файл | `planned` |
 | D.12 | Таблица соответствия заданию | Этот файл, обновлять статусы | ревью | `partial` (каркас) |
@@ -204,7 +204,7 @@
 
 | Этап | Макс. баллов | Текущая готовность |
 | --- | ---: | --- |
-| Подготовка модели | 5 | 0% (план готов) |
+| Подготовка модели | 5 | ~100% локально verified (этап 1) |
 | Cloud Infrastructure | 7 | 0% |
 | Контейнеризация и K8S | 8 | 0% |
 | CI/CD | 5 | 0% |

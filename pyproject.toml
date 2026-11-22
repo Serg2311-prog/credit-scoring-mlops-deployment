@@ -1,0 +1,14 @@
+[project]
+name = "credit-scoring-mlops-deployment"
+version = "0.1.0"
+description = "Industrial MLOps deployment for credit scoring"
+readme = "README.md"
+requires-python = ">=3.11"
+
+[tool.black]
+line-length = 88
+target-version = ["py311", "py312", "py313"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

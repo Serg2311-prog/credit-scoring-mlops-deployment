@@ -1,0 +1,6 @@
+# CPU-first torch wheel for Windows / Linux CI.
+# Install with: pip install -r requirements-nn.txt
+torch>=2.2
+onnx>=1.16
+onnxruntime>=1.18
+onnxscript>=0.1.0
