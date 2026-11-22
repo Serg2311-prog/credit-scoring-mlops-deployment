@@ -163,13 +163,44 @@ jobs:
           kind load docker-image "${MODELS_IMAGE}" --name credit-scoring
           bash scripts/ci/disk_report.sh after-kind-load-models
 
-      - name: Deploy overlay (real kubectl apply after cluster exists)
+      # Synthetic CI artifacts use input_dim!=47. Patch ConfigMap before apply so
+      # readiness can pass; keep base ConfigMap at production dim 47.
+      - name: Render manifests for synthetic kind smoke
         run: |
           set -euo pipefail
-          kubectl apply -k k8s/overlays/local
+          python scripts/ci/render_kind_manifests.py \
+            --overlay k8s/overlays/local \
+            --marker models/CI_SYNTHETIC_ARTIFACTS.json \
+            --output artifacts/ci/kustomize-kind-smoke.yaml
+          # Fail fast if image tags diverge from loaded images.
+          grep -E 'image: credit-scoring-api:stage3a' artifacts/ci/kustomize-kind-smoke.yaml
+          grep -E 'image: credit-scoring-models:stage3a' artifacts/ci/kustomize-kind-smoke.yaml
+          grep -E 'EXPECTED_INPUT_DIM:' artifacts/ci/kustomize-kind-smoke.yaml
+
+      - name: Deploy overlay (real kubectl apply after cluster exists)
+        id: deploy
+        run: |
+          set -euo pipefail
+          kubectl apply -f artifacts/ci/kustomize-kind-smoke.yaml
+          kubectl -n credit-scoring get pods -o wide || true
           kubectl -n credit-scoring rollout status deployment/credit-scoring-api --timeout=180s
-          kubectl -n credit-scoring get pods -o wide
           kubectl -n credit-scoring wait --for=condition=ready pod -l app.kubernetes.io/name=credit-scoring-api --timeout=120s
+          kubectl -n credit-scoring get pods -o wide
+
+      - name: Collect k8s diagnostics
+        if: always() && steps.deploy.outcome != 'skipped'
+        run: bash scripts/ci/k8s_diagnose.sh artifacts/ci/k8s-diagnose credit-scoring
+
+      - name: Upload kind smoke diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kind-smoke-diagnostics
+          path: |
+            artifacts/ci/k8s-diagnose/
+            artifacts/ci/kustomize-kind-smoke.yaml
+            models/CI_SYNTHETIC_ARTIFACTS.json
+          if-no-files-found: warn
 
       - name: Smoke via port-forward
         run: |
@@ -208,6 +239,7 @@ jobs:
           echo
           echo "OK: kind smoke endpoints passed"
 
+      # Diagnostics + artifact upload run before this step (same job, earlier steps).
       - name: Delete kind cluster
         if: always()
         run: kind delete cluster --name credit-scoring

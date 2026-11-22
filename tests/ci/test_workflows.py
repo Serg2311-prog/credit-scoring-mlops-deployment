@@ -91,7 +91,9 @@ def test_kubernetes_ci_uses_offline_kubeconform():
     assert 'KUBECONFORM_VERSION: "v0.6.7"' in text
     assert "kubectl apply --dry-run" not in text
     assert "--validate=false" not in text
-    assert "kubectl apply -k k8s/overlays/local" in text
+    # Kind smoke applies rendered manifests (local overlay + synthetic ConfigMap patch).
+    assert "k8s/overlays/local" in text
+    assert "kubectl apply -f artifacts/ci/kustomize-kind-smoke.yaml" in text
     assert "kind create cluster" in text
 
 
@@ -144,3 +146,18 @@ def test_kind_smoke_is_optional():
     # Build before kind create to reduce peak disk pressure.
     assert text.index("Build API and models images") < text.index("Create kind cluster")
     assert "kind delete cluster" in text
+    # Rollout failure diagnostics must run before cluster deletion.
+    assert "k8s_diagnose.sh" in text
+    assert "kind-smoke-diagnostics" in text
+    assert "render_kind_manifests.py" in text
+    assert text.index("Collect k8s diagnostics") < text.index("Delete kind cluster")
+    assert text.index("Upload kind smoke diagnostics") < text.index(
+        "Delete kind cluster"
+    )
+
+
+def test_ci_scripts_include_kind_helpers():
+    assert (SCRIPTS / "k8s_diagnose.sh").is_file()
+    assert (SCRIPTS / "render_kind_manifests.py").is_file()
+    assert (SCRIPTS / "disk_report.sh").is_file()
+    assert (SCRIPTS / "free_runner_disk.sh").is_file()

@@ -122,7 +122,21 @@ No commit/push; stage 5 not started.
 
 **Kubernetes E2E is NOT declared successful** until a new GitHub Actions `workflow_dispatch` with `run_kind_smoke=true` passes smoke.
 
+## Hotfix: kind rollout timeout (`45017625451`)
+
+| Item | Detail |
+| --- | --- |
+| Symptom | `rollout status` timeout; Deployment exists, 0 available replicas |
+| Image tags | Match (`credit-scoring-*:stage3a`, `IfNotPresent`) — not the cause |
+| Confirmed cause | Synthetic CI artifacts **input_dim=43** vs ConfigMap **EXPECTED_INPUT_DIM=47** → load error → `/health/ready` 503 → never Available |
+| Fix | `scripts/ci/render_kind_manifests.py` patches ConfigMap from `CI_SYNTHETIC_ARTIFACTS.json` before `kubectl apply` |
+| Diagnostics | `scripts/ci/k8s_diagnose.sh` + artifact `kind-smoke-diagnostics` **before** `kind delete`; rollout failure still fails the job |
+| Timeout | Unchanged (180s) — failure is permanent readiness, not slow start |
+| Probes | Unchanged |
+
+Local: `tests/ci` **14 passed**; render verified `EXPECTED_INPUT_DIM: '43'`. Hosted E2E still pending re-run.
+
 ## Stage 4 readiness
 
-**CI definitions corrected for hosted runners; local kubeconform + pytest + Trivy gates green; kind disk mitigations ready for re-run.**
+**CI definitions corrected; kind disk + synthetic-dim mitigations ready for hosted re-run.**
 Awaiting technical acceptance before commit/push.
