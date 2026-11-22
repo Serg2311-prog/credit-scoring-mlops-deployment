@@ -72,23 +72,23 @@
 
 ---
 
-## Учебный этап 2. Terraform / Cloud IaC (7 баллов)
+## Учебный этап 2 / Проектный этап 3Б. Terraform / Cloud IaC (код без apply)
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
-| 2.1 | Провайдер из списка задания | Выбран Yandex Cloud | docs + provider block | `planned` |
-| 2.2 | Модуль network/VPC | Отдельный module | `infra/terraform/modules/network` | `planned` |
-| 2.3 | Модуль Kubernetes | Managed K8s | `modules/kubernetes` | `planned` |
-| 2.4 | Модуль storage | Object Storage | `modules/storage` | `planned` |
-| 2.5 | Модуль monitoring | Cloud monitoring wiring / hooks | `modules/monitoring` | `planned` |
-| 2.6 | Окружения staging/production | `envs/staging`, `envs/production` | дерево файлов | `planned` |
-| 2.7 | CPU и GPU node groups | Оба описаны в module vars | tf vars/docs | `planned` |
-| 2.8 | Security groups / сетевые политики | Ресурсы в network/k8s modules | код + docs | `planned` |
-| 2.9 | Remote Terraform state | Backend Object Storage documented | `backend.tf` + docs | `planned` |
-| 2.10 | Variables и outputs | Есть inputs/outputs | `variables.tf`/`outputs.tf` | `planned` |
-| 2.11 | Безопасные секреты | Нет реальных секретов в Git; templates | grep + gitignore | `planned` |
-| 2.12 | Статическая проверка до аккаунта | `terraform fmt -check`, `terraform validate` | локальные логи | `planned` |
-| 2.13 | Нет apply без подтверждения | Apply не выполнен / задокументирован как blocked | отчёт этапа | `planned` / `blocked` до разрешения |
+| 2.1 | Провайдер из списка задания | Выбран Yandex Cloud | docs + provider block | `implemented` |
+| 2.2 | Модуль network/VPC | Отдельный module | `infra/terraform/modules/network` | `implemented` |
+| 2.3 | Модуль Kubernetes | Managed K8s | `modules/kubernetes` | `implemented` |
+| 2.4 | Модуль storage | Object Storage | `modules/storage` | `implemented` |
+| 2.5 | Модуль monitoring | Cloud Logging + metrics notes | `modules/monitoring` | `implemented` |
+| 2.6 | Окружения staging/production | `environments/staging`, `environments/production` | дерево файлов | `implemented` |
+| 2.7 | CPU и GPU node groups | CPU описан; GPU намеренно out-of-scope (ONNX CPU) | docs | `skipped` (GPU) / CPU `implemented` |
+| 2.8 | Security groups / сетевые политики | Ресурсы в network module | код + tests | `implemented` |
+| 2.9 | Remote Terraform state | Backend Object Storage documented | `backend.tf.example` + docs | `implemented` |
+| 2.10 | Variables и outputs | Есть inputs/outputs | `variables.tf`/`outputs.tf` | `implemented` |
+| 2.11 | Безопасные секреты | Нет реальных секретов в Git; templates | grep + gitignore | `implemented` |
+| 2.12 | Статическая проверка до аккаунта | `terraform fmt -check`, `terraform validate` | stage3b report | `verified_local` |
+| 2.13 | Нет apply без подтверждения | Apply не выполнен | stage3b report | `verified_local` (blocked apply) |
 
 ---
 

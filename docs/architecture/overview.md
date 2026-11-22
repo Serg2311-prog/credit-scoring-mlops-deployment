@@ -1,7 +1,7 @@
 # Архитектура
 
-Провайдер IaC (позже): **Yandex Cloud** (пока только план).  
-Инференс: **ONNX Runtime CPU FP32**.  
+Провайдер IaC: **Yandex Cloud** (Terraform подготовлен на этапе 3Б; **apply не выполнялся**).
+Инференс: **ONNX Runtime CPU FP32**.
 Baseline качества: RandomForest (исторический).
 
 ## Stage 2 — Inference path
@@ -18,29 +18,40 @@ flowchart LR
   API --> LOG[JSON logs]
 ```
 
-Локальный Docker Compose поднимает только API (+ volume с артефактами).
-
 ## Stage 3A — Local Kubernetes (kind)
 
 ```mermaid
 flowchart TB
   Host[Windows + Docker Desktop] --> Kind[kind control-plane]
   Kind --> NS[Namespace credit-scoring]
-  NS --> CM[ConfigMap]
-  NS --> DEP[Deployment replicas=1]
+  NS --> DEP[Deployment]
   NS --> SVC[Service ClusterIP]
-  DEP --> INIT[initContainer copy-models]
-  DEP --> CTR[api container]
-  INIT --> Vol[emptyDir /app/models]
-  CTR --> Vol
-  User[Developer] -->|port-forward| SVC
+  DEP --> INIT[initContainer models image]
+  DEP --> CTR[api]
 ```
 
-- Образы: `credit-scoring-api:stage3a`, `credit-scoring-models:stage3a` (kind load).
-- Без Ingress / mesh / cloud / Prometheus Operator.
-- Probes: live → liveness/startup; ready → readiness.
-- Overlay: `k8s/overlays/local`.
+## Stage 3B — Terraform (Yandex Cloud, code only)
 
-Подробности API: [`../api_contract.md`](../api_contract.md)  
-Docker: [`../docker_deployment.md`](../docker_deployment.md)  
-Kubernetes: [`../kubernetes_local_deployment.md`](../kubernetes_local_deployment.md)
+```mermaid
+flowchart TB
+  subgraph envs [Separate states]
+    STG[staging root module]
+    PROD[production root module]
+  end
+  STG --> NET[network]
+  STG --> IAM[iam]
+  STG --> K8S[kubernetes]
+  STG --> CR[registry]
+  STG --> S3[storage private]
+  STG --> LOG[logging group]
+  PROD --> NET2[network other CIDR]
+  PROD --> IAM2[iam]
+  PROD --> K8S2[kubernetes]
+```
+
+- Модули: `infra/terraform/modules/{network,iam,kubernetes,registry,storage,monitoring}`
+- Окружения: `infra/terraform/environments/{staging,production}`
+- Секреты только через env / gitignored tfvars
+- Будущий scrape `/metrics` — отдельный агент/Prometheus (не автоматом Yandex Monitoring)
+
+Подробности: [`../terraform_infrastructure.md`](../terraform_infrastructure.md), [`../cloud_cost_estimate.md`](../cloud_cost_estimate.md)

@@ -29,9 +29,20 @@ mlartifacts/
 *.pem
 *.key
 secrets/
-infra/terraform/**/terraform.tfvars
-infra/terraform/**/*.tfstate*
-infra/terraform/**/.terraform/
+
+# Terraform / IaC local state and secrets
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+# Keep .terraform.lock.hcl in Git after init for reproducible provider versions.
 
 # IDE / OS
 .idea/
@@ -42,7 +53,7 @@ Thumbs.db
 # Docker / local compose overrides
 docker-compose.override.yml
 
-# Local portable tooling (kind.exe, etc.)
+# Local portable tooling (kind.exe, terraform.exe, etc.)
 tools/
 !tools/.gitkeep
 

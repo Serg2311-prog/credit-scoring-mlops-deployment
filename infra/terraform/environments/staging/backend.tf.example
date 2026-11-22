@@ -1,0 +1,22 @@
+# Copy to backend.tf AFTER creating a private state bucket and access keys.
+# Do NOT commit real backend.tf with secrets.
+#
+# terraform {
+#   backend "s3" {
+#     endpoints = {
+#       s3 = "https://storage.yandexcloud.net"
+#     }
+#     bucket = "cs-tfstate-staging-UNIQUE"
+#     key    = "credit-scoring/staging/terraform.tfstate"
+#     region = "ru-central1"
+#
+#     skip_region_validation      = true
+#     skip_credentials_validation = true
+#     skip_requesting_account_id  = true
+#     skip_s3_checksum            = true
+#     skip_metadata_api_check     = true
+#
+#     # Provide via env: AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+#     # (Yandex Object Storage static keys for a dedicated state SA)
+#   }
+# }
