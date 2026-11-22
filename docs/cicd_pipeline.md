@@ -1,22 +1,23 @@
 # CI/CD Pipeline (Stage 4)
 
-## Status
+## Status (verified 2026-11-22)
 
-- GitHub Actions workflows are defined under `.github/workflows/`.
-- **No git remote** was configured in the working copy at stage-4 implementation time → Actions cannot run until the repo is published and pushed.
-- Local reproduction: `scripts/ci/check.ps1`, `build_images.ps1`, `smoke.ps1`.
-- Cloud CD (`terraform apply`, YCR push) is **not** executed in stage 4.
+- GitHub Actions workflows under `.github/workflows/` are **live** on [Serg2311-prog/credit-scoring-mlops-deployment](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment).
+- Hosted verification at commit [`86410e8`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/86410e8dfb7cd39711eb07ac3d88ceb2447b1a67): Python, Docker+Trivy, Infrastructure, Kubernetes offline, **kind E2E**, Release Candidate, and Staging **dry-run** all **SUCCESS**.
+- Full run table and incident history: [`docs/stage4_validation_report.md`](stage4_validation_report.md).
+- Cloud CD (`terraform apply`, YCR push, Managed K8s deploy) is **not** executed in stage 4.
+- The system is **not** deployed to production.
 
 ## Workflows
 
-| Workflow | Triggers | Purpose |
-| --- | --- | --- |
-| `ci-python.yml` | PR, push `main`, manual | black, flake8, pytest, synthetic artifacts |
-| `ci-infrastructure.yml` | PR, push `main`, manual | terraform fmt/validate, kustomize, static k8s/tf tests |
-| `ci-docker.yml` | PR, push `main`, manual | build API+models images, Trivy CRITICAL/HIGH (action pinned by SHA) |
-| `ci-kubernetes.yml` | PR/push (manifests); kind smoke only on manual flag | kustomize + **kubeconform** offline; optional kind |
-| `release-candidate.yml` | manual only | package RC metadata artifact (no GitHub Release) |
-| `cd-staging.yml` | manual + confirm phrase | dry-run plan only, `SKIPPED_NO_CLOUD_CREDENTIALS` |
+| Workflow | Triggers | Purpose | Hosted proof (2026-11-22) |
+| --- | --- | --- | --- |
+| `ci-python.yml` | PR, push `main`, manual | black, flake8, pytest, synthetic artifacts | [SUCCESS `45018989577`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/runs/45018989577) |
+| `ci-infrastructure.yml` | PR, push `main`, manual | terraform fmt/validate, kustomize, static k8s/tf tests | [SUCCESS `45018989519`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/runs/45018989519) |
+| `ci-docker.yml` | PR, push `main`, manual | build API+models images, Trivy CRITICAL/HIGH (action pinned by SHA) | [SUCCESS `45018989479`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/runs/45018989479) |
+| `ci-kubernetes.yml` | PR/push (manifests); kind smoke only on manual flag | kustomize + **kubeconform** offline; optional kind E2E | offline [SUCCESS `45018989542`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/runs/45018989542); kind E2E [SUCCESS `45019576136`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/runs/45019576136) |
+| `release-candidate.yml` | manual only | package RC metadata artifact (**synthetic**; no GitHub Release) | [SUCCESS `45020271258`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/runs/45020271258) |
+| `cd-staging.yml` | manual + confirm phrase | **dry-run only**; no cloud apply without credentials | [SUCCESS `45020843911`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/runs/45020843911) |
 
 ## Artifact strategy (Variant A)
 
@@ -38,6 +39,7 @@ Marker: `models/CI_SYNTHETIC_ARTIFACTS.json` (`synthetic: true`, `not_production
 | kind smoke | optional | manual `run_kind_smoke=true` |
 
 Do not treat CI-synthetic weights as stage-1 production (`mlp-onnx-fp32-v1`, dim 47).
+Kind smoke patches ConfigMap `EXPECTED_INPUT_DIM` / `MODEL_VERSION` from the synthetic marker via `scripts/ci/render_kind_manifests.py`.
 
 ## Local commands
 
@@ -60,24 +62,19 @@ terraform -chdir=infra/terraform/environments/staging init -backend=false
 terraform -chdir=infra/terraform/environments/staging validate
 ```
 
-## CD gate (future)
+## CD gate (future — not Stage 4)
 
 1. Configure GitHub Environment `staging` with required reviewers.
-2. Run `cd-staging.yml` with `confirm=deploy-staging-dry-run`.
-3. Separate explicit approval for `terraform plan` / `apply` and registry push (out of stage 4).
+2. Run `cd-staging.yml` with `confirm=deploy-staging-dry-run` (already verified dry-run path).
+3. Separate explicit approval for `terraform plan` / `apply` and registry push (**out of stage 4**).
 
-## Publishing the repo
+## Fixes after hosted CI (summary)
 
-```powershell
-gh repo create <name> --private --source . --remote origin
-git push -u origin main
-```
+1. **Kubernetes offline:** kubeconform instead of `kubectl apply --dry-run=client`.
+2. **Trivy action:** pinned SHA v0.36.0; HIGH/CRITICAL gate retained.
+3. **Actions pinning:** full commit SHAs.
+4. **Trivy `CVE-2025-47273` / Alpine `musl`:** Dockerfile + constraints; gate unchanged.
+5. **kind disk pressure:** runner reclaim, build-before-kind, image slim, diagnostics.
+6. **kind rollout / synthetic dim:** render ConfigMap from synthetic marker before apply.
 
-## Fixes after first hosted CI run (post `e04ff15`)
-
-1. **Kubernetes:** replaced `kubectl apply --dry-run=client` (needs OpenAPI / localhost:8080) with pinned **kubeconform v0.6.7** offline schema validation (`-strict`, kubernetes `1.33.0`). Real `kubectl apply` remains only in optional kind smoke after cluster create.
-2. **Docker/Trivy:** replaced non-resolving `aquasecurity/trivy-action@0.28.0` with full SHA `ed142fd0673e97e23eac54620cfb913e5ce36c25` (**v0.36.0**). Scans and JSON reports kept enabled.
-3. **Actions pinning:** checkout/setup-python/upload-artifact/setup-buildx/setup-terraform/setup-kubectl pinned to full commit SHAs (Node 20/24–compatible maintained majors).
-4. **Trivy HIGH `CVE-2025-47273` (setuptools):** pip 26.x `bom.cdx.json` false positive + real setuptools floor — Dockerfile.api deletes the vendored SBOM, installs `setuptools>=78.1.1` via `constraints-docker.txt`; models base bumped to `alpine:3.22` for `musl` `CVE-2026-107891`. Gate (`CRITICAL,HIGH`, `ignore-unfixed`, `exit-code: 1`) unchanged.
-5. **kind smoke disk pressure (GHA run `45015363021`):** `kind load docker-image` failed with `no space left on device` while unpacking the ~840 MB API image into containerd. Mitigations in `ci-kubernetes.yml` kind-smoke only: hosted-runner disk reclaim (`scripts/ci/free_runner_disk.sh`), multi-point `disk_report.sh`, build images before `kind create`, prune build cache before load, CPU-only torch for synth artifacts, slim API venv (drop pip/wheel + bytecode), fuller smoke (`/live` `/ready` `/predict` `/metrics`). Do not treat kind E2E as green until a hosted re-run passes.
-6. **kind rollout timeout (GHA run `45017625451`):** images loaded and `kubectl apply` succeeded, but `rollout status` timed out with 0 available replicas. Confirmed cause: CI synthetic ONNX/preprocessor **input_dim=43** while ConfigMap `EXPECTED_INPUT_DIM=47` → model load fails → `/health/ready` stays 503 → Deployment never becomes Available. Fix: `scripts/ci/render_kind_manifests.py` patches ConfigMap for synthetic marker before apply; `scripts/ci/k8s_diagnose.sh` + artifact `kind-smoke-diagnostics` capture pods/events/logs before `kind delete`. Probes/timeouts unchanged. E2E still not green until hosted re-run passes.
+Non-critical hosted warnings (do not fail gates): Node.js 20 deprecation notices; Docker Buildx cache save (`tar` exit code 2).
