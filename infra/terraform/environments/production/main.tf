@@ -5,7 +5,7 @@ locals {
       project     = "credit-scoring"
       environment = local.environment
       managed-by  = "terraform"
-      stage       = "3b"
+      stage       = "2"
     },
     var.extra_labels
   )
@@ -94,4 +94,10 @@ module "kubernetes" {
   node_preemptible           = var.node_preemptible
   node_disk_size_gb          = 100
   node_platform_id           = "standard-v3"
+  cpu_enable_autoscaling     = var.cpu_enable_autoscaling
+  # GPU node group OFF by default — set enable_gpu_node_group=true only with budget approval.
+  enable_gpu_node_group = var.enable_gpu_node_group
+  gpu_platform_id       = var.gpu_platform_id
+  gpu_count             = var.gpu_count
+  gpu_node_count        = var.gpu_node_count
 }

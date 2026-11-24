@@ -1,0 +1,24 @@
+# Partial backend config for:
+#   terraform init -backend-config=backend.hcl
+#
+# SEPARATE bucket and/or key from staging. Never share state with staging.
+# Do NOT commit real backend.hcl or secret keys.
+# Live remote backend = NOT_EXECUTED (no cloud buckets in this course pass).
+
+bucket = "cs-tfstate-production-UNIQUE"
+key    = "credit-scoring/production/terraform.tfstate"
+region = "ru-central1"
+
+endpoints = {
+  s3 = "https://storage.yandexcloud.net"
+}
+
+skip_region_validation      = true
+skip_credentials_validation = true
+skip_requesting_account_id  = true
+skip_s3_checksum            = true
+skip_metadata_api_check     = true
+
+# use_lockfile intentionally omitted — compatibility with Yandex Object Storage
+# conditional writes is NOT_VERIFIED. Serialize production applies;
+# use GitHub Environment protection for CD.

@@ -72,3 +72,30 @@ variable "extra_labels" {
   type    = map(string)
   default = {}
 }
+
+variable "cpu_enable_autoscaling" {
+  description = "Enable CPU node group auto_scale (default fixed_scale)."
+  type        = bool
+  default     = false
+}
+
+variable "enable_gpu_node_group" {
+  description = "Opt-in GPU workers. Default false — avoids paid GPU spend. NOT_EXECUTED in course policy."
+  type        = bool
+  default     = false
+}
+
+variable "gpu_platform_id" {
+  type    = string
+  default = "gpu-standard-v3"
+}
+
+variable "gpu_count" {
+  type    = number
+  default = 1
+}
+
+variable "gpu_node_count" {
+  type    = number
+  default = 1
+}

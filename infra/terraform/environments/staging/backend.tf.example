@@ -1,5 +1,43 @@
-# Copy to backend.tf AFTER creating a private state bucket and access keys.
-# Do NOT commit real backend.tf with secrets.
+# =============================================================================
+# Remote state — what "example-only" means
+# =============================================================================
+# IMPLEMENTED: documented backend wiring + backend.hcl.example for
+#   terraform init -backend-config=backend.hcl
+# NOT_EXECUTED: no Object Storage bucket created; no real backend.tf committed;
+#   no terraform init against a live remote; no state uploaded.
+#
+# Bootstrap (operator laptop — never commit secrets):
+# 1. Create PRIVATE bucket (versioning ON; enable SSE/KMS if available).
+# 2. IAM SA with minimal object R/W on that bucket only (not folder admin).
+# 3. Static keys → env AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY.
+# 4. Copy this file to backend.tf (gitignored if you prefer) using ONE of:
+#
+#    A) Partial backend + HCL file (recommended):
+#         terraform {
+#           backend "s3" {}
+#         }
+#       then: terraform init -backend-config=backend.hcl
+#       (copy backend.hcl.example → backend.hcl; fill bucket/key only)
+#
+#    B) Inline backend block (below) +:
+#         terraform init -backend-config="access_key=$env:AWS_ACCESS_KEY_ID" `
+#                        -backend-config="secret_key=$env:AWS_SECRET_ACCESS_KEY"
+#
+# State keys (must differ staging vs production):
+#   staging:    credit-scoring/staging/terraform.tfstate
+#   production: credit-scoring/production/terraform.tfstate
+#
+# Locking (Terraform 1.17.2 + Yandex Object Storage):
+# - use_lockfile (S3 native .tflock): AVAILABLE in Terraform >= 1.10, but
+#   HashiCorp marks non-AWS S3 as best-effort. Yandex compatibility is
+#   NOT_VERIFIED — do NOT enable use_lockfile in this repo without a successful
+#   lab proof on a real Yandex bucket.
+# - YDB Document API / dynamodb_table: Yandex tutorial path; deprecated in
+#   Terraform >= 1.11 — not configured here (would be paid/extra service).
+# - Safe procedure without verified lock: ONE operator or CI concurrency group;
+#   never parallel apply on the same state key.
+#
+# CI always uses: terraform init -backend=false
 #
 # terraform {
 #   backend "s3" {
@@ -16,7 +54,6 @@
 #     skip_s3_checksum            = true
 #     skip_metadata_api_check     = true
 #
-#     # Provide via env: AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
-#     # (Yandex Object Storage static keys for a dedicated state SA)
+#     # use_lockfile = true   # NOT enabled — Yandex compatibility NOT_VERIFIED
 #   }
 # }

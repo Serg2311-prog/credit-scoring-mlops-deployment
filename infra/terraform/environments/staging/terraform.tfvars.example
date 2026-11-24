@@ -18,3 +18,12 @@ public_master_ip   = false
 
 enable_load_balancer_admin = false
 log_retention_days         = 7
+
+# CPU autoscaling off by default (fixed_scale).
+cpu_enable_autoscaling = false
+
+# GPU node group OFF — enable only with explicit budget approval (paid).
+enable_gpu_node_group = false
+# gpu_platform_id = "gpu-standard-v3"
+# gpu_count       = 1
+# gpu_node_count  = 1

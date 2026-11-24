@@ -46,6 +46,11 @@ jobs:
           terraform -chdir=infra/terraform/environments/production init -backend=false -input=false
           terraform -chdir=infra/terraform/environments/production validate
 
+      - name: Native terraform test (kubernetes module, mock_provider)
+        run: |
+          terraform -chdir=infra/terraform/modules/kubernetes init -backend=false -input=false
+          terraform -chdir=infra/terraform/modules/kubernetes test
+
   kubernetes-manifests:
     name: Kustomize + kubeconform + tests
     runs-on: ubuntu-latest
@@ -82,18 +87,25 @@ jobs:
           sudo mv /tmp/kubeconform /usr/local/bin/kubeconform
           kubeconform -v
 
-      - name: Kustomize render
+      - name: Kustomize render (local + staging + production)
         run: |
           mkdir -p artifacts/ci
           kubectl kustomize k8s/overlays/local | tee artifacts/ci/kustomize-local.yaml
+          kubectl kustomize k8s/overlays/staging | tee artifacts/ci/kustomize-staging.yaml
+          kubectl kustomize k8s/overlays/production | tee artifacts/ci/kustomize-production.yaml
 
       - name: Offline schema validation (kubeconform)
         run: |
-          kubeconform \
-            -kubernetes-version "${KUBECONFORM_K8S_VERSION}" \
-            -summary \
-            -strict \
-            artifacts/ci/kustomize-local.yaml
+          for f in artifacts/ci/kustomize-local.yaml \
+                   artifacts/ci/kustomize-staging.yaml \
+                   artifacts/ci/kustomize-production.yaml; do
+            echo "==> kubeconform $f"
+            kubeconform \
+              -kubernetes-version "${KUBECONFORM_K8S_VERSION}" \
+              -summary \
+              -strict \
+              "$f"
+          done
 
       - name: Pytest Kubernetes/Terraform static suite
         env:

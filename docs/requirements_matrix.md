@@ -74,15 +74,15 @@
 | 2.4 | Модуль storage | Object Storage | `modules/storage` | `implemented` |
 | 2.5 | Модуль monitoring | Cloud monitoring notes | `modules/monitoring` | `implemented` |
 | 2.6 | Окружения staging/production | `environments/*` | дерево файлов | `implemented` |
-| 2.7 | CPU node groups | CPU описан; GPU out-of-scope (ONNX CPU) | docs | `implemented` (GPU: `skipped_no_env`) |
-| 2.8 | Security groups / сетевые политики | Ресурсы в network module | код + tests | `implemented` |
-| 2.9 | Remote Terraform state | Backend Object Storage documented | `backend.tf.example` + docs | `implemented` |
-| 2.10 | Variables и outputs | Есть inputs/outputs | `variables.tf`/`outputs.tf` | `implemented` |
+| 2.7 | CPU/GPU node groups | CPU always; GPU `enable_gpu_node_group=false` (schema-verified) | modules/kubernetes + tests | CPU `implemented`/`verified_static`; GPU IaC `implemented`, cloud `not_executed` |
+| 2.8 | Security groups / сетевые политики | SG + CALICO + K8s NP | код + tests; NP traffic | SG `verified_static`; NP enforcement local **`blocked`** (kindnet/RAM) |
+| 2.9 | Remote Terraform state | Backend + `backend.hcl.example`; lockfile NOT_VERIFIED on Yandex | examples + Block 6.1 notes | example `implemented`; live remote `not_executed` |
+| 2.10 | Variables и outputs | Есть inputs/outputs (+ GPU outputs) | `variables.tf`/`outputs.tf` | `implemented` |
 | 2.11 | Безопасные секреты | Нет реальных секретов в Git | grep + gitignore | `verified_local` |
-| 2.12 | Статическая проверка до аккаунта | `terraform fmt -check`, `validate` | stage3b report + CI Infrastructure | `verified_local` / `verified_ci` |
-| 2.13 | Нет apply без подтверждения | **Cloud apply не выполнялся** | stage3b + README | `not_executed` (apply) / контроль `verified_local` |
+| 2.12 | Статическая проверка до аккаунта | `terraform fmt -check`, `validate` | Block 6 report + CI Infrastructure | `verified_local` / prior `verified_ci` |
+| 2.13 | Нет apply без подтверждения | **Cloud apply не выполнялся** | Block 6 + README | `not_executed` (apply) / контроль `verified_local` |
 
-Отчёт (историческое имя файла): [`docs/stage3b_validation_report.md`](stage3b_validation_report.md), [`docs/terraform_infrastructure.md`](terraform_infrastructure.md).
+Отчёты: [`docs/stage2_infrastructure_completion_report.md`](stage2_infrastructure_completion_report.md), [`docs/stage3b_validation_report.md`](stage3b_validation_report.md), [`docs/terraform_infrastructure.md`](terraform_infrastructure.md).
 
 **Явно:** production / staging в Yandex Cloud **не развёрнуты**. `terraform apply` = `not_executed`.
 

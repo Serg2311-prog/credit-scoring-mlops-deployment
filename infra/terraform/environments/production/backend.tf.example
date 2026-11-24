@@ -1,4 +1,17 @@
-# Separate state from staging. Copy to backend.tf when ready.
+# =============================================================================
+# Remote state — PRODUCTION (example-only)
+# =============================================================================
+# Same meaning as staging: configuration documented; live remote NOT_EXECUTED.
+# Use a SEPARATE bucket and key from staging.
+#
+# Init pattern:
+#   copy → backend.tf with `backend "s3" {}`
+#   copy backend.hcl.example → backend.hcl
+#   terraform init -backend-config=backend.hcl
+# Credentials via env AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY only.
+#
+# use_lockfile: NOT enabled (Yandex S3 lockfile compatibility NOT_VERIFIED).
+# Serialize production applies; prefer GitHub Environment protection for CD.
 #
 # terraform {
 #   backend "s3" {

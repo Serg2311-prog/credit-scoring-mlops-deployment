@@ -1,0 +1,38 @@
+# EXAMPLE ONLY — not part of base/overlays. Requires GPU node group + drivers.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: credit-scoring-gpu-example
+  labels:
+    app.kubernetes.io/name: credit-scoring-gpu-example
+    app.kubernetes.io/part-of: credit-scoring-mlops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: credit-scoring-gpu-example
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: credit-scoring-gpu-example
+    spec:
+      nodeSelector:
+        workload.credit-scoring/type: gpu
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+        - key: workload.credit-scoring/gpu
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: placeholder
+          image: nvidia/cuda:12.2.0-base-ubuntu22.04
+          command: ["sleep", "infinity"]
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+            requests:
+              nvidia.com/gpu: 1

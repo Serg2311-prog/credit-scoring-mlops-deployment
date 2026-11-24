@@ -16,6 +16,7 @@
 | `terraform apply` / YC production | **`not_executed`** |
 | Полный Airflow Docker E2E | **`verified_local`** (Block 4.1: cron + scheduler DagRun + `new_data` + same-holdout gate; `docs/stage7_airflow_e2e_report.md`; CI compose E2E not claimed) |
 | CI/CD staging/production (Block 5 / 5.1) | Overlays + orchestrator/production with 5-CI gate, opt-in auto staging, staging-release provenance, fail-closed modes **implemented** / **verified_static**; kind CD **`verified_local`**; GHCR/cloud **`not_executed`** (`docs/stage4_cicd_completion_report.md`) |
+| Terraform / cloud infra (Block 6) | GPU opt-in NG + remote-state docs + validate **`verified_static`/`verified_local`**; apply / live remote / GPU cloud **`not_executed`**; NP enforcement **`blocked`** (kindnet/RAM) — `docs/stage2_infrastructure_completion_report.md` |
 | Auto-promote модели | **запрещён** (`auto_promote=false`) |
 | Рабочий DVC pipeline (`dvc.yaml` + local remote) | **есть** (synthetic demo; см. `docs/stage3_completion_report.md`) |
 

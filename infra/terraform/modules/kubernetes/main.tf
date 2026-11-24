@@ -58,10 +58,11 @@ resource "terraform_data" "iam_ready" {
 resource "yandex_kubernetes_node_group" "cpu" {
   cluster_id  = yandex_kubernetes_cluster.this.id
   name        = "${var.name_prefix}-${var.node_group_name}"
-  description = "CPU-only workers for credit-scoring API"
+  description = "CPU workers for credit-scoring API (default serving path)"
   version     = var.kubernetes_version
 
-  labels = var.labels
+  labels      = var.labels
+  node_labels = var.cpu_node_labels
 
   instance_template {
     platform_id = var.node_platform_id
@@ -76,6 +77,7 @@ resource "yandex_kubernetes_node_group" "cpu" {
       cores         = var.node_cores
       memory        = var.node_memory_gb
       core_fraction = var.node_core_fraction
+      gpus          = 0
     }
 
     boot_disk {
@@ -93,8 +95,20 @@ resource "yandex_kubernetes_node_group" "cpu" {
   }
 
   scale_policy {
-    fixed_scale {
-      size = var.node_count
+    dynamic "fixed_scale" {
+      for_each = var.cpu_enable_autoscaling ? [] : [1]
+      content {
+        size = var.node_count
+      }
+    }
+
+    dynamic "auto_scale" {
+      for_each = var.cpu_enable_autoscaling ? [1] : []
+      content {
+        min     = var.cpu_autoscaling_min
+        max     = var.cpu_autoscaling_max
+        initial = var.cpu_autoscaling_initial
+      }
     }
   }
 
@@ -111,6 +125,82 @@ resource "yandex_kubernetes_node_group" "cpu" {
     maintenance_window {
       day        = "sunday"
       start_time = "04:00"
+      duration   = "3h"
+    }
+  }
+}
+
+# GPU workers — DISABLED BY DEFAULT (enable_gpu_node_group=false).
+# Attributes verified against yandex provider schema (resources.gpus, gpu_settings,
+# node_labels, node_taints). Do not enable without budget approval; never applied in CI.
+resource "yandex_kubernetes_node_group" "gpu" {
+  count = var.enable_gpu_node_group ? 1 : 0
+
+  cluster_id  = yandex_kubernetes_cluster.this.id
+  name        = "${var.name_prefix}-${var.gpu_node_group_name}"
+  description = "Optional GPU workers (opt-in; costly). Not used by default serving."
+  version     = var.kubernetes_version
+
+  labels      = var.labels
+  node_labels = var.gpu_node_labels
+  node_taints = var.gpu_node_taints
+
+  instance_template {
+    platform_id = var.gpu_platform_id
+
+    network_interface {
+      nat                = true
+      subnet_ids         = [var.subnet_id]
+      security_group_ids = var.node_security_group_ids
+    }
+
+    resources {
+      cores         = var.gpu_node_cores
+      memory        = var.gpu_node_memory_gb
+      core_fraction = 100
+      gpus          = var.gpu_count
+    }
+
+    dynamic "gpu_settings" {
+      for_each = var.gpu_environment == "" ? [] : [1]
+      content {
+        gpu_environment = var.gpu_environment
+      }
+    }
+
+    boot_disk {
+      type = var.gpu_disk_type
+      size = var.gpu_disk_size_gb
+    }
+
+    scheduling_policy {
+      preemptible = var.gpu_preemptible
+    }
+
+    container_runtime {
+      type = "containerd"
+    }
+  }
+
+  scale_policy {
+    fixed_scale {
+      size = var.gpu_node_count
+    }
+  }
+
+  allocation_policy {
+    location {
+      zone = var.gpu_zone != "" ? var.gpu_zone : var.master_zone
+    }
+  }
+
+  maintenance_policy {
+    auto_upgrade = true
+    auto_repair  = true
+
+    maintenance_window {
+      day        = "sunday"
+      start_time = "05:00"
       duration   = "3h"
     }
   }

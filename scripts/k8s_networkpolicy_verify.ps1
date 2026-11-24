@@ -40,15 +40,31 @@ Write-Host "Detected CNI hint: $cni"
 $enforced = $false
 if ($cni -in @("calico", "cilium")) { $enforced = $true }
 
+# Free RAM gate: installing Calico/Cilium beside kindnet or a second cluster
+# needs several GB; course laptops often have <1 GB free with Docker+kind up.
+$freeMb = 0
+try {
+    $os = Get-CimInstance Win32_OperatingSystem
+    $freeMb = [int]($os.FreePhysicalMemory / 1024)
+} catch {}
+Write-Host "Free physical memory (approx): ${freeMb} MB"
+
 if (-not $AttemptTrafficProbes) {
     Write-Host "SKIP traffic probes (pass -AttemptTrafficProbes on Calico/Cilium)"
+    if ($cni -eq "kindnet") {
+        Write-Host "NOTE: kindnet does not enforce NetworkPolicy; cloud MK8s uses CALICO."
+    }
     Write-Host "NETWORKPOLICY_STATUS=manifests_verified enforcement=$enforced cni=$cni"
     exit 0
 }
 
 if (-not $enforced) {
     Write-Host "CNI '$cni' is not Policy-enforcing; refuse to claim deny/allow traffic results"
-    Write-Host "NETWORKPOLICY_STATUS=manifests_verified enforcement=false cni=$cni"
+    if ($freeMb -gt 0 -and $freeMb -lt 2048) {
+        Write-Host "NETWORKPOLICY_STATUS=BLOCKED reason=insufficient_ram_for_calico_sidecar free_mb=$freeMb cni=$cni"
+    } else {
+        Write-Host "NETWORKPOLICY_STATUS=manifests_verified enforcement=false cni=$cni"
+    }
     exit 0
 }
 

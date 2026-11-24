@@ -1,7 +1,10 @@
-# Terraform Infrastructure — Yandex Cloud (Stage 3B)
+# Terraform Infrastructure — Yandex Cloud (Этап 2 / historically Stage 3B)
 
-**Статус:** код и документация подготовлены.
+**Статус:** код и документация подготовлены (Block 6).
+
 **Факт:** облачные ресурсы **не создавались**. `terraform apply` / `destroy` **не выполнялись**.
+
+Отчёт: [`docs/stage2_infrastructure_completion_report.md`](stage2_infrastructure_completion_report.md).
 
 ## Архитектура модулей
 
@@ -13,16 +16,18 @@ environments/{staging|production}
     → module.registry
     → module.storage
     → module.kubernetes  (depends on network + iam + monitoring log group)
+           ├ cpu node group (default)
+           └ gpu node group (enable_gpu_node_group=false by default)
 ```
 
 | Модуль | Ресурсы | Назначение |
 | --- | --- | --- |
 | `network` | `yandex_vpc_network`, `yandex_vpc_subnet`, SG + rule | VPC, CIDR, master/nodes SG |
 | `iam` | SA + `folder_iam_member` | least privilege |
-| `kubernetes` | `yandex_kubernetes_cluster`, `yandex_kubernetes_node_group` | MK8s CPU-only |
+| `kubernetes` | cluster + CPU NG + optional GPU NG (`count`) | MK8s CALICO; GPU opt-in |
 | `registry` | `yandex_container_registry` | API + models images |
 | `storage` | `yandex_storage_bucket`, optional `yandex_kms_symmetric_key` | private ML artifacts |
-| `monitoring` | `yandex_logging_group` | master/app logs retention |
+| `monitoring` | `yandex_logging_group` | master/app logs retention (metrics → Stage 5) |
 
 Provider: `yandex-cloud/yandex` `~> 0.250`
 Terraform: `>= 1.5.0` (проверено с **v1.17.2**)
@@ -63,15 +68,23 @@ Terraform: `>= 1.5.0` (проверено с **v1.17.2**)
 
 Публичный доступ к inference API — **только** через будущий Ingress/ALB+TLS (не открывается Terraform на 3Б).
 
+## CPU / GPU node groups
+
+| Group | Default | Labels / taints | Notes |
+| --- | --- | --- | --- |
+| CPU | always on | `workload.credit-scoring/type=cpu` | Serving path; optional `auto_scale` |
+| GPU | **off** (`enable_gpu_node_group=false`) | GPU labels + `NoSchedule` taints | Uses schema attrs `resources.gpus`, `gpu_settings`; **NOT_EXECUTED** in cloud |
+
+K8s example (not applied on kind): `k8s/examples/gpu-workload/`.
+
 ## Object Storage
 
-- `acl = private`
-- anonymous read/list/config_read = false
+- Private via `anonymous_access_flags` (read/list/config_read = false); do **not** use deprecated public ACL
 - versioning on
 - SSE-KMS optional (default on)
 - lifecycle: abort multipart + expire noncurrent
 
-Загрузка моделей на 3Б **запрещена**. Будущая доставка в Pod:
+Загрузка моделей в облако на этом этапе **запрещена** (policy). Будущая доставка в Pod:
 
 1. CI кладёт `credit_scoring_nn.onnx` + `preprocessor.joblib` в private bucket.
 2. Init/job с SA `ml-reader` (Workload Identity / mounted key — выбрать на этапе deploy) копирует в volume.
@@ -97,12 +110,13 @@ cr.yandex/<registry-id>/credit-scoring-models:<model-version>
 
 ## Terraform state
 
-1. Отдельный private bucket на окружение.
-2. S3-compatible backend (`storage.yandexcloud.net`) — см. `backend.tf.example`.
-3. Отдельный SA только на state bucket (минимум прав).
-4. Versioning + SSE на state bucket.
-5. State lock: стандартный S3 lock Yandex/Terraform — проверить актуальные ограничения backend перед apply.
-6. Не коммитить `*.tfstate`, `*.tfvars`, `.terraform/`.
+1. Отдельный private bucket на окружение (staging ≠ production key/bucket).
+2. S3-compatible backend (`storage.yandexcloud.net`) — `backend.tf.example` + `backend.hcl.example` для `terraform init -backend-config=backend.hcl` (example only; live remote **NOT_EXECUTED**).
+3. Отдельный SA только на state bucket (минимум прав); keys via env `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`.
+4. Versioning + SSE/KMS на state bucket (when creating bucket manually).
+5. **Locking:** `use_lockfile` exists in Terraform 1.17 but Yandex compatibility is **NOT_VERIFIED** (not enabled). YDB/dynamodb_table path is deprecated ≥1.11 and not configured. Serialize applies.
+6. Не коммитить `*.tfstate`, `*.tfvars`, `backend.hcl`, `.terraform/`.
+7. Block 6.1 notes: [`docs/block61_infrastructure_acceptance.md`](block61_infrastructure_acceptance.md).
 
 ## Credentials
 

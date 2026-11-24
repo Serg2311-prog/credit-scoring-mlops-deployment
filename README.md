@@ -109,7 +109,7 @@ $env:PYTHONPATH = (Get-Location).Path
 
 ---
 
-## Этап 2 — Infrastructure as Code, Terraform, Yandex Cloud
+## Этап 2 — Infrastructure as Code, Terraform, Yandex Cloud (Block 6)
 
 ### Цель
 
@@ -117,19 +117,23 @@ $env:PYTHONPATH = (Get-Location).Path
 
 ### Реализованные компоненты
 
-- Модули Terraform: network, iam, kubernetes, registry, kubernetes, monitoring
+- Модули Terraform: network, iam, kubernetes (CPU + opt-in GPU), registry, storage, monitoring
 - Окружения `infra/terraform/environments/staging` и `production`
+- Remote state bootstrap examples (Yandex Object Storage); live remote **NOT_EXECUTED**
+- GPU node group **off by default** (`enable_gpu_node_group=false`)
 - Примеры backend/tfvars без секретов в Git
 - Оценка стоимости в документации
 
 ### Проверка
 
 - `terraform fmt -recursive -check`
-- `terraform init -backend=false` + `validate` (без cloud credentials)
+- `terraform init -backend=false` + `validate` (без cloud credentials) — **VERIFIED_LOCAL** (Block 6)
+- NetworkPolicy traffic on kind — **BLOCKED** (kindnet + low RAM); cloud CALICO configured in TF
 - **`terraform apply` не выполнялся**
 
 ### Документация
 
+- [docs/stage2_infrastructure_completion_report.md](docs/stage2_infrastructure_completion_report.md)
 - [docs/terraform_infrastructure.md](docs/terraform_infrastructure.md)
 - [docs/stage3b_validation_report.md](docs/stage3b_validation_report.md)
 - [infra/terraform/README.md](infra/terraform/README.md)

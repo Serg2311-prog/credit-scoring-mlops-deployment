@@ -1,6 +1,6 @@
-# Terraform — Yandex Cloud (Stage 3B)
+# Terraform — Yandex Cloud (Этап 2 / Block 6)
 
-IaC for future Credit Scoring deployment. **No `terraform apply` in stage 3B.**
+IaC for Credit Scoring staging/production. **No `terraform apply` without explicit approval.**
 
 ## Layout
 
@@ -9,7 +9,7 @@ infra/terraform/
   modules/
     network/      # VPC, subnets, security groups
     iam/          # least-privilege service accounts
-    kubernetes/   # Managed Kubernetes + CPU node group
+    kubernetes/   # Managed Kubernetes + CPU NG + optional GPU NG
     registry/     # Container Registry
     storage/      # private Object Storage + optional KMS
     monitoring/   # Cloud Logging group (+ metrics notes)
@@ -17,6 +17,18 @@ infra/terraform/
     staging/
     production/
 ```
+
+## CPU / GPU
+
+- CPU node group: always defined (serving).
+- GPU node group: `enable_gpu_node_group=false` by default (cost control).
+- Do not enable GPU without budget approval. Cloud GPU create = **NOT_EXECUTED** here.
+
+## Remote state
+
+See `environments/*/backend.tf.example`. Example only — live remote backend **NOT_EXECUTED**.
+
+Locking on Yandex Object Storage has no DynamoDB-style lock; serialize applies.
 
 ## Credentials (never commit)
 
@@ -31,15 +43,11 @@ Provider also accepts `cloud_id` / `folder_id` via `terraform.tfvars` (gitignore
 ## Static checks (allowed)
 
 ```powershell
-$tf = ".\tools\terraform.exe"   # or terraform on PATH
-& $tf -chdir=infra/terraform fmt -recursive -check
-
-# per environment
-& $tf -chdir=infra/terraform/environments/staging init -backend=false
-& $tf -chdir=infra/terraform/environments/staging validate
-
-& $tf -chdir=infra/terraform/environments/production init -backend=false
-& $tf -chdir=infra/terraform/environments/production validate
+terraform -chdir=infra/terraform fmt -recursive -check
+terraform -chdir=infra/terraform/environments/staging init -backend=false
+terraform -chdir=infra/terraform/environments/staging validate
+terraform -chdir=infra/terraform/environments/production init -backend=false
+terraform -chdir=infra/terraform/environments/production validate
 ```
 
 ## Forbidden without explicit approval
@@ -47,12 +55,9 @@ $tf = ".\tools\terraform.exe"   # or terraform on PATH
 - `terraform apply` / `terraform destroy`
 - uploading images/models
 - creating paid cloud resources
+- enabling `enable_gpu_node_group=true` without budget note
 
-## Future deploy (documentation only)
+## Docs
 
-1. Create separate folders for staging/production.
-2. Create private state buckets; copy `backend.tf.example` → `backend.tf`.
-3. Fill `terraform.tfvars` from example.
-4. `terraform plan` (separate approval) → `apply` (separate approval).
-5. Push images by digest; sync artifacts to private bucket.
-6. Deploy Kustomize overlay adapted for cloud (future stage).
+- `docs/stage2_infrastructure_completion_report.md`
+- `docs/terraform_infrastructure.md`

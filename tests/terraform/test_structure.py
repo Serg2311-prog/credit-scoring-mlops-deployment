@@ -30,6 +30,7 @@ REQUIRED_ENV_FILES = [
     "versions.tf",
     "terraform.tfvars.example",
     "backend.tf.example",
+    "backend.hcl.example",
 ]
 
 
@@ -127,10 +128,57 @@ def test_provider_version_pinned():
         assert "0.250" in versions
 
 
-def test_k8s_cpu_only_no_gpu():
+def test_gpu_node_group_gated_off_by_default():
     k8s = (MODULES / "kubernetes" / "main.tf").read_text(encoding="utf-8")
-    assert "gpus" not in k8s.lower() or "gpus =" not in k8s
-    assert "standard-v3" in (ENVS / "staging" / "main.tf").read_text(encoding="utf-8")
+    variables = (MODULES / "kubernetes" / "variables.tf").read_text(encoding="utf-8")
+    assert "yandex_kubernetes_node_group" in k8s and "gpu" in k8s
+    assert "enable_gpu_node_group" in variables
+    assert "default     = false" in variables or "default = false" in variables
+    assert "count = var.enable_gpu_node_group ? 1 : 0" in k8s
+    assert "gpus" in k8s  # schema attribute resources.gpus
+    assert "node_taints" in k8s
+    assert "node_labels" in k8s
+    staging = (ENVS / "staging" / "main.tf").read_text(encoding="utf-8")
+    assert "enable_gpu_node_group" in staging
+    assert "standard-v3" in staging
+    # Env default remains false
+    stg_vars = (ENVS / "staging" / "variables.tf").read_text(encoding="utf-8")
+    assert "enable_gpu_node_group" in stg_vars
+    assert re.search(
+        r'variable\s+"enable_gpu_node_group"[\s\S]*?default\s*=\s*false',
+        stg_vars,
+    )
+
+
+def test_remote_state_example_documents_lock_limits():
+    for env in ("staging", "production"):
+        backend = (ENVS / env / "backend.tf.example").read_text(encoding="utf-8")
+        assert "storage.yandexcloud.net" in backend
+        assert "credit-scoring/" in backend and "terraform.tfstate" in backend
+        assert "lock" in backend.lower() or "Lock" in backend
+        assert "use_lockfile" in backend
+        assert "NOT_VERIFIED" in backend or "NOT_EXECUTED" in backend
+        assert "AWS_ACCESS_KEY_ID" in backend or "ACCESS_KEY" in backend
+        hcl = (ENVS / env / "backend.hcl.example").read_text(encoding="utf-8")
+        assert "backend-config" in hcl
+        assert "credit-scoring/" in hcl
+        assert env in hcl or ("staging" in hcl or "production" in hcl)
+
+
+def test_native_terraform_tests_exist():
+    path = MODULES / "kubernetes" / "tests" / "cpu_gpu.tftest.hcl"
+    assert path.is_file()
+    text = path.read_text(encoding="utf-8")
+    assert "mock_provider" in text
+    assert "command = plan" in text
+    assert "enable_gpu_node_group" in text
+    assert "CALICO" in text
+
+
+def test_module_provider_pins_match_envs():
+    for name in REQUIRED_MODULES:
+        versions = (MODULES / name / "versions.tf").read_text(encoding="utf-8")
+        assert "~> 0.250" in versions
 
 
 def test_consistency_with_stage3a_service_port_and_paths():

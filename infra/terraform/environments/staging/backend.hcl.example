@@ -1,0 +1,30 @@
+# Partial backend config for:
+#   terraform init -backend-config=backend.hcl
+# after copying backend.tf.example → backend.tf with an empty/partial backend "s3" {}.
+#
+# Do NOT commit real backend.hcl (gitignore *.hcl except examples if needed).
+# Credentials: prefer env AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY, or pass via
+#   -backend-config="access_key=..." -backend-config="secret_key=..."
+# Never put secret keys in this file in Git.
+#
+# Live remote backend = NOT_EXECUTED in course policy (no buckets created here).
+
+bucket = "cs-tfstate-staging-UNIQUE"
+key    = "credit-scoring/staging/terraform.tfstate"
+region = "ru-central1"
+
+endpoints = {
+  s3 = "https://storage.yandexcloud.net"
+}
+
+skip_region_validation      = true
+skip_credentials_validation = true
+skip_requesting_account_id  = true
+skip_s3_checksum            = true
+skip_metadata_api_check     = true
+
+# use_lockfile = true
+# NOT enabled: HashiCorp S3 native lockfile is best-effort for non-AWS S3.
+# Yandex docs historically use YDB Document API (dynamodb_table) for locking;
+# that path is deprecated in Terraform >= 1.11 and is NOT configured here.
+# Safe procedure without verified lock: single-operator / serialized applies only.

@@ -37,3 +37,19 @@ output "iam_boundaries" {
 output "metrics_notes" {
   value = module.monitoring.metrics_integration_notes
 }
+
+output "cpu_node_group_id" {
+  value = module.kubernetes.node_group_id
+}
+
+output "gpu_node_group_enabled" {
+  value = module.kubernetes.gpu_node_group_enabled
+}
+
+output "gpu_node_group_id" {
+  value = module.kubernetes.gpu_node_group_id
+}
+
+output "network_policy_provider" {
+  value = module.kubernetes.network_policy_provider
+}

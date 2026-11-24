@@ -16,3 +16,8 @@ public_master_ip   = false
 
 enable_load_balancer_admin = false
 log_retention_days         = 30
+
+cpu_enable_autoscaling = false
+
+# GPU OFF by default (cost control).
+enable_gpu_node_group = false
