@@ -1,8 +1,11 @@
 # Static scoring UI + nginx reverse-proxy to the inference API.
-FROM nginx:1.27-alpine
+# Pin concrete nginx stable + digest; apk upgrade stays on the same Alpine branch.
+FROM nginx:1.30.8-alpine@sha256:6437a63b5c529f0e06162b3f593c0154cff6fa2ea0f94fd7c27928cb399e022d
 
-RUN apk add --no-cache gettext \
-    && rm -rf /usr/share/nginx/html/*
+RUN apk update \
+    && apk upgrade --no-cache \
+    && apk add --no-cache gettext \
+    && rm -rf /var/cache/apk/* /usr/share/nginx/html/*
 
 COPY frontend/index.html frontend/styles.css frontend/app.js /usr/share/nginx/html/
 COPY frontend/nginx.conf.template /etc/nginx/nginx.conf.template

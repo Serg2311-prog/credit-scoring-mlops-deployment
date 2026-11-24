@@ -43,7 +43,9 @@ RUN git init -q \
     && python -c "import json; m=json.load(open('data/dvc_tracked/train_smoke_metrics.json')); assert m['writes_production_models'] is False"
 
 # Final image: versioned data only (no pip/dvc/git).
-FROM busybox:1.36 AS runtime
+# Alpine (not busybox) so Trivy can detect OS packages; pin digest, same-branch apk upgrade.
+FROM alpine:3.21@sha256:bc21487101ae47172509130ee1092cc273a831968d64b617776d1f69c81e42ab AS runtime
+RUN apk upgrade --no-cache && rm -rf /var/cache/apk/*
 WORKDIR /data
 COPY --from=dvc /workspace/data/dvc_tracked/ /data/dvc_tracked/
 USER nobody

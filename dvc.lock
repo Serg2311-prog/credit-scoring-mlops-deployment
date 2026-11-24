@@ -1,7 +1,7 @@
 schema: '2.0'
 stages:
   generate_demo:
-    cmd: python scripts/dvc/generate_demo_dataset.py --output 
+    cmd: python scripts/dvc/generate_demo_dataset.py --output
       data/dvc_tracked/raw_demo.csv --rows 200 --seed 42
     deps:
     - path: scripts/dvc/generate_demo_dataset.py
@@ -22,7 +22,7 @@ stages:
       md5: 407c92b0719a1d2daa7ea45045d0ff2b
       size: 28069
   prepare_demo:
-    cmd: python scripts/dvc/prepare_demo_dataset.py --input 
+    cmd: python scripts/dvc/prepare_demo_dataset.py --input
       data/dvc_tracked/raw_demo.csv --out-dir data/dvc_tracked --seed 42
     deps:
     - path: data/dvc_tracked/raw_demo.csv
@@ -55,8 +55,8 @@ stages:
       md5: 49f5581dfb3f52a7d50592077aac9797
       size: 21098
   validate_ml_ready:
-    cmd: python scripts/dvc/validate_demo_for_ml.py --train 
-      data/dvc_tracked/train_demo.csv --test data/dvc_tracked/test_demo.csv 
+    cmd: python scripts/dvc/validate_demo_for_ml.py --train
+      data/dvc_tracked/train_demo.csv --test data/dvc_tracked/test_demo.csv
       --output data/dvc_tracked/train_smoke_metrics.json --seed 42
     deps:
     - path: data/dvc_tracked/test_demo.csv

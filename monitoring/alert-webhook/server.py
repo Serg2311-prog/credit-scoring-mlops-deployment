@@ -24,7 +24,10 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(raw.decode("utf-8"))
         except json.JSONDecodeError:
             payload = {"raw": raw.decode("utf-8", errors="replace")}
-        print(json.dumps({"event": "alertmanager_webhook", "payload": payload}), flush=True)
+        print(
+            json.dumps({"event": "alertmanager_webhook", "payload": payload}),
+            flush=True,
+        )
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.end_headers()

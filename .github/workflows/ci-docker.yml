@@ -62,7 +62,12 @@ jobs:
         run: mkdir -p artifacts/ci
 
       # Pin Trivy action to full commit SHA (v0.36.0); floating 0.28.x tag is invalid.
+      # Each security scan runs independently (if: always) so one failure cannot skip others.
+      # Final gate below fails the job when any CRITICAL/HIGH (fixed) finding remains.
       - name: Trivy scan API image
+        id: trivy_api
+        if: always()
+        continue-on-error: true
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: credit-scoring-api:ci
@@ -70,6 +75,7 @@ jobs:
           exit-code: "1"
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          vuln-type: os,library
 
       - name: Trivy JSON report (API)
         if: always()
@@ -80,8 +86,12 @@ jobs:
           output: artifacts/ci/trivy-api.json
           exit-code: "0"
           severity: CRITICAL,HIGH,MEDIUM
+          vuln-type: os,library
 
       - name: Trivy scan models image
+        id: trivy_models
+        if: always()
+        continue-on-error: true
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: credit-scoring-models:ci
@@ -89,6 +99,7 @@ jobs:
           exit-code: "1"
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          vuln-type: os,library
 
       - name: Trivy JSON report (models)
         if: always()
@@ -99,8 +110,12 @@ jobs:
           output: artifacts/ci/trivy-models.json
           exit-code: "0"
           severity: CRITICAL,HIGH,MEDIUM
+          vuln-type: os,library
 
       - name: Trivy scan frontend image
+        id: trivy_frontend
+        if: always()
+        continue-on-error: true
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: credit-scoring-frontend:ci
@@ -108,6 +123,7 @@ jobs:
           exit-code: "1"
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          vuln-type: os,library
 
       - name: Trivy JSON report (frontend)
         if: always()
@@ -118,8 +134,12 @@ jobs:
           output: artifacts/ci/trivy-frontend.json
           exit-code: "0"
           severity: CRITICAL,HIGH,MEDIUM
+          vuln-type: os,library
 
       - name: Trivy scan DVC data image
+        id: trivy_dvc
+        if: always()
+        continue-on-error: true
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: credit-scoring-dvc-data:ci
@@ -127,6 +147,18 @@ jobs:
           exit-code: "1"
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          vuln-type: os,library
+
+      - name: Trivy JSON report (DVC)
+        if: always()
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: credit-scoring-dvc-data:ci
+          format: json
+          output: artifacts/ci/trivy-dvc.json
+          exit-code: "0"
+          severity: CRITICAL,HIGH,MEDIUM
+          vuln-type: os,library
 
       - name: Upload Trivy reports
         if: always()
@@ -135,3 +167,27 @@ jobs:
           name: trivy-reports
           path: artifacts/ci/trivy-*.json
           if-no-files-found: warn
+
+      - name: Security gate (fail on any CRITICAL/HIGH)
+        if: always()
+        run: |
+          set -euo pipefail
+          failed=0
+          for name in api models frontend dvc; do
+            case "$name" in
+              api) outcome="${{ steps.trivy_api.outcome }}" ;;
+              models) outcome="${{ steps.trivy_models.outcome }}" ;;
+              frontend) outcome="${{ steps.trivy_frontend.outcome }}" ;;
+              dvc) outcome="${{ steps.trivy_dvc.outcome }}" ;;
+            esac
+            echo "Trivy $name outcome=$outcome"
+            if [ "$outcome" != "success" ] && [ "$outcome" != "skipped" ]; then
+              echo "::error::Security gate failed for $name image (outcome=$outcome)"
+              failed=1
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo "One or more Trivy CRITICAL/HIGH gates failed."
+            exit 1
+          fi
+          echo "All Trivy security gates passed."

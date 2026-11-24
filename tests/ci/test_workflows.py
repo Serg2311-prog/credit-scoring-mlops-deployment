@@ -85,6 +85,23 @@ def test_docker_ci_builds_and_scans():
     uses = _uses_lines(text)
     assert any(u.startswith(TRIVY_SHA) for u in uses)
     assert not any(u.startswith("aquasecurity/trivy-action@0.28.0") for u in uses)
+    # Four images: gate scans keep exit-code 1 + CRITICAL,HIGH; not weakened.
+    assert text.count('exit-code: "1"') >= 4
+    assert text.count("severity: CRITICAL,HIGH") >= 4
+    assert "ignore-unfixed: true" in text
+    # Independent scans + JSON reports for all four; final mandatory gate.
+    for image_id in ("trivy_api", "trivy_models", "trivy_frontend", "trivy_dvc"):
+        assert f"id: {image_id}" in text
+    assert text.count("continue-on-error: true") >= 4
+    assert "trivy-api.json" in text
+    assert "trivy-models.json" in text
+    assert "trivy-frontend.json" in text
+    assert "trivy-dvc.json" in text
+    assert "Security gate (fail on any CRITICAL/HIGH)" in text
+    assert "All Trivy security gates passed." in text
+    # Gate must still fail the job (no exit-code 0 on gate scans).
+    gate_idx = text.index("Security gate (fail on any CRITICAL/HIGH)")
+    assert "exit 1" in text[gate_idx:]
 
 
 def test_kubernetes_ci_uses_offline_kubeconform():
