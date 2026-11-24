@@ -1,0 +1,79 @@
+{
+  "source_artifact": "artifacts/onnx_quantization.json",
+  "holdout_n": 6000,
+  "threshold": 0.5,
+  "confusion_fp32": {
+    "tn": 3597,
+    "fp": 1076,
+    "fn": 490,
+    "tp": 837
+  },
+  "confusion_quant": {
+    "tn": 3630,
+    "fp": 1043,
+    "fn": 492,
+    "tp": 835
+  },
+  "metric_deltas": {
+    "roc_auc": {
+      "fp32": 0.774154013072903,
+      "quant": 0.7720294607173503,
+      "abs_delta": -0.0021245523555526447,
+      "rel_delta": -0.002744353603644722
+    },
+    "pr_auc": {
+      "fp32": 0.5509275849049489,
+      "quant": 0.5470729452616527,
+      "abs_delta": -0.0038546396432961316,
+      "rel_delta": -0.0069966357628674005
+    },
+    "precision": {
+      "fp32": 0.4375326711970727,
+      "quant": 0.4446219382321619,
+      "abs_delta": 0.0070892670350892195,
+      "rel_delta": 0.01620282895833414
+    },
+    "recall": {
+      "fp32": 0.6307460437076111,
+      "quant": 0.6292388847023361,
+      "abs_delta": -0.0015071590052749828,
+      "rel_delta": -0.0023894862604538856
+    },
+    "f1": {
+      "fp32": 0.5166666666666667,
+      "quant": 0.5210608424336973,
+      "abs_delta": 0.004394175767030606,
+      "rel_delta": 0.008504856323285043
+    },
+    "accuracy": {
+      "fp32": 0.739,
+      "quant": 0.7441666666666666,
+      "abs_delta": 0.005166666666666653,
+      "rel_delta": 0.006991429860171384
+    }
+  },
+  "size_bytes": {
+    "fp32": 62934,
+    "quant": 24223,
+    "ratio_quant_to_fp32": 0.3848952871261957
+  },
+  "decision_flips": {
+    "threshold": 0.5,
+    "n_rows": 6000,
+    "n_decision_flips": 131,
+    "decision_flip_rate": 0.021833333333333333,
+    "flips_0_to_1": 48,
+    "flips_1_to_0": 83,
+    "probability_mean_abs_delta": 0.01604660399557997,
+    "probability_max_abs_delta": 0.11675628178545217,
+    "probability_rmse": 0.021908665187476327
+  },
+  "notes": "Metrics from existing quantization evaluation on fixed holdout; threshold=0.5 not tuned on test. Latency compared in CPU benchmark.",
+  "class_disagreement": {
+    "fp32_vs_quant_decision_flip_rate": 0.021833333333333333,
+    "n_decision_flips": 131,
+    "n_rows": 6000,
+    "note": "class disagreement = decision flips at threshold 0.5 between FP32 and quantized ONNX"
+  },
+  "pytorch_onnx_fp32_class_disagreement_rate": 0.0
+}

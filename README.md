@@ -86,25 +86,34 @@ UCI raw CSV
 
 - Обучение MLP (`src/nn/train_nn.py`), val только из train
 - Экспорт ONNX FP32 и dynamic quantization
-- Parity PyTorch ↔ ONNX, CPU benchmark (несколько batch size)
-- GPU benchmark как отдельный сценарий (auto-skip без GPU)
+- Parity PyTorch ↔ ONNX, CPU benchmark (batch 1/8/32/64/128 + thread probe)
+- API load test (synthetic, local uvicorn) — `scripts/api_load_test.py`
+- GPU benchmark как отдельный сценарий (`BLOCKED_NO_GPU` без CUDA; см. Colab instructions)
+- Production resource sizing vs K8s overlays — без необоснованной смены manifests
 
 ### Проверка
 
-- Локальные unit/integration-тесты модели и экспорта
+- Локальные unit/integration-тесты модели, экспорта и benchmark utilities
 - Зафиксированные метрики: MLP/ONNX FP32 test ROC-AUC **0.7742**
+- Block 7: [docs/stage1_model_optimization_completion_report.md](docs/stage1_model_optimization_completion_report.md)
+- Git-tracked evidence: [results/block7/](results/block7/) (parity, quality, CPU CSV, API load, GPU status)
 - Отчёт: [docs/model_benchmark.md](docs/model_benchmark.md), [docs/stage1_audit_report.md](docs/stage1_audit_report.md)
 
 ### Документация
 
 - [docs/model_benchmark.md](docs/model_benchmark.md)
 - [docs/stage1_audit_report.md](docs/stage1_audit_report.md)
-- Скрипт: `scripts/run_stage1.ps1`
+- [docs/stage1_model_optimization_completion_report.md](docs/stage1_model_optimization_completion_report.md)
+- [docs/production_resource_sizing.md](docs/production_resource_sizing.md)
+- [docs/gpu_benchmark_colab.md](docs/gpu_benchmark_colab.md)
+- Скрипт: `scripts/run_stage1.ps1`; Block 7: `scripts/block7_eval.py`
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 $env:PYTHONPATH = (Get-Location).Path
 .\scripts\run_stage1.ps1
+# Block 7 refresh (does not rewrite production registry/ONNX):
+.\.venv\Scripts\python.exe scripts\block7_eval.py
 ```
 
 ---

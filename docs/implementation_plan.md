@@ -339,8 +339,11 @@ credit-scoring-mlops-deployment/
 ## 8. Детальный план этапа 1 (исторический; выполнен)
 
 > Ниже — исходный план запуска этапа 1. Критерии закрыты; отчёты:
-> [`docs/stage1_audit_report.md`](stage1_audit_report.md), [`docs/model_benchmark.md`](model_benchmark.md).
+> [`docs/stage1_audit_report.md`](stage1_audit_report.md), [`docs/model_benchmark.md`](model_benchmark.md),
+> [`docs/stage1_model_optimization_completion_report.md`](stage1_model_optimization_completion_report.md) (Block 7),
+> [`docs/production_resource_sizing.md`](production_resource_sizing.md).
 > Baseline RF test ROC-AUC **0.7771**; MLP/ONNX FP32 **0.7742**.
+> Block 7: CPU batches 1/8/32/64/128, API load VERIFIED_LOCAL, GPU **BLOCKED_NO_GPU**, production artifacts unchanged.
 
 ### 8.1. Цели (план)
 
@@ -387,7 +390,7 @@ credit-scoring-mlops-deployment/
 ### 8.5. Команды проверки (исторический план этапа 1)
 
 ```powershell
-cd "C:\Users\Sergey\Documents\Личное\Учеба\3 Семестр\Автоматизация процессов доставки и развертывания ML-моделей\ИТОГОВЫЙ ПРОЕКТ\credit-scoring-mlops-deployment"
+# from repository root
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -U pip

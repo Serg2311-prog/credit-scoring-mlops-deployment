@@ -1,0 +1,60 @@
+{
+  "block": "7",
+  "date": "2026-11-24",
+  "hardware": {
+    "cpu": "Intel Core i5-1135G7",
+    "ram_gb_nominal": 8,
+    "gpu": "none"
+  },
+  "software": {
+    "os": "Windows-11-10.0.26300-SP0",
+    "python": "3.13.7",
+    "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+    "torch": "2.15.0+cpu",
+    "torch_cuda_is_available": false,
+    "onnxruntime": "1.32.0",
+    "onnxruntime_providers": [
+      "AzureExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "cpu_marketing_name": "Intel Core i5-1135G7",
+    "ram_gb_nominal": 8
+  },
+  "methodology": {
+    "parity_n": 6000,
+    "parity_atol": 1e-05,
+    "parity_mae_atol": 1e-06,
+    "cpu_warmup": 20,
+    "cpu_timed": 100,
+    "cpu_repeats": 3,
+    "batch_sizes": [
+      1,
+      8,
+      32,
+      64,
+      128
+    ],
+    "thread_probe": [
+      1,
+      2,
+      4
+    ],
+    "api": {
+      "env": "local_uvicorn src.api.main:app workers=1",
+      "concurrency": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "duration_s": 8,
+      "synthetic": true
+    }
+  },
+  "cpu_benchmark_default_threads": 2,
+  "notes": [
+    "Local Windows laptop evidence only \u2014 not Kubernetes resource-limit proof.",
+    "Process RSS includes imported PyTorch/ORT stacks.",
+    "API load CPU% was not sampled; free_mb and client RSS were recorded."
+  ]
+}

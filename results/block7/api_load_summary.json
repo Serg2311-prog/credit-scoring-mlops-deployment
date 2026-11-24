@@ -1,0 +1,87 @@
+{
+  "environment": "local_http",
+  "server": "local_uvicorn src.api.main:app workers=1 host=127.0.0.1:8000",
+  "payload": "synthetic_uci_shaped",
+  "duration_s_per_level": 8.0,
+  "min_free_mb": 350.0,
+  "free_mb_start": 765.91,
+  "load_client_rss_mb": 36.69,
+  "cpu_percent": null,
+  "cpu_percent_note": "NOT_MEASURED",
+  "levels": [
+    {
+      "concurrency": 1,
+      "duration_s": 8.0,
+      "requests_ok": 438,
+      "requests_total": 438,
+      "http_errors": 0,
+      "timeouts": 0,
+      "rps": 54.75,
+      "latency_p50_ms": 15.257,
+      "latency_p95_ms": 29.687,
+      "latency_p99_ms": 43.24,
+      "latency_mean_ms": 18.158,
+      "free_mb_end": 875.56,
+      "stopped_early": false
+    },
+    {
+      "concurrency": 2,
+      "duration_s": 8.0,
+      "requests_ok": 396,
+      "requests_total": 396,
+      "http_errors": 0,
+      "timeouts": 0,
+      "rps": 49.5,
+      "latency_p50_ms": 38.68,
+      "latency_p95_ms": 54.737,
+      "latency_p99_ms": 66.064,
+      "latency_mean_ms": 40.324,
+      "free_mb_end": 792.53,
+      "stopped_early": false
+    },
+    {
+      "concurrency": 4,
+      "duration_s": 8.0,
+      "requests_ok": 377,
+      "requests_total": 377,
+      "http_errors": 0,
+      "timeouts": 0,
+      "rps": 47.125,
+      "latency_p50_ms": 84.23,
+      "latency_p95_ms": 116.596,
+      "latency_p99_ms": 157.79,
+      "latency_mean_ms": 85.655,
+      "free_mb_end": 798.89,
+      "stopped_early": false
+    },
+    {
+      "concurrency": 8,
+      "duration_s": 8.0,
+      "requests_ok": 363,
+      "requests_total": 363,
+      "http_errors": 0,
+      "timeouts": 0,
+      "rps": 45.375,
+      "latency_p50_ms": 175.934,
+      "latency_p95_ms": 234.952,
+      "latency_p99_ms": 251.246,
+      "latency_mean_ms": 177.894,
+      "free_mb_end": 766.59,
+      "stopped_early": false
+    }
+  ],
+  "saturation_note": "On this single-worker local run, RPS peaks at concurrency=1 and declines as concurrency rises while p95 grows roughly linearly. That supports saturation onset for this process beyond concurrency 1, but does not isolate model vs preprocess vs HTTP without profiling.",
+  "recommended_safe_concurrency_low_latency": 2,
+  "recommended_safe_concurrency_error_free_observed": 8,
+  "health_after": {
+    "/health/live": {
+      "status_code": 200,
+      "ok": true
+    },
+    "/health/ready": {
+      "status_code": 200,
+      "ok": true
+    }
+  },
+  "status": "completed"
+}

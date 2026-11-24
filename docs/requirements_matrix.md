@@ -51,16 +51,19 @@
 | 1.3 | Воспроизводимость | Фиксированные seeds/params | `params.yaml` + отчёт | `verified_local` |
 | 1.4 | Сохранение модели и эксперимента | `.pt` + metadata/metrics JSON | артефакты / metadata | `verified_local` |
 | 1.5 | Конвертация в ONNX | Файл `.onnx` создан | `python -m src.nn.export_onnx` | `verified_local` |
-| 1.6 | Валидация конвертации | PyTorch vs ORT | `artifacts/onnx_parity.json` | `verified_local` |
+| 1.6 | Валидация конвертации | PyTorch vs ORT | `artifacts/onnx_parity.json` + Block7 `parity_summary.json` PASS | `verified_local` |
 | 1.7 | Dynamic quantization | Quantized артефакт + обоснование | `python -m src.nn.quantize` | `verified_local` |
-| 1.8 | Сравнение size/ROC-AUC/F1/latency/… | Измеренные значения | `docs/model_benchmark.md` | `verified_local` |
-| 1.9 | CPU benchmarks, несколько batch sizes | JSON batch∈{1,16,64,256} | `artifacts/benchmark_cpu.json` | `verified_local` |
+| 1.8 | Сравнение size/ROC-AUC/F1/latency/… | Измеренные значения + abs/rel Δ | `docs/model_benchmark.md`, `artifacts/block7/quantization_deltas.json` | `verified_local` |
+| 1.9 | CPU benchmarks, несколько batch sizes | Block7 batch∈{1,8,32,64,128} + historical {1,16,64,256} | `artifacts/block7/benchmark_cpu_block7.json` | `verified_local` |
 | 1.10 | Честный benchmark-отчёт | RF baseline не подменён (ROC-AUC **0.7771**; MLP **0.7742**) | `docs/model_benchmark.md` | `verified_local` |
-| 1.11 | GPU benchmark | Auto-skip без GPU | `artifacts/benchmark_gpu.json` SKIPPED | `verified_local` |
+| 1.11 | GPU benchmark | Нет GPU → `BLOCKED_NO_GPU` (не CPU-as-GPU) | `artifacts/block7/benchmark_gpu.json` | `blocked_no_gpu` |
 | 1.12 | Test не для подбора HP | Val только из train | код split + отчёт | `verified_local` |
-| 1.13 | Тесты этапа 1 | pytest model/export/parity | suite в полном pytest | `verified_local` |
+| 1.13 | Тесты этапа 1 | pytest model/export/parity/benchmark utils | suite в полном pytest | `verified_local` |
+| 1.14 | API load testing | Concurrent synthetic HTTP | `scripts/api_load_test.py`, `results/block7/api_load_summary.json` | `verified_local` |
+| 1.15 | Production resource sizing | Обоснование vs K8s overlays | `docs/production_resource_sizing.md` | `verified_local` |
+| 1.16 | Git-tracked benchmark evidence | Compact JSON/CSV/plots after clone | `results/block7/` | `verified_local` |
 
-Отчёт: [`docs/stage1_audit_report.md`](stage1_audit_report.md), [`docs/model_benchmark.md`](model_benchmark.md).
+Отчёт: [`docs/stage1_audit_report.md`](stage1_audit_report.md), [`docs/model_benchmark.md`](model_benchmark.md), [`docs/stage1_model_optimization_completion_report.md`](stage1_model_optimization_completion_report.md).
 
 ---
 
@@ -277,7 +280,7 @@
 | Учебный этап | Содержание | Готовность кода | Проверка |
 | --- | --- | --- | --- |
 | 0 | Аудит / план / матрица | Готово | `verified_local` |
-| 1 | MLP / ONNX / benchmark | Готово | `verified_local` |
+| 1 | MLP / ONNX / benchmark (+ Block 7 API load; GPU blocked) | Готово | `verified_local` / GPU `blocked_no_gpu` |
 | 2 | Terraform YC | Код готов | validate local/CI; **apply `not_executed`** |
 | 3 | Docker / kind / K8s / DVC / frontend | Frontend+Ingress+DVC verified locally | NP enforcement kindnet `partial`; CI на новых Dockerfile — `not_executed` до push |
 | 4 | CI/CD | Готово | **5× SUCCESS на `65de3ad`**; prod deploy `not_executed` |

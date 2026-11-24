@@ -76,3 +76,6 @@ tools/
 
 # Audit copy of source (not part of deliverable)
 _source_audit/
+
+# Local scanner noise (do not commit)
+trivy_failure_log.txt

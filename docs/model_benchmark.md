@@ -1,12 +1,13 @@
 # Stage 1 — Model & ONNX Benchmark Report
 
-**Дата прогона:** 2026-11-22  
-**Среда:** Windows 11, Python 3.13.7 (CPU torch 2.15.0+cpu), Intel Core i5, ~8 GB RAM, GPU отсутствует  
+**Дата исходного прогона:** 2026-11-22
+**Block 7 refresh:** 2026-11-24 (`artifacts/block7/`, см. [`stage1_model_optimization_completion_report.md`](stage1_model_optimization_completion_report.md))
+**Среда:** Windows 11, Python 3.13.7 (CPU torch 2.15.0+cpu), Intel Core i5-1135G7, ~8 GB RAM, GPU отсутствует
 **Данные:** UCI Default of Credit Card Clients, train=24000 / test=6000, `test_size=0.2`, `random_state=42`
 
-Все числа ниже взяты из локальных артефактов этого прогона. Выдуманных метрик нет.
+Все числа ниже взяты из локальных артефактов. Выдуманных метрик нет. Production ONNX/preprocessor/registry/`dvc.lock` в Block 7 **не** перезаписывались.
 
-Исходные JSON:
+Исходные JSON (Stage 1) + Block 7:
 
 - `artifacts/baseline_metrics.json`
 - `artifacts/nn_metrics.json`
@@ -14,6 +15,8 @@
 - `artifacts/onnx_quantization.json`
 - `artifacts/benchmark_cpu.json`
 - `artifacts/benchmark_gpu.json`
+- `artifacts/block7/*` (local working copies; gitignored)
+- **`results/block7/*`** — compact Git-tracked evidence for clone/review
 
 ---
 
@@ -88,7 +91,7 @@ RF baseline — **исторические** метрики исходного �
 | batch=256 | 6.41e-08 | 9.10e-09 | passed |
 | full test (6000) | 7.08e-08 | 1.05e-08 | passed |
 
-Пороги: `parity_atol=1e-5`, `parity_mae_atol=1e-6`.  
+Пороги: `parity_atol=1e-5`, `parity_mae_atol=1e-6`.
 Полный путь `raw → preprocessor.joblib → model → sigmoid` согласован.
 
 ---
@@ -178,34 +181,70 @@ End-to-end почти одинаков для backends: доминирует pre
 
 ## 7. GPU benchmark
 
+Исторический артефакт мог содержать `SKIPPED`. Block 7 фиксирует явный статус:
+
 ```json
-{"device": "cuda", "status": "SKIPPED", "reason": "GPU/CUDA недоступна на этой машине"}
+{"device": "cuda", "status": "BLOCKED_NO_GPU", "torch_cuda_is_available": false}
 ```
 
-Команда: `python -m src.nn.benchmark --device cuda` — корректно завершается со статусом `SKIPPED`.
+Команда: `python -m src.nn.benchmark --device cuda` — **без** silent CPU fallback и **без** выдуманных GPU latency.
+Инструкция внешнего прогона: [`gpu_benchmark_colab.md`](gpu_benchmark_colab.md). Статус **не** `VERIFIED_GPU`.
 
 ---
 
-## 8. Ограничения эксперимента
+## 8. Block 7 refresh (2026-11-24)
 
-1. Локально установлен Python **3.13**, не 3.11 (папка Python311 без интерпретатора).  
-2. Нет GPU — GPU numbers отсутствуют.  
-3. MLP не превзошла RF baseline по ключевым метрикам качества.  
-4. Dynamic quantization даёт сжатие, но ухудшает parity вероятностей (max abs ~0.12).  
-5. На batch=1 quantized ONNX **медленнее** FP32 ONNX в этом прогоне; выигрыш проявляется на больших batch.  
-6. RSS включает весь процесс с импортированным torch — это не изолированный memory footprint модели.  
-7. Latency не включает pandas Feature Engineering / preprocessor (измеряется только тензорный forward).  
+### 8.1. Parity re-check
+
+| n | max\|Δp\| | MAE | class agreement | Tolerances | Result |
+| ---: | ---: | ---: | ---: | --- | --- |
+| 6000 | 7.08e-08 | 1.05e-08 | 1.0 | atol 1e-5 / mae 1e-6 | **PASS** |
+
+### 8.2. CPU model_only (batches 1/8/32/64/128)
+
+ORT FP32 batch=1 p50 ≈ **0.021 ms** vs PyTorch ≈ 0.141 ms. Quantized часто **не быстрее** FP32 на этом CPU. Полная таблица: `artifacts/block7/cpu_benchmark_summary.csv`.
+
+### 8.3. API load (local uvicorn, synthetic)
+
+Peak ≈ **55 RPS** at concurrency=1; p95 grows with concurrency; health OK after test. Details: `artifacts/block7/api_load_results.json`.
+
+### 8.4. Production sizing
+
+[`production_resource_sizing.md`](production_resource_sizing.md) — keep existing K8s CPU/mem/replicas and ORT threads=2; FP32 default; GPU not required.
+
+How to reproduce:
+
+```powershell
+$env:PYTHONPATH = (Get-Location).Path
+.\.venv\Scripts\python.exe scripts\block7_eval.py
+.\.venv\Scripts\python.exe -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
+.\.venv\Scripts\python.exe scripts\api_load_test.py --concurrency 1,2,4,8 --duration 8 --min-free-mb 350
+```
+
+---
+
+## 9. Ограничения эксперимента
+
+1. Локально установлен Python **3.13**, не 3.11.
+2. Нет GPU — GPU numbers отсутствуют (`BLOCKED_NO_GPU`).
+3. MLP не превзошла RF baseline по ключевым метрикам качества.
+4. Dynamic quantization даёт сжатие, но ухудшает parity вероятностей (max abs ~0.12).
+5. На batch=1 quantized ONNX **медленнее** FP32 ONNX в прогонах; ускорение **не** утверждается без измерений.
+6. RSS включает весь процесс с импортированным torch — это не изолированный memory footprint модели.
+7. `model_only` не включает preprocessor; `end_to_end` и API load — включают.
 8. ORT quantization на путях с кириллицей требует temp ASCII workaround.
+9. API load — локальный uvicorn, не cloud SKU.
 
 ---
 
-## 9. Рекомендация для дальнейшего развертывания
+## 10. Рекомендация для дальнейшего развертывания
 
 | Цель | Рекомендация |
 | --- | --- |
 | Максимальное качество (offline/baseline) | Исторический **RandomForest** (`artifacts/baseline_metrics.json`) |
 | Быстрый CPU inference с паритетом к обученной NN | **ONNX FP32** (`models/credit_scoring_nn.onnx`) |
-| Минимальный размер артефакта / высокий batch throughput | ONNX Quantized — только после продуктового решения о допуске Δp |
-| Следующие этапы (API / K8s) | Держать preprocessor + ONNX FP32 как основной NN path; RF сохранить для A/B |
+| Минимальный размер артефакта | ONNX Quantized — только после продуктового решения о допуске Δp / flips |
+| API / K8s resources | См. [`production_resource_sizing.md`](production_resource_sizing.md) — текущие overlays **оставить** |
+| GPU | Не нужен для этой MLP; IaC GPU opt-in остаётся выключенным |
 
-**Итог этапа 1:** подготовка NN→ONNX→quant→CPU benchmarks **выполнена и измерена**. Для serving на следующих этапах по умолчанию предлагается **ONNX FP32** (паритет с PyTorch, существенно быстрее PyTorch на малых batch). Quantized — опциональный кандидат, не default.
+**Итог:** NN→ONNX→quant→CPU/API benchmarks **измерены**. Serving default — **ONNX FP32**. Quantized — опциональный кандидат, не default. GPU — `BLOCKED_NO_GPU`.

@@ -41,7 +41,14 @@ def _time_callable(
     fn: Callable[[], None],
     warmup: int,
     timed: int,
+    *,
+    measure_cold_start: bool = True,
 ) -> dict[str, float]:
+    cold_ms = float("nan")
+    if measure_cold_start:
+        started = time.perf_counter()
+        fn()
+        cold_ms = (time.perf_counter() - started) * 1000.0
     for _ in range(warmup):
         fn()
     samples: list[float] = []
@@ -50,8 +57,10 @@ def _time_callable(
         fn()
         samples.append((time.perf_counter() - started) * 1000.0)
     return {
+        "cold_start_ms": cold_ms,
         "latency_p50_ms": _percentile(samples, 50),
         "latency_p95_ms": _percentile(samples, 95),
+        "latency_p99_ms": _percentile(samples, 99),
         "latency_mean_ms": float(np.mean(samples)),
         "latency_std_ms": float(np.std(samples)),
         "n_timed": float(timed),
@@ -77,12 +86,20 @@ def _load_raw_and_features() -> tuple[pd.DataFrame, np.ndarray, np.ndarray]:
 def _summarize_timed(repeat_stats: list[dict[str, float]]) -> dict[str, float]:
     latency_p50 = float(np.mean([item["latency_p50_ms"] for item in repeat_stats]))
     latency_p95 = float(np.mean([item["latency_p95_ms"] for item in repeat_stats]))
+    latency_p99 = float(
+        np.mean([item.get("latency_p99_ms", np.nan) for item in repeat_stats])
+    )
+    latency_mean = float(np.mean([item["latency_mean_ms"] for item in repeat_stats]))
+    cold = float(np.mean([item.get("cold_start_ms", np.nan) for item in repeat_stats]))
     throughput = float(
         np.mean([item["throughput_samples_per_s"] for item in repeat_stats])
     )
     return {
+        "cold_start_ms_mean_over_repeats": cold,
         "latency_p50_ms_mean_over_repeats": latency_p50,
         "latency_p95_ms_mean_over_repeats": latency_p95,
+        "latency_p99_ms_mean_over_repeats": latency_p99,
+        "latency_mean_ms_mean_over_repeats": latency_mean,
         "throughput_samples_per_s_mean_over_repeats": throughput,
     }
 
@@ -165,16 +182,35 @@ def _predict_ort(session, features: np.ndarray) -> np.ndarray:
     return np.concatenate(outputs)
 
 
-def benchmark_cpu() -> dict[str, Any]:
+def benchmark_cpu(
+    *,
+    batch_sizes: list[int] | None = None,
+    num_threads: int | None = None,
+    output_path: Any | None = None,
+    warmup_runs: int | None = None,
+    timed_runs: int | None = None,
+    repeats: int | None = None,
+    scopes: tuple[str, ...] = ("model_only", "end_to_end"),
+) -> dict[str, Any]:
     import onnxruntime as ort
+    from pathlib import Path
 
-    configure_cpu_threads()
+    threads_used = configure_cpu_threads(num_threads=num_threads)
     params = load_params()
     bench = params.get("benchmark", {})
-    warmup = int(bench.get("warmup_runs", 20))
-    timed = int(bench.get("timed_runs", 100))
-    repeats = int(bench.get("repeats", 3))
-    batch_sizes = [int(item) for item in bench.get("batch_sizes", [1, 16, 64, 256])]
+    warmup = int(
+        warmup_runs if warmup_runs is not None else bench.get("warmup_runs", 20)
+    )
+    timed = int(timed_runs if timed_runs is not None else bench.get("timed_runs", 100))
+    repeats = int(repeats if repeats is not None else bench.get("repeats", 3))
+    batch_sizes = [
+        int(item)
+        for item in (
+            batch_sizes
+            if batch_sizes is not None
+            else bench.get("batch_sizes", [1, 16, 64, 256])
+        )
+    ]
     threshold = float(params["nn"].get("threshold", 0.5))
 
     raw_features, features, y_true = _load_raw_and_features()
@@ -235,82 +271,86 @@ def benchmark_cpu() -> dict[str, Any]:
             model_batch = features[:actual_bs]
             raw_batch = raw_features.iloc[:actual_bs].copy()
 
-            # --- model-only: только тензорный forward ---
-            model_repeat_stats = []
-            rss_before = _rss_mb()
-            for repeat_idx in range(repeats):
-                if variant["kind"] == "torch":
-                    runner = _torch_runner(variant["model"], model_batch, device)
-                else:
-                    runner = _ort_runner(variant["session"], model_batch)
-                stats = _time_callable(runner, warmup=warmup, timed=timed)
-                stats["repeat"] = repeat_idx + 1
-                stats["throughput_samples_per_s"] = (
-                    actual_bs / (stats["latency_mean_ms"] / 1000.0)
-                    if stats["latency_mean_ms"] > 0
-                    else float("nan")
+            if "model_only" in scopes:
+                # --- model-only: только тензорный forward ---
+                model_repeat_stats = []
+                rss_before = _rss_mb()
+                for repeat_idx in range(repeats):
+                    if variant["kind"] == "torch":
+                        runner = _torch_runner(variant["model"], model_batch, device)
+                    else:
+                        runner = _ort_runner(variant["session"], model_batch)
+                    stats = _time_callable(runner, warmup=warmup, timed=timed)
+                    stats["repeat"] = repeat_idx + 1
+                    stats["throughput_samples_per_s"] = (
+                        actual_bs / (stats["latency_mean_ms"] / 1000.0)
+                        if stats["latency_mean_ms"] > 0
+                        else float("nan")
+                    )
+                    model_repeat_stats.append(stats)
+                rss_after = _rss_mb()
+                model_summary = _summarize_timed(model_repeat_stats)
+                model_only_rows.append(
+                    {
+                        "scope": "model_only",
+                        "variant": variant_name,
+                        "batch_size": actual_bs,
+                        "model_size_bytes": variant["size_bytes"],
+                        **model_summary,
+                        "rss_mb_before": rss_before,
+                        "rss_mb_after": rss_after,
+                        "rss_mb_delta": rss_after - rss_before,
+                        "repeats": model_repeat_stats,
+                        "quality_metrics": quality[variant_name],
+                    }
                 )
-                model_repeat_stats.append(stats)
-            rss_after = _rss_mb()
-            model_summary = _summarize_timed(model_repeat_stats)
-            model_only_rows.append(
-                {
-                    "scope": "model_only",
-                    "variant": variant_name,
-                    "batch_size": actual_bs,
-                    "model_size_bytes": variant["size_bytes"],
-                    **model_summary,
-                    "rss_mb_before": rss_before,
-                    "rss_mb_after": rss_after,
-                    "rss_mb_delta": rss_after - rss_before,
-                    "repeats": model_repeat_stats,
-                    "quality_metrics": quality[variant_name],
-                }
-            )
-            print(
-                f"[model_only] {variant_name} batch={actual_bs}: "
-                f"p50={model_summary['latency_p50_ms_mean_over_repeats']:.3f}ms "
-                f"p95={model_summary['latency_p95_ms_mean_over_repeats']:.3f}ms "
-                f"tps={model_summary['throughput_samples_per_s_mean_over_repeats']:.1f}"
-            )
+                p50 = model_summary["latency_p50_ms_mean_over_repeats"]
+                p95 = model_summary["latency_p95_ms_mean_over_repeats"]
+                tps = model_summary["throughput_samples_per_s_mean_over_repeats"]
+                print(
+                    f"[model_only] {variant_name} batch={actual_bs}: "
+                    f"p50={p50:.3f}ms p95={p95:.3f}ms tps={tps:.1f}"
+                )
 
-            # --- end-to-end: raw DataFrame -> preprocessor -> model ---
-            e2e_repeat_stats = []
-            for repeat_idx in range(repeats):
-                if variant["kind"] == "torch":
-                    runner = _e2e_torch_runner(
-                        variant["model"], preprocessor, raw_batch, device
+            if "end_to_end" in scopes:
+                # --- end-to-end: raw DataFrame -> preprocessor -> model ---
+                e2e_repeat_stats = []
+                for repeat_idx in range(repeats):
+                    if variant["kind"] == "torch":
+                        runner = _e2e_torch_runner(
+                            variant["model"], preprocessor, raw_batch, device
+                        )
+                    else:
+                        runner = _e2e_ort_runner(
+                            variant["session"], preprocessor, raw_batch
+                        )
+                    stats = _time_callable(runner, warmup=warmup, timed=timed)
+                    stats["repeat"] = repeat_idx + 1
+                    stats["throughput_samples_per_s"] = (
+                        actual_bs / (stats["latency_mean_ms"] / 1000.0)
+                        if stats["latency_mean_ms"] > 0
+                        else float("nan")
                     )
-                else:
-                    runner = _e2e_ort_runner(
-                        variant["session"], preprocessor, raw_batch
-                    )
-                stats = _time_callable(runner, warmup=warmup, timed=timed)
-                stats["repeat"] = repeat_idx + 1
-                stats["throughput_samples_per_s"] = (
-                    actual_bs / (stats["latency_mean_ms"] / 1000.0)
-                    if stats["latency_mean_ms"] > 0
-                    else float("nan")
+                    e2e_repeat_stats.append(stats)
+                e2e_summary = _summarize_timed(e2e_repeat_stats)
+                e2e_rows.append(
+                    {
+                        "scope": "end_to_end",
+                        "variant": variant_name,
+                        "batch_size": actual_bs,
+                        "model_size_bytes": variant["size_bytes"],
+                        **e2e_summary,
+                        "repeats": e2e_repeat_stats,
+                        "quality_metrics": quality[variant_name],
+                    }
                 )
-                e2e_repeat_stats.append(stats)
-            e2e_summary = _summarize_timed(e2e_repeat_stats)
-            e2e_rows.append(
-                {
-                    "scope": "end_to_end",
-                    "variant": variant_name,
-                    "batch_size": actual_bs,
-                    "model_size_bytes": variant["size_bytes"],
-                    **e2e_summary,
-                    "repeats": e2e_repeat_stats,
-                    "quality_metrics": quality[variant_name],
-                }
-            )
-            print(
-                f"[end_to_end] {variant_name} batch={actual_bs}: "
-                f"p50={e2e_summary['latency_p50_ms_mean_over_repeats']:.3f}ms "
-                f"p95={e2e_summary['latency_p95_ms_mean_over_repeats']:.3f}ms "
-                f"tps={e2e_summary['throughput_samples_per_s_mean_over_repeats']:.1f}"
-            )
+                p50 = e2e_summary["latency_p50_ms_mean_over_repeats"]
+                p95 = e2e_summary["latency_p95_ms_mean_over_repeats"]
+                tps = e2e_summary["throughput_samples_per_s_mean_over_repeats"]
+                print(
+                    f"[end_to_end] {variant_name} batch={actual_bs}: "
+                    f"p50={p50:.3f}ms p95={p95:.3f}ms tps={tps:.1f}"
+                )
 
     from src.config import nn_checkpoint_path
 
@@ -339,7 +379,11 @@ def benchmark_cpu() -> dict[str, Any]:
                 "для всех backend и обоих scopes."
             ),
             "memory": "psutil RSS процесса до/после серии model-only замеров",
-            "threads": configure_cpu_threads(),
+            "threads": threads_used,
+            "cold_start": "first call before warmup, reported separately",
+            "percentiles": (
+                "p50/p95/p99 over timed samples; means averaged across repeats"
+            ),
         },
         "model_sizes_bytes": {
             "pytorch_checkpoint": ckpt.stat().st_size if ckpt.is_file() else None,
@@ -353,22 +397,56 @@ def benchmark_cpu() -> dict[str, Any]:
         "results": model_only_rows,
         "status": "completed",
     }
-    dump_json(artifacts_dir() / "benchmark_cpu.json", report)
-    print(f"Отчёт: {artifacts_dir() / 'benchmark_cpu.json'}")
+    out = Path(output_path) if output_path else artifacts_dir() / "benchmark_cpu.json"
+    dump_json(out, report)
+    print(f"Отчёт: {out}")
     return report
 
 
-def benchmark_gpu() -> dict[str, Any]:
-    """Отдельный GPU-сценарий. Без CUDA возвращает SKIPPED."""
+def benchmark_gpu(
+    *,
+    batch_sizes: list[int] | None = None,
+    output_path: Any | None = None,
+    allow_cpu_fallback: bool = False,
+) -> dict[str, Any]:
+    """GPU scenario. Without CUDA returns BLOCKED_NO_GPU (never invents latency)."""
+    from pathlib import Path
+
+    import onnxruntime as ort
+
     configure_cpu_threads()
-    if not torch.cuda.is_available():
+    providers = list(ort.get_available_providers())
+    cuda_available = bool(torch.cuda.is_available())
+    has_cuda_ep = any("CUDA" in p for p in providers)
+
+    if not cuda_available or not has_cuda_ep:
+        # Never emit CPU timings under a GPU device label.
+        if allow_cpu_fallback:
+            raise RuntimeError(
+                "GPU benchmark refuses CPU fallback: set up CUDA + "
+                "CUDAExecutionProvider, or accept BLOCKED_NO_GPU "
+                "(allow_cpu_fallback cannot fabricate GPU latency)."
+            )
         report = {
             "device": "cuda",
-            "status": "SKIPPED",
-            "reason": "GPU/CUDA недоступна на этой машине",
+            "status": "BLOCKED_NO_GPU",
+            "torch_cuda_is_available": cuda_available,
+            "onnxruntime_providers": providers,
+            "cuda_execution_provider_present": has_cuda_ep,
+            "reason": (
+                "No usable GPU for measured CUDA/ORT-CUDA inference. "
+                "CPU numbers must not be reported as GPU results."
+            ),
+            "colab_instructions": (
+                "See docs/gpu_benchmark_colab.md — run the same "
+                "python -m src.nn.benchmark --device cuda on a GPU runtime."
+            ),
         }
-        dump_json(artifacts_dir() / "benchmark_gpu.json", report)
-        print("GPU benchmark: SKIPPED (CUDA unavailable)")
+        out = (
+            Path(output_path) if output_path else artifacts_dir() / "benchmark_gpu.json"
+        )
+        dump_json(out, report)
+        print(f"GPU benchmark: BLOCKED_NO_GPU -> {out}")
         return report
 
     params = load_params()
@@ -376,13 +454,23 @@ def benchmark_gpu() -> dict[str, Any]:
     warmup = int(bench.get("warmup_runs", 20))
     timed = int(bench.get("timed_runs", 100))
     repeats = int(bench.get("repeats", 3))
-    batch_sizes = [int(item) for item in bench.get("batch_sizes", [1, 16, 64, 256])]
+    batch_sizes = [
+        int(item)
+        for item in (
+            batch_sizes
+            if batch_sizes is not None
+            else bench.get("batch_sizes", [1, 16, 64, 256])
+        )
+    ]
 
     _raw_features, features, _y_true = _load_raw_and_features()
     model, _payload = load_checkpoint(map_location="cpu")
     device = torch.device("cuda")
     model = model.to(device)
     model.eval()
+    # Confirm we are not silently on CPU
+    if next(model.parameters()).device.type != "cuda":
+        raise RuntimeError("Model not on CUDA — refusing fake GPU benchmark")
 
     rows = []
     for batch_size in batch_sizes:
@@ -413,11 +501,14 @@ def benchmark_gpu() -> dict[str, Any]:
     report = {
         "device": "cuda",
         "status": "completed",
+        "status_alias": "VERIFIED_GPU",
         "cuda_device_name": torch.cuda.get_device_name(0),
+        "onnxruntime_providers": providers,
         "results": rows,
     }
-    dump_json(artifacts_dir() / "benchmark_gpu.json", report)
-    print(f"GPU benchmark completed: {artifacts_dir() / 'benchmark_gpu.json'}")
+    out = Path(output_path) if output_path else artifacts_dir() / "benchmark_gpu.json"
+    dump_json(out, report)
+    print(f"GPU benchmark completed: {out}")
     return report
 
 
@@ -429,11 +520,29 @@ def main() -> None:
         default="cpu",
         help="cpu — полный сравнительный прогон; cuda/gpu — отдельный GPU сценарий",
     )
+    parser.add_argument(
+        "--batch-sizes",
+        default="",
+        help="Comma-separated batch sizes (default: params.yaml benchmark.batch_sizes)",
+    )
+    parser.add_argument(
+        "--threads",
+        type=int,
+        default=None,
+        help="CPU torch/ORT thread count (cpu device only)",
+    )
+    parser.add_argument("--output", default="", help="Optional JSON output path")
     args = parser.parse_args()
+    batches = (
+        [int(x) for x in args.batch_sizes.split(",") if x.strip()]
+        if args.batch_sizes.strip()
+        else None
+    )
+    out = args.output or None
     if args.device in {"cuda", "gpu"}:
-        benchmark_gpu()
+        benchmark_gpu(batch_sizes=batches, output_path=out)
     else:
-        benchmark_cpu()
+        benchmark_cpu(batch_sizes=batches, num_threads=args.threads, output_path=out)
 
 
 if __name__ == "__main__":

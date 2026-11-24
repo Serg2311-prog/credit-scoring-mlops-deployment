@@ -141,6 +141,13 @@ def run_parity(
     )
     all_ok = all_ok and full_passed
 
+    thr = float(nn_params.get("threshold", 0.5))
+    torch_cls = (torch_prob_full >= thr).astype(int)
+    ort_cls = (ort_prob_full >= thr).astype(int)
+    class_agree = float(np.mean(torch_cls == ort_cls))
+    full_stats["class_agreement_rate"] = class_agree
+    full_stats["threshold"] = thr
+
     report = {
         "onnx_path": str(onnx_file),
         "n_test_rows": int(len(features)),
@@ -157,6 +164,7 @@ def run_parity(
         "batches": batch_reports,
         "full_test": {"passed": bool(full_passed), **full_stats},
         "passed": bool(all_ok),
+        "result": "PASS" if all_ok else "FAIL",
     }
     dump_json(artifacts_dir() / "onnx_parity.json", report)
     print(f"Parity overall passed={all_ok}")

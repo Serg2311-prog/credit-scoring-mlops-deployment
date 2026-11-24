@@ -1,0 +1,16 @@
+{
+  "result": "PASS",
+  "passed": true,
+  "n_test_rows": 6000,
+  "full_test": {
+    "passed": true,
+    "mae": 1.0526087647045e-08,
+    "max_abs": 7.083860929790742e-08,
+    "rmse": 1.582388451619614e-08,
+    "n": 6000,
+    "class_agreement_rate": 1.0,
+    "threshold": 0.5
+  },
+  "parity_atol": 1e-05,
+  "parity_mae_atol": 1e-06
+}

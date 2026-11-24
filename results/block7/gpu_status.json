@@ -1,0 +1,12 @@
+{
+  "device": "cuda",
+  "status": "BLOCKED_NO_GPU",
+  "torch_cuda_is_available": false,
+  "onnxruntime_providers": [
+    "AzureExecutionProvider",
+    "CPUExecutionProvider"
+  ],
+  "cuda_execution_provider_present": false,
+  "reason": "No usable GPU for measured CUDA/ORT-CUDA inference. CPU numbers must not be reported as GPU results.",
+  "colab_instructions": "See docs/gpu_benchmark_colab.md \u2014 run the same python -m src.nn.benchmark --device cuda on a GPU runtime."
+}
