@@ -1,0 +1,24 @@
+# Static scoring UI + nginx reverse-proxy to the inference API.
+FROM nginx:1.27-alpine
+
+RUN apk add --no-cache gettext \
+    && rm -rf /usr/share/nginx/html/*
+
+COPY frontend/index.html frontend/styles.css frontend/app.js /usr/share/nginx/html/
+COPY frontend/nginx.conf.template /etc/nginx/nginx.conf.template
+COPY frontend/docker-entrypoint.sh /docker-entrypoint-frontend.sh
+RUN sed -i 's/\r$//' /docker-entrypoint-frontend.sh \
+    && chmod +x /docker-entrypoint-frontend.sh \
+    && chown -R nginx:nginx /usr/share/nginx/html \
+    && mkdir -p /var/cache/nginx /var/run /var/log/nginx \
+    && chown -R nginx:nginx /var/cache/nginx /var/run /var/log/nginx /etc/nginx \
+    && mkdir -p /tmp/client_temp /tmp/proxy_temp /tmp/fastcgi_temp /tmp/uwsgi_temp /tmp/scgi_temp \
+    && chown -R nginx:nginx /tmp
+
+ENV API_UPSTREAM=api:8000
+EXPOSE 8080
+USER nginx
+HEALTHCHECK --interval=20s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget -qO- http://127.0.0.1:8080/healthz | grep -q ok
+
+ENTRYPOINT ["/docker-entrypoint-frontend.sh"]

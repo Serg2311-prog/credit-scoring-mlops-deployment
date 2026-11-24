@@ -10,6 +10,8 @@ __pycache__
 mlruns
 mlartifacts
 data
+!data/dvc_tracked/
+!data/dvc_tracked/.gitkeep
 artifacts
 notebooks
 docs
@@ -17,7 +19,10 @@ tests
 tools
 infra
 k8s
-scripts
+# Keep DVC pipeline scripts available for the API image DVC stage.
+scripts/*
+!scripts/dvc/
+!scripts/dvc/**
 _source_audit
 *.md
 .env

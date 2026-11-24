@@ -16,7 +16,7 @@
 | `terraform apply` / YC production | **`not_executed`** |
 | Полный Airflow Docker E2E | **`not_executed`** (не утверждается) |
 | Auto-promote модели | **запрещён** (`auto_promote=false`) |
-| Рабочий DVC pipeline (`dvc.yaml` + remote) | **отсутствует** в этом репо (`partial` / documented gap) |
+| Рабочий DVC pipeline (`dvc.yaml` + local remote) | **есть** (synthetic demo; см. `docs/stage3_completion_report.md`) |
 
 Секции §1 и §9 ниже сохраняют **исторический** аудит исходного проекта и проверки этапа 0.
 Актуальная матрица статусов: [`docs/requirements_matrix.md`](requirements_matrix.md).
@@ -155,8 +155,8 @@ Raw client features (23 cols)
 [CI/CD] GitHub Actions: build→test→scans→(optional dry-run deploy)
 ```
 
-**Факт после реализации:** минимальный frontend / Ingress остаются вне обязательного объёма (`planned`).
-DVC remote в этом репозитории не настроен; prepare идёт через скрипты/`params.yaml`.
+**Факт после реализации:** frontend, Ingress и DVC demo-pipeline реализованы и локально проверены
+(см. `docs/stage3_completion_report.md`). NetworkPolicy enforcement на kindnet — PARTIAL.
 
 ### 2.2. Выбор облачного провайдера
 
@@ -238,8 +238,8 @@ credit-scoring-mlops-deployment/
 ### 3.2. Факт после этапов 1–7
 
 - Каркас + код этапов **1–7 реализованы** (см. README и matrix).
-- **Нет** рабочего `dvc.yaml` / DVC remote в этом репозитории.
-- **Нет** обязательного frontend / Ingress (`planned`).
+- DVC demo-pipeline + local remote: `verified_local` (не UCI raw; не production ONNX outs).
+- Frontend / Ingress: `verified_local` (host kind `:8080` может требовать recreate).
 - DAG: `airflow_home/dags/credit_scoring_retraining.py`.
 - Compose-профили разделены: API, observability, airflow (не поднимать всё сразу на 8 GB).
 
@@ -323,7 +323,7 @@ credit-scoring-mlops-deployment/
 | 0 | Аудит + план + матрица | Готово | `verified_local` |
 | 1 | PyTorch NN, ONNX, quant, CPU bench | Готово | `verified_local` (GPU: skip) |
 | 2 | Terraform modules (YC) | Готово | fmt/validate local+CI; **apply `not_executed`** |
-| 3 | Docker, kind/Kustomize, API | Готово (DVC pipeline / frontend — gaps) | `verified_local`; DVC `partial` |
+| 3 | Docker, kind/Kustomize, frontend, Ingress, DVC | Готово локально | `verified_local`; NP enforcement `partial` |
 | 4 | GitHub Actions | Готово | **verified_ci** на `65de3ad` (5 workflows); prod deploy `not_executed` |
 | 5 | Observability stack | Готово локально | `verified_local`; cloud obs `not_executed` |
 | 6 | Evidently, quality signals, A/B | Готово | `verified_local`; **no auto-promote** |
@@ -430,7 +430,7 @@ black --check src tests
 1. **Нет** cloud `terraform apply` и **нет** production в Yandex Cloud.
 2. **Нет** утверждения полного Airflow Docker E2E.
 3. **Нет** auto-promote candidate/challenger в production.
-4. **Нет** подтверждённого рабочего DVC pipeline/remote в этом репо.
-5. Frontend / Ingress остаются `planned`, если не появятся отдельно.
+4. DVC demo-pipeline подтверждён локально; cloud remote — по желанию позже.
+5. Frontend / Ingress подтверждены локально; NP deny/allow на kindnet не enforce.
 
 Дальнейшие действия (вне обязательного DoD сдачи): ручной promotion модели после review; опциональный Airflow compose при свободной RAM; cloud apply только после явного подтверждения.

@@ -14,3 +14,6 @@ images:
   - name: credit-scoring-models
     newName: credit-scoring-models
     newTag: stage3a
+  - name: credit-scoring-frontend
+    newName: credit-scoring-frontend
+    newTag: stage3a

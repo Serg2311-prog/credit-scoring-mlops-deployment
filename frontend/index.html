@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Credit Scoring</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <p class="brand">Credit Scoring</p>
+        <h1>Оценка риска дефолта</h1>
+        <p class="lead">
+          Отправьте признаки клиента в inference API и получите вероятность
+          дефолта от производственной ONNX-модели.
+        </p>
+        <div class="status-row" id="api-status" aria-live="polite">
+          Проверка API…
+        </div>
+      </header>
+
+      <main>
+        <form id="score-form" novalidate>
+          <section class="block">
+            <h2>Клиент</h2>
+            <div class="grid">
+              <label>
+                LIMIT_BAL
+                <input name="LIMIT_BAL" type="number" min="0" step="any" value="20000" required />
+              </label>
+              <label>
+                SEX
+                <select name="SEX" required>
+                  <option value="1">1 — male</option>
+                  <option value="2" selected>2 — female</option>
+                </select>
+              </label>
+              <label>
+                EDUCATION
+                <input name="EDUCATION" type="number" min="0" max="6" value="2" required />
+              </label>
+              <label>
+                MARRIAGE
+                <input name="MARRIAGE" type="number" min="0" max="3" value="1" required />
+              </label>
+              <label>
+                AGE
+                <input name="AGE" type="number" min="18" max="100" value="24" required />
+              </label>
+            </div>
+          </section>
+
+          <section class="block">
+            <h2>Статус платежей PAY_0…PAY_6</h2>
+            <div class="grid six">
+              <label>PAY_0 <input name="PAY_0" type="number" min="-2" max="8" value="2" required /></label>
+              <label>PAY_2 <input name="PAY_2" type="number" min="-2" max="8" value="2" required /></label>
+              <label>PAY_3 <input name="PAY_3" type="number" min="-2" max="8" value="-1" required /></label>
+              <label>PAY_4 <input name="PAY_4" type="number" min="-2" max="8" value="-1" required /></label>
+              <label>PAY_5 <input name="PAY_5" type="number" min="-2" max="8" value="-2" required /></label>
+              <label>PAY_6 <input name="PAY_6" type="number" min="-2" max="8" value="-2" required /></label>
+            </div>
+          </section>
+
+          <section class="block">
+            <h2>Счета BILL_AMT1…6</h2>
+            <div class="grid six">
+              <label>BILL_AMT1 <input name="BILL_AMT1" type="number" step="any" value="3913" required /></label>
+              <label>BILL_AMT2 <input name="BILL_AMT2" type="number" step="any" value="3102" required /></label>
+              <label>BILL_AMT3 <input name="BILL_AMT3" type="number" step="any" value="689" required /></label>
+              <label>BILL_AMT4 <input name="BILL_AMT4" type="number" step="any" value="0" required /></label>
+              <label>BILL_AMT5 <input name="BILL_AMT5" type="number" step="any" value="0" required /></label>
+              <label>BILL_AMT6 <input name="BILL_AMT6" type="number" step="any" value="0" required /></label>
+            </div>
+          </section>
+
+          <section class="block">
+            <h2>Платежи PAY_AMT1…6</h2>
+            <div class="grid six">
+              <label>PAY_AMT1 <input name="PAY_AMT1" type="number" min="0" step="any" value="0" required /></label>
+              <label>PAY_AMT2 <input name="PAY_AMT2" type="number" min="0" step="any" value="689" required /></label>
+              <label>PAY_AMT3 <input name="PAY_AMT3" type="number" min="0" step="any" value="0" required /></label>
+              <label>PAY_AMT4 <input name="PAY_AMT4" type="number" min="0" step="any" value="0" required /></label>
+              <label>PAY_AMT5 <input name="PAY_AMT5" type="number" min="0" step="any" value="0" required /></label>
+              <label>PAY_AMT6 <input name="PAY_AMT6" type="number" min="0" step="any" value="0" required /></label>
+            </div>
+          </section>
+
+          <div class="actions">
+            <button type="submit" id="submit-btn">Рассчитать скоринг</button>
+            <button type="button" id="fill-demo" class="secondary">Демо-значения</button>
+          </div>
+        </form>
+
+        <section class="result" id="result" hidden>
+          <h2>Результат</h2>
+          <dl>
+            <div><dt>Вероятность дефолта</dt><dd id="out-proba">—</dd></div>
+            <div><dt>Предсказание</dt><dd id="out-pred">—</dd></div>
+            <div><dt>Версия модели</dt><dd id="out-model">—</dd></div>
+            <div><dt>request_id</dt><dd id="out-rid">—</dd></div>
+          </dl>
+          <pre id="out-raw" class="raw"></pre>
+        </section>
+
+        <p class="error" id="error" hidden></p>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>

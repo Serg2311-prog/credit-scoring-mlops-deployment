@@ -13,6 +13,10 @@ build/
 data/raw/*.csv
 data/processed/*
 !data/processed/.gitkeep
+data/dvc_tracked/*
+!data/dvc_tracked/.gitkeep
+!data/dvc_tracked/*.dvc
+!data/dvc_tracked/.gitignore
 models/*
 !models/.gitkeep
 !models/model_registry.json
@@ -25,6 +29,11 @@ mlartifacts/
 .airflow_home/
 airflow_home/logs/*
 !airflow_home/logs/.gitkeep
+
+# DVC local remote/cache (pointers + dvc.lock stay in Git)
+.dvc_remote/
+.dvc/cache/
+.dvc/tmp/
 
 # Secrets / local env
 .env

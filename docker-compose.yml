@@ -1,4 +1,4 @@
-# Inference API (Stage 2+). Observability stack: docker-compose.observability.yml
+# Inference API + frontend UI (Stage 3). Observability: docker-compose.observability.yml
 #   docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d --build
 
 services:
@@ -40,6 +40,25 @@ services:
     cpus: 1.0
     mem_limit: 1536m
     mem_reservation: 512m
+    networks:
+      - default
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    image: credit-scoring-frontend:stage3
+    container_name: credit-scoring-frontend
+    ports:
+      - "8081:8080"
+    environment:
+      API_UPSTREAM: api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    cpus: 0.25
+    mem_limit: 128m
     networks:
       - default
 

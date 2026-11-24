@@ -1,0 +1,86 @@
+schema: '2.0'
+stages:
+  generate_demo:
+    cmd: python scripts/dvc/generate_demo_dataset.py --output 
+      data/dvc_tracked/raw_demo.csv --rows 200 --seed 42
+    deps:
+    - path: scripts/dvc/generate_demo_dataset.py
+      hash: md5
+      md5: 830b78409b86e642474e167599c793b7
+      size: 807
+    - path: src/data/synthetic.py
+      hash: md5
+      md5: dee7ecacde2cf903d67eeaf16fed1031
+      size: 1761
+    - path: src/schema.py
+      hash: md5
+      md5: eece0a014470f75af2295145824b6ced
+      size: 2156
+    outs:
+    - path: data/dvc_tracked/raw_demo.csv
+      hash: md5
+      md5: 407c92b0719a1d2daa7ea45045d0ff2b
+      size: 28069
+  prepare_demo:
+    cmd: python scripts/dvc/prepare_demo_dataset.py --input 
+      data/dvc_tracked/raw_demo.csv --out-dir data/dvc_tracked --seed 42
+    deps:
+    - path: data/dvc_tracked/raw_demo.csv
+      hash: md5
+      md5: 407c92b0719a1d2daa7ea45045d0ff2b
+      size: 28069
+    - path: scripts/dvc/prepare_demo_dataset.py
+      hash: md5
+      md5: 4ee2c775aa816220ce2b3bd38cdf8896
+      size: 1827
+    - path: src/data/validation.py
+      hash: md5
+      md5: 2dd5f3ac65f409ccf92dadd874caeff2
+      size: 4822
+    - path: src/schema.py
+      hash: md5
+      md5: eece0a014470f75af2295145824b6ced
+      size: 2156
+    outs:
+    - path: data/dvc_tracked/demo_meta.json
+      hash: md5
+      md5: 9621bd038fe12353ad167c5e259136c5
+      size: 220
+    - path: data/dvc_tracked/test_demo.csv
+      hash: md5
+      md5: 1ee030099102a80f8d90a48112ec7317
+      size: 7186
+    - path: data/dvc_tracked/train_demo.csv
+      hash: md5
+      md5: 49f5581dfb3f52a7d50592077aac9797
+      size: 21098
+  validate_ml_ready:
+    cmd: python scripts/dvc/validate_demo_for_ml.py --train 
+      data/dvc_tracked/train_demo.csv --test data/dvc_tracked/test_demo.csv 
+      --output data/dvc_tracked/train_smoke_metrics.json --seed 42
+    deps:
+    - path: data/dvc_tracked/test_demo.csv
+      hash: md5
+      md5: 1ee030099102a80f8d90a48112ec7317
+      size: 7186
+    - path: data/dvc_tracked/train_demo.csv
+      hash: md5
+      md5: 49f5581dfb3f52a7d50592077aac9797
+      size: 21098
+    - path: scripts/dvc/validate_demo_for_ml.py
+      hash: md5
+      md5: 68a5d3478f4ec634b2d42f6cbb4203e5
+      size: 3396
+    - path: src/data/validation.py
+      hash: md5
+      md5: 2dd5f3ac65f409ccf92dadd874caeff2
+      size: 4822
+    - path: src/schema.py
+      hash: md5
+      md5: eece0a014470f75af2295145824b6ced
+      size: 2156
+    outs:
+    - path: data/dvc_tracked/train_smoke_metrics.json
+      hash: md5
+      md5: a5238559b25568568356ab8ba769d1b9
+      size: 682

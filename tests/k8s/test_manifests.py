@@ -39,11 +39,21 @@ def test_required_files_exist():
         BASE / "configmap.yaml",
         BASE / "deployment.yaml",
         BASE / "service.yaml",
+        BASE / "frontend-deployment.yaml",
+        BASE / "frontend-service.yaml",
+        BASE / "ingress.yaml",
+        BASE / "networkpolicy.yaml",
         BASE / "kustomization.yaml",
         BASE / "secret.example.yaml",
         OVERLAY / "kustomization.yaml",
         OVERLAY / "patch-resources.yaml",
         ROOT / "docker" / "Dockerfile.models",
+        ROOT / "docker" / "Dockerfile.frontend",
+        ROOT / "docker" / "Dockerfile.dvcdata",
+        ROOT / "frontend" / "index.html",
+        ROOT / "frontend" / "app.js",
+        ROOT / "dvc.yaml",
+        ROOT / "dvc.lock",
     ]
     for path in required:
         assert path.is_file(), f"missing {path}"
@@ -83,9 +93,48 @@ def test_no_real_secret_manifests_in_git():
 def test_kustomize_renders_expected_resources():
     docs = _load_kustomize()
     kinds = {d["kind"] for d in docs}
-    assert {"Namespace", "ConfigMap", "Deployment", "Service"} <= kinds
+    assert {
+        "Namespace",
+        "ConfigMap",
+        "Deployment",
+        "Service",
+        "Ingress",
+        "NetworkPolicy",
+    } <= kinds
     assert "Secret" not in kinds
-    assert "Ingress" not in kinds
+    deployments = {d["metadata"]["name"] for d in _by_kind(docs, "Deployment")}
+    assert {
+        "credit-scoring-api",
+        "credit-scoring-frontend",
+    } <= deployments
+    policies = {d["metadata"]["name"] for d in _by_kind(docs, "NetworkPolicy")}
+    assert {
+        "default-deny-ingress",
+        "allow-frontend",
+        "allow-api",
+    } <= policies
+    allow_api = next(
+        d
+        for d in _by_kind(docs, "NetworkPolicy")
+        if d["metadata"]["name"] == "allow-api"
+    )
+    api_from = allow_api["spec"]["ingress"][0].get("from") or []
+    assert any(
+        (f.get("podSelector") or {})
+        .get("matchLabels", {})
+        .get("app.kubernetes.io/name")
+        == "credit-scoring-frontend"
+        for f in api_from
+    )
+    assert any(
+        (f.get("namespaceSelector") or {})
+        .get("matchLabels", {})
+        .get("kubernetes.io/metadata.name")
+        == "ingress-nginx"
+        for f in api_from
+    )
+    ingress = _by_kind(docs, "Ingress")[0]
+    assert ingress["spec"]["ingressClassName"] == "nginx"
 
 
 def test_deployment_security_and_probes():

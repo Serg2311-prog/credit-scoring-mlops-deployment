@@ -1,0 +1,50 @@
+# DVC-integrated data image (synthetic demo only).
+# Keeps DVC tooling out of the inference API runtime image.
+# Build: docker build -f docker/Dockerfile.dvcdata -t credit-scoring-dvc-data:local .
+FROM python:3.12-slim-bookworm AS dvc
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/workspace \
+    DVC_ANALYTICS=false
+
+WORKDIR /workspace
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir \
+        "dvc>=3.55,<4" \
+        "pandas>=2.2.3,<3" \
+        "scikit-learn>=1.5" \
+        "numpy>=1.26" \
+        "PyYAML>=6.0" \
+        "pandera>=0.20"
+
+COPY .dvc ./.dvc
+COPY dvc.yaml ./dvc.yaml
+COPY dvc.lock ./dvc.lock
+COPY scripts/dvc ./scripts/dvc
+COPY src ./src
+COPY params.yaml ./params.yaml
+
+# Minimal git workspace required by DVC; then repro → push → pull proves remote I/O.
+RUN git init -q \
+    && git config user.email "dvc-builder@local" \
+    && git config user.name "dvc-builder" \
+    && git add dvc.yaml dvc.lock .dvc scripts src params.yaml \
+    && git commit -qm "dvc docker build context" \
+    && mkdir -p .dvc_remote data/dvc_tracked \
+    && dvc repro --force \
+    && dvc push \
+    && rm -rf data/dvc_tracked/*.csv data/dvc_tracked/*.json \
+    && dvc pull -v \
+    && test -f data/dvc_tracked/train_demo.csv \
+    && test -f data/dvc_tracked/train_smoke_metrics.json \
+    && python -c "import json; m=json.load(open('data/dvc_tracked/train_smoke_metrics.json')); assert m['writes_production_models'] is False"
+
+# Final image: versioned data only (no pip/dvc/git).
+FROM busybox:1.36 AS runtime
+WORKDIR /data
+COPY --from=dvc /workspace/data/dvc_tracked/ /data/dvc_tracked/
+USER nobody
+CMD ["sh", "-c", "ls -la /data/dvc_tracked && cat /data/dvc_tracked/demo_meta.json"]

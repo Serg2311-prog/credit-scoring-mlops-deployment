@@ -2,6 +2,8 @@
 param(
     [string]$ApiTag = "credit-scoring-api:ci",
     [string]$ModelsTag = "credit-scoring-models:ci",
+    [string]$FrontendTag = "credit-scoring-frontend:ci",
+    [string]$DvcTag = "credit-scoring-dvc-data:ci",
     [switch]$ForceSynthetic
 )
 
@@ -39,4 +41,12 @@ Write-Host "==> docker build models $ModelsTag"
 docker build -f docker/Dockerfile.models -t $ModelsTag .
 Assert-Exit "docker build models"
 
-Write-Host "OK: images built ($ApiTag, $ModelsTag)"
+Write-Host "==> docker build frontend $FrontendTag"
+docker build -f docker/Dockerfile.frontend -t $FrontendTag .
+Assert-Exit "docker build frontend"
+
+Write-Host "==> docker build DVC data $DvcTag"
+docker build -f docker/Dockerfile.dvcdata -t $DvcTag .
+Assert-Exit "docker build dvc"
+
+Write-Host "OK: images built ($ApiTag, $ModelsTag, $FrontendTag, $DvcTag)"

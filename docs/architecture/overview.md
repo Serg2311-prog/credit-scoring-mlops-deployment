@@ -19,17 +19,24 @@ flowchart LR
   API --> LOG[JSON logs]
 ```
 
-## Stage 3A — Local Kubernetes (kind)
+## Stage 3 — Local Kubernetes (kind) + frontend + Ingress
 
 ```mermaid
 flowchart TB
   Host[Windows + Docker Desktop] --> Kind[kind control-plane]
+  Kind --> IngNS[ingress-nginx]
   Kind --> NS[Namespace credit-scoring]
-  NS --> DEP[Deployment]
-  NS --> SVC[Service ClusterIP]
-  DEP --> INIT[initContainer models image]
-  DEP --> CTR[api]
+  IngNS --> Ing[Ingress credit-scoring]
+  Ing --> FE[frontend Service]
+  Ing --> API[api Service]
+  NS --> NP[NetworkPolicy deny/allow]
+  NS --> DEPAPI[Deployment api]
+  NS --> DEPFE[Deployment frontend]
+  DEPAPI --> INIT[initContainer models image]
+  DEPAPI --> CTR[api container]
 ```
+
+DVC (data versioning, separate from inference image): `dvc.yaml` → local remote → `docker/Dockerfile.dvcdata`.
 
 ## Stage 3B — Terraform (Yandex Cloud, code only)
 

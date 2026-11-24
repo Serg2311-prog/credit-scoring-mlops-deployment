@@ -19,6 +19,8 @@ jobs:
       PYTHONPATH: ${{ github.workspace }}
       API_IMAGE: credit-scoring-api:ci
       MODELS_IMAGE: credit-scoring-models:ci
+      FRONTEND_IMAGE: credit-scoring-frontend:ci
+      DVC_IMAGE: credit-scoring-dvc-data:ci
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -49,6 +51,12 @@ jobs:
 
       - name: Build models image
         run: docker build -f docker/Dockerfile.models -t "$MODELS_IMAGE" .
+
+      - name: Build frontend image
+        run: docker build -f docker/Dockerfile.frontend -t "$FRONTEND_IMAGE" .
+
+      - name: Build DVC data image
+        run: docker build -f docker/Dockerfile.dvcdata -t "$DVC_IMAGE" .
 
       - name: Prepare report directory
         run: mkdir -p artifacts/ci
@@ -91,6 +99,34 @@ jobs:
           output: artifacts/ci/trivy-models.json
           exit-code: "0"
           severity: CRITICAL,HIGH,MEDIUM
+
+      - name: Trivy scan frontend image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: credit-scoring-frontend:ci
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Trivy JSON report (frontend)
+        if: always()
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: credit-scoring-frontend:ci
+          format: json
+          output: artifacts/ci/trivy-frontend.json
+          exit-code: "0"
+          severity: CRITICAL,HIGH,MEDIUM
+
+      - name: Trivy scan DVC data image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: credit-scoring-dvc-data:ci
+          format: table
+          exit-code: "1"
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
 
       - name: Upload Trivy reports
         if: always()

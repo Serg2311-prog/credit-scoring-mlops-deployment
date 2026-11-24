@@ -147,46 +147,51 @@ terraform -chdir=infra/terraform/environments/staging validate
 
 ### Цель
 
-Упаковать inference в CPU Docker-образы и описать локальное развёртывание в kind/Kustomize. Зафиксировать подход к данным/артефактам.
+Упаковать inference в CPU Docker-образы (API + frontend), Ingress/NetworkPolicy и воспроизводимый DVC pipeline для demo-данных.
 
 ### Реализованные компоненты
 
-- Multi-stage Dockerfile API (`docker/Dockerfile.api`) и models image
-- `docker-compose.yml` для локального serving
-- Манифесты Kustomize: `k8s/base`, `k8s/overlays/local`, kind cluster config
-- PowerShell-скрипты create / build-load / deploy / smoke / rollback
-- Контракт API: raw UCI features → probability / decision
+- Multi-stage `docker/Dockerfile.api`, `Dockerfile.models`, `Dockerfile.frontend`, `Dockerfile.dvcdata`
+- Compose: API `:8000` + frontend UI `:8081` (nginx proxy `/api` → backend)
+- Kustomize: Deployment/Service frontend+API, Ingress, NetworkPolicy
+- kind config с port-mapping под ingress-nginx (пересоздание кластера нужно для host `:8080`)
 
 ### DVC
 
-Отдельного рабочего `dvc.yaml` / настроенного DVC remote в этом репозитории **нет**.
+Рабочий pipeline: `dvc.yaml` / `dvc.lock`, local remote `.dvc_remote/` (gitignored).
+Stages: generate → prepare → validate_ml_ready (smoke train **без** записи production models).
+DVC-in-Docker: отдельный образ `Dockerfile.dvcdata` (repro/push/pull); **не** раздувает API runtime.
 
-Данные и тяжёлые артефакты не коммитятся; подготовка описана через `params.yaml`, скрипты и CI synthetic artifacts. Полноценный DVC remote остаётся вне обязательного подтверждённого объёма.
+```powershell
+$env:PYTHONPATH = (Get-Location).Path
+$env:Path = "$(Resolve-Path .\.venv\Scripts);$env:Path"
+python -m dvc repro
+python -m dvc push
+docker build -f docker/Dockerfile.dvcdata -t credit-scoring-dvc-data:local .
+```
 
 ### Проверка
 
-- Локальный Docker smoke и API/ONNX parity (см. отчёты этапов serving/K8s)
-- kind-скрипты и offline-валидация манифестов в CI
-- Отчёты: [docs/docker_deployment.md](docs/docker_deployment.md), [docs/kubernetes_local_deployment.md](docs/kubernetes_local_deployment.md)
+- Compose UI+API smoke; Ingress E2E через `kubectl -n ingress-nginx port-forward svc/ingress-nginx-controller`
+- NetworkPolicy: манифесты verified; enforcement на kindnet = **не подтверждён**
+- Отчёт: [docs/stage3_completion_report.md](docs/stage3_completion_report.md)
 
 ### Документация
 
 - [docs/api_contract.md](docs/api_contract.md)
 - [docs/docker_deployment.md](docs/docker_deployment.md)
-- [docs/stage2_validation_report.md](docs/stage2_validation_report.md)
 - [docs/kubernetes_local_deployment.md](docs/kubernetes_local_deployment.md)
-- [docs/stage3a_validation_report.md](docs/stage3a_validation_report.md)
+- [docs/stage3_completion_report.md](docs/stage3_completion_report.md)
 - [k8s/README.md](k8s/README.md)
 
 ```powershell
 docker compose up -d --build
+# UI http://127.0.0.1:8081
 ```
 
 ```powershell
-.\scripts\k8s_create.ps1
-.\scripts\k8s_build_load.ps1
-.\scripts\k8s_deploy.ps1
-.\scripts\k8s_smoke.ps1
+.\scripts\k8s_ingress_e2e.ps1
+.\scripts\k8s_networkpolicy_verify.ps1
 ```
 
 ---

@@ -79,6 +79,8 @@ def test_docker_ci_builds_and_scans():
     text = _text("ci-docker.yml")
     assert "Dockerfile.api" in text
     assert "Dockerfile.models" in text
+    assert "Dockerfile.frontend" in text
+    assert "Dockerfile.dvcdata" in text
     assert "trivy" in text.lower()
     uses = _uses_lines(text)
     assert any(u.startswith(TRIVY_SHA) for u in uses)

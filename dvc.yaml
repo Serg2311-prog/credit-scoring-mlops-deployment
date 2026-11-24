@@ -1,0 +1,47 @@
+# Reproducible synthetic ML-demo data pipeline (no real credit/PII in Git).
+# Local remote: `.dvc_remote/` (gitignored). Production ONNX models are NOT DVC outs.
+stages:
+  generate_demo:
+    cmd: >-
+      python scripts/dvc/generate_demo_dataset.py
+      --output data/dvc_tracked/raw_demo.csv
+      --rows 200
+      --seed 42
+    deps:
+      - scripts/dvc/generate_demo_dataset.py
+      - src/data/synthetic.py
+      - src/schema.py
+    outs:
+      - data/dvc_tracked/raw_demo.csv
+
+  prepare_demo:
+    cmd: >-
+      python scripts/dvc/prepare_demo_dataset.py
+      --input data/dvc_tracked/raw_demo.csv
+      --out-dir data/dvc_tracked
+      --seed 42
+    deps:
+      - scripts/dvc/prepare_demo_dataset.py
+      - data/dvc_tracked/raw_demo.csv
+      - src/data/validation.py
+      - src/schema.py
+    outs:
+      - data/dvc_tracked/train_demo.csv
+      - data/dvc_tracked/test_demo.csv
+      - data/dvc_tracked/demo_meta.json
+
+  validate_ml_ready:
+    cmd: >-
+      python scripts/dvc/validate_demo_for_ml.py
+      --train data/dvc_tracked/train_demo.csv
+      --test data/dvc_tracked/test_demo.csv
+      --output data/dvc_tracked/train_smoke_metrics.json
+      --seed 42
+    deps:
+      - scripts/dvc/validate_demo_for_ml.py
+      - data/dvc_tracked/train_demo.csv
+      - data/dvc_tracked/test_demo.csv
+      - src/data/validation.py
+      - src/schema.py
+    outs:
+      - data/dvc_tracked/train_smoke_metrics.json

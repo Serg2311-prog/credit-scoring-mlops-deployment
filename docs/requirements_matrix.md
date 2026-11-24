@@ -124,20 +124,21 @@
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
 | 3.1 | Multi-stage Dockerfile | Backend multi-stage | `docker/Dockerfile.api` | `verified_local` |
-| 3.2 | Отдельные backend/frontend образы | Два Dockerfile | frontend отсутствует | `planned` |
-| 3.3 | FastAPI inference | `/predict` + health | compose / tests | `verified_local` |
-| 3.4 | Минимальный frontend | Demo UI | отсутствует | `planned` |
-| 3.5 | DVC-интеграция артефактов | Рабочий DVC pipeline/remote | **нет `dvc.yaml` в репо** | `partial` (документировано отсутствие; **не** verified pipeline) |
+| 3.2 | Отдельные backend/frontend образы | API + frontend Dockerfiles | `Dockerfile.frontend` + compose/k8s | `verified_local` |
+| 3.3 | FastAPI inference | `/predict` + health | compose / Ingress E2E | `verified_local` |
+| 3.4 | Минимальный frontend | Demo UI → API | `frontend/` + compose `:8081` | `verified_local` |
+| 3.5 | DVC-интеграция артефактов | pipeline + local remote + Docker | `dvc.yaml` / `Dockerfile.dvcdata` | `verified_local` (synthetic demo; не UCI raw) |
 | 3.6 | K8s Deployment rolling update | `RollingUpdate` | манифест + kind | `verified_local` |
-| 3.7 | Service | ClusterIP | манифест + port-forward | `verified_local` |
-| 3.8 | Ingress | Ingress resource | отсутствует | `planned` |
+| 3.7 | Service | ClusterIP API+frontend | манифесты | `verified_local` |
+| 3.8 | Ingress | Ingress + routing E2E | controller port-forward | `verified_local` (host `:8080` kind recreate = `partial`) |
 | 3.9 | ConfigMap | Несекретная конфигурация | манифест | `verified_local` |
 | 3.10 | Secret templates | `*.example` без реальных секретов | `k8s/base/secret.example.yaml` | `implemented` |
-| 3.11 | readiness/liveness probes | Оба probe | манифест + Ready Pod | `verified_local` |
+| 3.11 | readiness/liveness probes | Оба probe | Ready Pods | `verified_local` |
 | 3.12 | resource requests/limits | CPU/memory | манифест | `verified_local` |
-| 3.13 | Docker Compose локально | `docker compose up` | stage2 report | `verified_local` |
+| 3.13 | Docker Compose локально | API+frontend | `docker compose up` | `verified_local` |
+| 3.14 | NetworkPolicy | deny/allow manifests | applied + script | `partial_verified` (kindnet **не enforce**) |
 
-**DVC:** отсутствие рабочего `dvc.yaml` / remote **не** выдаётся за подтверждённый DVC pipeline. Данные/артефакты — через `params.yaml`, скрипты и CI synthetic artifacts.
+**DVC:** synthetic demo pipeline verified; production ONNX не в DVC outs; remote local gitignored.
 
 ---
 
@@ -276,7 +277,7 @@
 | 0 | Аудит / план / матрица | Готово | `verified_local` |
 | 1 | MLP / ONNX / benchmark | Готово | `verified_local` |
 | 2 | Terraform YC | Код готов | validate local/CI; **apply `not_executed`** |
-| 3 | Docker / kind / K8s | Готово (frontend/Ingress/DVC pipeline — gaps) | `verified_local`; DVC `partial` |
+| 3 | Docker / kind / K8s / DVC / frontend | Frontend+Ingress+DVC verified locally | NP enforcement kindnet `partial`; CI на новых Dockerfile — `not_executed` до push |
 | 4 | CI/CD | Готово | **5× SUCCESS на `65de3ad`**; prod deploy `not_executed` |
 | 5 | Observability | Готово локально | `verified_local`; cloud obs `not_executed` |
 | 6 | Drift / A/B | Готово | `verified_local` |
