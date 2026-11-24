@@ -62,11 +62,25 @@ terraform -chdir=infra/terraform/environments/staging init -backend=false
 terraform -chdir=infra/terraform/environments/staging validate
 ```
 
-## CD gate (future — not Stage 4)
+## CD (Block 5 / 5.1)
 
-1. Configure GitHub Environment `staging` with required reviewers.
-2. Run `cd-staging.yml` with `confirm=deploy-staging-dry-run` (already verified dry-run path).
-3. Separate explicit approval for `terraform plan` / `apply` and registry push (**out of stage 4**).
+| Workflow | Role |
+| --- | --- |
+| `ci-cd.yml` | Gate **5** required CI for SHA → modes `validation` / `publish` / `deploy` (fail-closed). Opt-in auto on `main` via `AUTO_STAGING_ENABLED=true` + `workflow_run`. GHCR `:sha` + digest; deploy writes `staging-release.json` |
+| `cd-staging.yml` | Dry-run / documentation path (`confirm=deploy-staging-dry-run`) + CI gate |
+| `cd-production.yml` | Fetch verified `staging-release.json` by `staging_run_id`; promote **same digests**; `environment: production`; main-only; modes `validation` / `deploy` |
+
+**Required CI gate:** CI Python, CI Docker, CI Infrastructure, CI Kubernetes, CI Airflow DAG (same commit SHA). Incomplete checks wait on auto path; failed/cancelled/skipped/stale tip block deploy.
+
+**Fail-closed:** `mode=deploy` without kubeconfig or smoke base URL → job failure (not false SUCCESS). Validation ≠ deployment.
+
+Local kind verification (not cloud): `scripts/ci/local_cd_verify.ps1` → namespaces `credit-scoring-cd-staging` / `credit-scoring-cd-prod`.
+
+Report: [`docs/stage4_cicd_completion_report.md`](stage4_cicd_completion_report.md).
+
+1. Configure GitHub Environments `staging` / `production` (reviewers in UI — not claimed until configured).
+2. Set secrets/vars listed in the completion report (no values in Git). Optional repo var `AUTO_STAGING_ENABLED=true`.
+3. `terraform apply` remains **out of policy** until explicitly approved.
 
 ## Fixes after hosted CI (summary)
 

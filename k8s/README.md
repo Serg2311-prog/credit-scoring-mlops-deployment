@@ -46,8 +46,21 @@ No Windows `hostPath`, no ConfigMap/Secret for binaries, no public model downloa
 kubectl -n credit-scoring port-forward svc/credit-scoring-api 8000:8000
 ```
 
-## Render manifests
+## Overlays
+
+| Overlay | Namespace | Use |
+| --- | --- | --- |
+| `overlays/local` | `credit-scoring` | Laptop kind (Stage 3A) |
+| `overlays/staging` | `credit-scoring-staging` | Staging CD |
+| `overlays/production` | `credit-scoring-production` | Production CD |
+| `overlays/cd-demo-staging` | `credit-scoring-cd-staging` | Isolated kind CD demo |
+| `overlays/cd-demo-production` | `credit-scoring-cd-prod` | Isolated kind promote demo |
+
+CD details (opt-in auto staging, provenance): `docs/stage4_cicd_completion_report.md`.
 
 ```powershell
 kubectl kustomize k8s/overlays/local
+kubectl kustomize k8s/overlays/staging
+# Full kind CD demo (does not delete cluster):
+powershell -File scripts/ci/local_cd_verify.ps1
 ```

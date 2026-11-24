@@ -205,8 +205,11 @@ docker compose up -d --build
 ### Реализованные компоненты
 
 - Workflows: CI Python, CI Docker (+ Trivy), CI Infrastructure, CI Kubernetes
-- Release Candidate и CD Staging **dry-run**
-- Локальные скрипты `scripts/ci/`
+- Orchestrator `ci-cd.yml` (gate **5** CI → modes validation/publish/deploy; opt-in auto via `AUTO_STAGING_ENABLED`; GHCR SHA+digest; `staging-release.json`)
+- `cd-production.yml` (promote digests **only** from verified staging run; Environment `production`)
+- Kustomize overlays: `staging`, `production`, kind CD demos
+- Release Candidate и CD Staging dry-run
+- Локальные скрипты `scripts/ci/` (+ `local_cd_verify.ps1`, `staging_release_manifest.py`)
 - Synthetic artifacts для CI без реальных кредитных PII в Git
 
 ### Проверка
@@ -223,9 +226,12 @@ docker compose up -d --build
 
 Ранее на этапе 4 также подтверждались kind E2E, Release Candidate и CD Staging dry-run (см. отчёт этапа 4) — это **не** означает cloud production deploy.
 
+Block 5 / 5.1: локальный kind CD (staging→prod-demo→negative→recover) — **VERIFIED_LOCAL**; gate/provenance/fail-closed — **VERIFIED_STATIC**; GHCR push / cloud kube / hosted orchestrator — **NOT_EXECUTED** без commit/push и credentials.
+
 ### Документация
 
 - [docs/cicd_pipeline.md](docs/cicd_pipeline.md)
+- [docs/stage4_cicd_completion_report.md](docs/stage4_cicd_completion_report.md)
 - [docs/stage4_validation_report.md](docs/stage4_validation_report.md)
 - Workflows: `.github/workflows/`
 
@@ -233,6 +239,8 @@ docker compose up -d --build
 .\.venv\Scripts\Activate.ps1
 $env:PYTHONPATH = (Get-Location).Path
 .\scripts\ci\check.ps1
+# optional kind CD demo (isolated namespaces):
+# powershell -File scripts/ci/local_cd_verify.ps1
 ```
 
 ---

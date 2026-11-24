@@ -1,0 +1,30 @@
+# Isolated kind/local CD demo for production promotion (same digests as staging).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: credit-scoring-cd-prod
+
+resources:
+  - ../production
+
+patches:
+  - target:
+      kind: Namespace
+      name: credit-scoring-production
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: credit-scoring-cd-prod
+  - path: patch-host.yaml
+  - path: patch-replicas.yaml
+
+images:
+  - name: credit-scoring-api
+    newName: credit-scoring-api
+    newTag: cd-demo
+  - name: credit-scoring-models
+    newName: credit-scoring-models
+    newTag: cd-demo
+  - name: credit-scoring-frontend
+    newName: credit-scoring-frontend
+    newTag: cd-demo

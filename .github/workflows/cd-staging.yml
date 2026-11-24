@@ -1,21 +1,32 @@
-name: CD Staging (manual gate)
+name: CD Staging
 
-# Stage 4: prepare a safe CD path WITHOUT cloud apply / image push.
+# Staging CD entrypoints:
+# 1) dry-run plan (no cloud) — confirm=deploy-staging-dry-run
+# 2) full path — prefer workflow CI/CD Orchestrator (ci-cd.yml) with confirm=deploy-staging
 on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: "Type deploy-staging-dry-run to acknowledge no cloud apply"
+        description: "deploy-staging-dry-run | see also ci-cd.yml deploy-staging"
         required: true
         default: ""
       image_digest_api:
-        description: "Optional API image digest (informational)"
+        description: "Optional API image digest (informational for dry-run)"
         required: false
         default: ""
       image_digest_models:
         description: "Optional models image digest (informational)"
         required: false
         default: ""
+
+concurrency:
+  group: cd-staging-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+  checks: read
 
 jobs:
   guard:
@@ -26,26 +37,63 @@ jobs:
       - name: Validate confirmation phrase
         run: |
           if [ "${{ inputs.confirm }}" != "deploy-staging-dry-run" ]; then
-            echo "Refusing CD. Set confirm=deploy-staging-dry-run"
-            echo "Stage 4 does not perform terraform apply or registry push."
+            echo "This workflow is the dry-run / documentation path."
+            echo "For GHCR publish + optional kube apply use workflow 'CI/CD Orchestrator' with confirm=deploy-staging."
+            echo "Refusing. Set confirm=deploy-staging-dry-run"
             exit 1
           fi
           echo "Confirmation accepted — dry-run path only"
 
-  plan-only:
-    name: Document intended staging deploy
+  gate-ci:
+    name: Require CI success for SHA
     needs: guard
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Optional GitHub Environment for future required reviewers (configure in UI).
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Verify required CI conclusions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts/ci
+          python scripts/ci/check_required_ci.py \
+            --sha "${{ github.sha }}" \
+            --owner "${{ github.repository_owner }}" \
+            --repo "${{ github.event.repository.name }}" \
+            --output artifacts/ci/ci_gate.json
+
+      - name: Upload gate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cd-staging-gate-${{ github.sha }}
+          path: artifacts/ci/ci_gate.json
+
+  plan-only:
+    name: Document intended staging deploy
+    needs: [guard, gate-ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment: staging
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Install PyYAML + render overlay
+        run: |
+          python -m pip install --upgrade pip pyyaml
+          mkdir -p artifacts/ci
+          SHA="${{ github.sha }}"
+          python scripts/ci/render_cd_images.py \
+            --overlay k8s/overlays/staging \
+            --api-image "credit-scoring-api:sha-${SHA}" \
+            --models-image "credit-scoring-models:sha-${SHA}" \
+            --frontend-image "credit-scoring-frontend:sha-${SHA}" \
+            --output artifacts/ci/kustomize-staging-dry-run.yaml
+
       - name: Emit deploy plan (no cloud commands)
         run: |
-          mkdir -p artifacts/ci
           cat > artifacts/ci/cd-staging-plan.json <<EOF
           {
             "mode": "dry-run",
@@ -53,6 +101,7 @@ jobs:
             "git_sha": "${{ github.sha }}",
             "api_digest": "${{ inputs.image_digest_api }}",
             "models_digest": "${{ inputs.image_digest_models }}",
+            "overlay": "k8s/overlays/staging",
             "blocked_actions": [
               "terraform apply",
               "terraform destroy",
@@ -60,12 +109,11 @@ jobs:
               "kubectl apply to Yandex MK8s",
               "upload models to Object Storage"
             ],
-            "next_steps_after_approval": [
-              "Configure GitHub Environment secrets (no commit)",
-              "terraform plan (separate approval)",
-              "push images by digest to YCR",
-              "kubectl apply -k overlay/staging",
-              "rollout status + smoke /predict"
+            "next_steps": [
+              "Run CI/CD Orchestrator with confirm=deploy-staging for GHCR + optional kube",
+              "Configure GitHub Environment secrets STAGING_KUBECONFIG (base64)",
+              "Configure vars STAGING_SMOKE_BASE_URL / STAGING_SMOKE_HOST",
+              "Promote digests via cd-production.yml"
             ],
             "status": "SKIPPED_NO_CLOUD_CREDENTIALS"
           }
@@ -74,11 +122,11 @@ jobs:
 
       - name: Explicit skip of cloud deploy
         run: |
-          echo "::notice::CD staging cloud deploy SKIPPED (stage 4 policy)"
+          echo "::notice::CD staging cloud deploy SKIPPED (dry-run path)"
           echo "No credentials used. No paid resources created."
 
       - name: Upload plan artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cd-staging-plan-${{ github.sha }}
-          path: artifacts/ci/cd-staging-plan.json
+          path: artifacts/ci/

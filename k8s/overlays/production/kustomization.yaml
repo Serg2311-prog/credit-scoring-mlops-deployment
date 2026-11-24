@@ -1,0 +1,40 @@
+# Production overlay — separate namespace; promote the SAME image digests as staging.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: credit-scoring-production
+
+resources:
+  - ../../base
+  # Secret: apply secret.example.yaml manually / sealed-secrets — not committed as live Secret.
+
+patches:
+  - target:
+      kind: Namespace
+      name: credit-scoring
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: credit-scoring-production
+      - op: add
+        path: /metadata/labels/app.kubernetes.io~1environment
+        value: production
+  - path: patch-ingress-host.yaml
+  - path: patch-resources.yaml
+  - path: patch-rolling-update.yaml
+
+images:
+  - name: credit-scoring-api
+    newName: credit-scoring-api
+    newTag: production
+  - name: credit-scoring-models
+    newName: credit-scoring-models
+    newTag: production
+  - name: credit-scoring-frontend
+    newName: credit-scoring-frontend
+    newTag: production
+
+labels:
+  - pairs:
+      app.kubernetes.io/environment: production
+    includeSelectors: false

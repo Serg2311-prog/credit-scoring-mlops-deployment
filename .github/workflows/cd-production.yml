@@ -1,0 +1,230 @@
+name: CD Production (promotion)
+
+# Promote digests from a verified staging-release.json produced by CI/CD Orchestrator.
+# Never builds/pushes images. Digests come only from the trusted staging run artifact.
+# GitHub Environment "production" should require reviewers (configure in repo Settings UI).
+on:
+  workflow_dispatch:
+    inputs:
+      git_sha:
+        description: "Git SHA that was staged"
+        required: true
+      staging_run_id:
+        description: "Successful CI/CD Orchestrator run id that produced staging-release"
+        required: true
+      mode:
+        description: "validation | deploy"
+        required: true
+        default: "validation"
+      confirm:
+        description: "Type promote-production (required for deploy)"
+        required: false
+        default: ""
+      # Optional claims — if set, must exactly match the staging manifest (anti-substitution).
+      claim_api_ref:
+        description: "Optional exact api image@sha256 to assert"
+        required: false
+        default: ""
+      claim_models_ref:
+        description: "Optional exact models image@sha256 to assert"
+        required: false
+        default: ""
+      claim_frontend_ref:
+        description: "Optional exact frontend image@sha256 to assert"
+        required: false
+        default: ""
+
+concurrency:
+  group: cd-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+  checks: read
+
+jobs:
+  guard:
+    name: Guards + provenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      api_ref: ${{ steps.prov.outputs.api_ref }}
+      models_ref: ${{ steps.prov.outputs.models_ref }}
+      frontend_ref: ${{ steps.prov.outputs.frontend_ref }}
+      mode: ${{ steps.meta.outputs.mode }}
+    steps:
+      - name: Confirm + branch + mode
+        id: meta
+        run: |
+          set -euo pipefail
+          MODE="${{ github.event.inputs.mode }}"
+          case "$MODE" in
+            validation|deploy) ;;
+            *) echo "Invalid mode=$MODE"; exit 1 ;;
+          esac
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "Production CD only from main (got ${{ github.ref }})"
+            exit 1
+          fi
+          if [ "$MODE" = "deploy" ] && [ "${{ github.event.inputs.confirm }}" != "promote-production" ]; then
+            echo "Refusing deploy without confirm=promote-production"
+            exit 1
+          fi
+          echo "mode=${MODE}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.inputs.git_sha }}
+
+      - name: Require CI success for SHA
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts/ci
+          python scripts/ci/check_required_ci.py \
+            --sha "${{ github.event.inputs.git_sha }}" \
+            --owner "${{ github.repository_owner }}" \
+            --repo "${{ github.event.repository.name }}" \
+            --output artifacts/ci/ci_gate_production.json
+
+      - name: Fetch + verify staging release manifest
+        id: prov
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/ci
+          python scripts/ci/staging_release_manifest.py fetch \
+            --run-id "${{ github.event.inputs.staging_run_id }}" \
+            --expect-git-sha "${{ github.event.inputs.git_sha }}" \
+            --owner "${{ github.repository_owner }}" \
+            --repo "${{ github.event.repository.name }}" \
+            --claim-api-ref "${{ github.event.inputs.claim_api_ref }}" \
+            --claim-models-ref "${{ github.event.inputs.claim_models_ref }}" \
+            --claim-frontend-ref "${{ github.event.inputs.claim_frontend_ref }}" \
+            --output artifacts/ci/staging-release.json
+          API=$(python -c "import json;print(json.load(open('artifacts/ci/staging-release.json'))['images']['api'])")
+          MODELS=$(python -c "import json;print(json.load(open('artifacts/ci/staging-release.json'))['images']['models'])")
+          FRONTEND=$(python -c "import json;print(json.load(open('artifacts/ci/staging-release.json'))['images']['frontend'])")
+          echo "api_ref=${API}" >> "$GITHUB_OUTPUT"
+          echo "models_ref=${MODELS}" >> "$GITHUB_OUTPUT"
+          echo "frontend_ref=${FRONTEND}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload provenance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cd-production-provenance-${{ github.event.inputs.git_sha }}
+          path: artifacts/ci/
+
+  validate-only:
+    name: Validation-only production render
+    needs: guard
+    if: needs.guard.outputs.mode == 'validation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.inputs.git_sha }}
+
+      - name: Install PyYAML
+        run: python -m pip install --upgrade pip pyyaml
+
+      - name: Render production overlay from verified digests
+        run: |
+          mkdir -p artifacts/ci
+          python scripts/ci/render_cd_images.py \
+            --overlay k8s/overlays/production \
+            --api-image "${{ needs.guard.outputs.api_ref }}" \
+            --models-image "${{ needs.guard.outputs.models_ref }}" \
+            --frontend-image "${{ needs.guard.outputs.frontend_ref }}" \
+            --output artifacts/ci/kustomize-production.yaml
+          ! grep -E 'image: .*:latest($|")' artifacts/ci/kustomize-production.yaml
+          cat > artifacts/ci/cd-mode.json <<EOF
+          {"mode":"validation","deployed":false,"git_sha":"${{ github.event.inputs.git_sha }}","staging_run_id":"${{ github.event.inputs.staging_run_id }}"}
+          EOF
+
+      - name: Upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cd-production-validation-${{ github.event.inputs.git_sha }}
+          path: artifacts/ci/
+
+  promote:
+    name: Apply production (fail-closed)
+    needs: guard
+    if: needs.guard.outputs.mode == 'deploy'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.inputs.git_sha }}
+
+      - name: Install PyYAML
+        run: python -m pip install --upgrade pip pyyaml
+
+      - name: Require kubeconfig + smoke variables (fail-closed)
+        env:
+          KUBECONFIG_B64: ${{ secrets.PRODUCTION_KUBECONFIG }}
+          SMOKE_URL: ${{ vars.PRODUCTION_SMOKE_BASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${KUBECONFIG_B64}" ]; then
+            echo "FAIL-CLOSED: mode=deploy requires secret PRODUCTION_KUBECONFIG"
+            echo "Use mode=validation to render without cloud apply."
+            exit 1
+          fi
+          if [ -z "${SMOKE_URL}" ]; then
+            echo "FAIL-CLOSED: mode=deploy requires variable PRODUCTION_SMOKE_BASE_URL"
+            exit 1
+          fi
+
+      - name: Render production manifests (same digests from staging)
+        run: |
+          mkdir -p artifacts/ci
+          python scripts/ci/render_cd_images.py \
+            --overlay k8s/overlays/production \
+            --api-image "${{ needs.guard.outputs.api_ref }}" \
+            --models-image "${{ needs.guard.outputs.models_ref }}" \
+            --frontend-image "${{ needs.guard.outputs.frontend_ref }}" \
+            --output artifacts/ci/kustomize-production.yaml
+          ! grep -E 'image: .*:latest($|")' artifacts/ci/kustomize-production.yaml
+
+      - name: kubectl apply + rollout
+        env:
+          KUBECONFIG_B64: ${{ secrets.PRODUCTION_KUBECONFIG }}
+        run: |
+          set -euo pipefail
+          echo "$KUBECONFIG_B64" | base64 -d > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
+          kubectl apply -f artifacts/ci/kustomize-production.yaml
+          kubectl -n credit-scoring-production rollout status deploy/credit-scoring-api --timeout=300s
+          kubectl -n credit-scoring-production rollout status deploy/credit-scoring-frontend --timeout=300s
+
+      - name: Mandatory production smoke
+        run: |
+          set -euo pipefail
+          python scripts/ci/smoke_http.py \
+            --base-url "${{ vars.PRODUCTION_SMOKE_BASE_URL }}" \
+            --host "${{ vars.PRODUCTION_SMOKE_HOST }}" \
+            --output artifacts/ci/smoke_production.json
+
+      - name: Record deploy mode
+        run: |
+          cat > artifacts/ci/cd-mode.json <<EOF
+          {"mode":"deploy","deployed":true,"git_sha":"${{ github.event.inputs.git_sha }}","staging_run_id":"${{ github.event.inputs.staging_run_id }}"}
+          EOF
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cd-production-${{ github.event.inputs.git_sha }}
+          path: artifacts/ci/

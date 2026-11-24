@@ -146,20 +146,20 @@
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
-| 4.1 | Последовательность build→test→deploy→monitor | Jobs/needs | workflow YAML | `implemented` |
+| 4.1 | Последовательность build→test→deploy→monitor | `ci-cd.yml` gates **5** CI → publish → deploy | YAML + tests | `implemented` / orchestrator `verified_static`; hosted CD `not_executed` |
 | 4.2 | pytest | Job step | `ci-python.yml` | `verified_ci` |
 | 4.3 | black | `--check` | `ci-python.yml` | `verified_ci` |
 | 4.4 | flake8 | step | `ci-python.yml` | `verified_ci` |
 | 4.5 | Проверка схемы данных | validation в pytest | CI Python | `verified_ci` |
-| 4.6 | Docker build | build без обязательного push secrets | `ci-docker.yml` | `verified_ci` |
-| 4.7 | Security scanning | Trivy в CI Docker | run на `65de3ad` | `verified_ci` |
+| 4.6 | Docker build | build + optional GHCR push by SHA | `ci-docker.yml` / `ci-cd.yml` | build `verified_ci`; GHCR push `not_executed` (no commit/push this block) |
+| 4.7 | Security scanning | Trivy в CI Docker (+ pre-push in orchestrator) | CI Docker | `verified_ci` |
 | 4.8 | Vulnerability scanning | Отчёт сканера / job success | CI Docker | `verified_ci` |
-| 4.9 | Проверка K8s манифестов | kustomize / kubeconform | `ci-kubernetes.yml` | `verified_ci` |
+| 4.9 | Проверка K8s манифестов | kustomize / kubeconform + staging/prod overlays | `ci-kubernetes.yml` | `verified_ci` + overlays `verified_static` |
 | 4.10 | Проверка Terraform | fmt/validate | `ci-infrastructure.yml` | `verified_ci` |
-| 4.11 | Staging deployment | Только dry-run / credentials gate | `cd-staging.yml` | `partial_verified` (dry-run; cloud apply `not_executed`) |
-| 4.12 | Production deployment | manual gate; auto prod CD нет | docs | `not_executed` |
-| 4.13 | Проверка rollout | kind optional / offline | CI Kubernetes (+ ранее kind E2E) | `partial_verified` |
-| 4.14 | Безопасный skip без credentials | Job skipped, не fake success | `cd-staging` | `implemented` |
+| 4.11 | Staging deployment | Fail-closed `mode=deploy` + opt-in auto; kind CD demo | `local_cd_verify.ps1` / workflows | kind demo `verified_local`; cloud apply `not_executed` |
+| 4.12 | Production deployment | Provenance via `staging-release.json` + Environment | workflow + kind prod-demo | workflow `implemented`/`verified_static`; kind promote `verified_local`; cloud `not_executed` |
+| 4.13 | Проверка rollout | kind CD + smoke_http | local CD | `verified_local` |
+| 4.14 | Fail-closed vs validation | `mode=deploy` fails without secrets/vars; `validation`/`publish` separate | `ci-cd` / `cd-production` + tests | `implemented` / `verified_static` |
 
 На коммите **`65de3ad`** SUCCESS: CI Python, CI Docker, CI Infrastructure, CI Kubernetes, CI Airflow DAG
 (см. [`README.md`](../README.md), [`docs/stage4_validation_report.md`](stage4_validation_report.md) для более ранней истории kind/RC).

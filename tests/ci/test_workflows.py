@@ -18,6 +18,8 @@ REQUIRED_WORKFLOWS = [
     "ci-kubernetes.yml",
     "release-candidate.yml",
     "cd-staging.yml",
+    "ci-cd.yml",
+    "cd-production.yml",
 ]
 
 TRIVY_SHA = "aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25"
@@ -134,6 +136,7 @@ def test_cd_staging_is_manual_and_dry_run():
     assert "terraform apply" in text
     assert "SKIPPED_NO_CLOUD_CREDENTIALS" in text
     assert "environment: staging" in text
+    assert "check_required_ci.py" in text
 
 
 def test_release_candidate_does_not_create_github_release():

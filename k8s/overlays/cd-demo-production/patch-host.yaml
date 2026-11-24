@@ -1,0 +1,59 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: credit-scoring
+  namespace: credit-scoring-production
+spec:
+  rules:
+    - host: cd-prod.local
+      http:
+        paths:
+          - path: /predict
+            pathType: Prefix
+            backend:
+              service:
+                name: credit-scoring-api
+                port:
+                  number: 8000
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: credit-scoring-api
+                port:
+                  number: 8000
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: credit-scoring-api
+                port:
+                  number: 8000
+          - path: /model
+            pathType: Prefix
+            backend:
+              service:
+                name: credit-scoring-api
+                port:
+                  number: 8000
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: credit-scoring-api
+                port:
+                  number: 8000
+          - path: /openapi.json
+            pathType: Exact
+            backend:
+              service:
+                name: credit-scoring-api
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: credit-scoring-frontend
+                port:
+                  number: 80

@@ -1,0 +1,441 @@
+name: CI/CD Orchestrator
+
+# Build → Test → Security (required CI) → GHCR publish → staging deploy/smoke.
+# Modes: validation | publish | deploy (fail-closed for deploy).
+# Auto staging on main is opt-in via repository variable AUTO_STAGING_ENABLED=true.
+# Cloud terraform apply is never run here.
+on:
+  workflow_dispatch:
+    inputs:
+      git_sha:
+        description: "Commit SHA to deploy (empty = workflow sha)"
+        required: false
+        default: ""
+      mode:
+        description: "validation | publish | deploy"
+        required: true
+        default: "validation"
+      confirm:
+        description: "For publish/deploy type: deploy-staging"
+        required: false
+        default: ""
+  workflow_run:
+    workflows:
+      - CI Python
+      - CI Docker
+      - CI Infrastructure
+      - CI Kubernetes
+      - CI Airflow DAG
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  # One in-flight staging chain per commit SHA; newer attempt cancels waiters.
+  group: cicd-orchestrator-staging-${{ github.event.workflow_run.head_sha || github.event.inputs.git_sha || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
+  checks: read
+  packages: write
+
+jobs:
+  resolve:
+    name: Resolve SHA and mode
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      deploy_sha: ${{ steps.out.outputs.deploy_sha }}
+      mode: ${{ steps.out.outputs.mode }}
+      auto: ${{ steps.out.outputs.auto }}
+      skip: ${{ steps.out.outputs.skip }}
+      skip_reason: ${{ steps.out.outputs.skip_reason }}
+    steps:
+      - name: Decide
+        id: out
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_SHA: ${{ github.event.inputs.git_sha }}
+          INPUT_MODE: ${{ github.event.inputs.mode }}
+          INPUT_CONFIRM: ${{ github.event.inputs.confirm }}
+          WR_SHA: ${{ github.event.workflow_run.head_sha }}
+          WR_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WR_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          AUTO_FLAG: ${{ vars.AUTO_STAGING_ENABLED }}
+          FALLBACK_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          SKIP=false
+          REASON=""
+          AUTO=false
+          MODE="${INPUT_MODE:-validation}"
+          SHA="${FALLBACK_SHA}"
+
+          if [ "$EVENT_NAME" = "workflow_run" ]; then
+            AUTO=true
+            SHA="${WR_SHA}"
+            MODE="deploy"
+            if [ "${AUTO_FLAG}" != "true" ]; then
+              SKIP=true
+              REASON="AUTO_STAGING_ENABLED!=true (auto staging disabled)"
+            fi
+            if [ "${WR_BRANCH}" != "main" ]; then
+              SKIP=true
+              REASON="workflow_run branch is not main"
+            fi
+            # Triggering workflow may still be mid-matrix; gate job re-checks all five.
+            if [ "${WR_CONCLUSION}" = "failure" ] || [ "${WR_CONCLUSION}" = "cancelled" ] || [ "${WR_CONCLUSION}" = "timed_out" ]; then
+              SKIP=true
+              REASON="triggering CI conclusion=${WR_CONCLUSION}"
+            fi
+          else
+            if [ -n "${INPUT_SHA}" ]; then
+              SHA="${INPUT_SHA}"
+            fi
+            case "$MODE" in
+              validation|publish|deploy) ;;
+              *)
+                echo "Invalid mode=$MODE"
+                exit 1
+                ;;
+            esac
+            if [ "$MODE" != "validation" ] && [ "${INPUT_CONFIRM}" != "deploy-staging" ]; then
+              echo "Refusing publish/deploy without confirm=deploy-staging"
+              exit 1
+            fi
+          fi
+
+          echo "deploy_sha=${SHA}" >> "$GITHUB_OUTPUT"
+          echo "mode=${MODE}" >> "$GITHUB_OUTPUT"
+          echo "auto=${AUTO}" >> "$GITHUB_OUTPUT"
+          echo "skip=${SKIP}" >> "$GITHUB_OUTPUT"
+          echo "skip_reason=${REASON}" >> "$GITHUB_OUTPUT"
+          echo "Resolved sha=${SHA} mode=${MODE} auto=${AUTO} skip=${SKIP} reason=${REASON}"
+
+  gate-ci:
+    name: Require CI success for SHA
+    needs: resolve
+    if: needs.resolve.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      gate_result: ${{ steps.gate.outputs.result }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.resolve.outputs.deploy_sha }}
+
+      - name: Verify required CI conclusions (5 workflows)
+        id: gate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTO: ${{ needs.resolve.outputs.auto }}
+          SHA: ${{ needs.resolve.outputs.deploy_sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/ci
+          EXTRA=()
+          if [ "$AUTO" = "true" ]; then
+            EXTRA+=(--incomplete-as-wait --expect-branch-tip main)
+          fi
+          set +e
+          python scripts/ci/check_required_ci.py \
+            --sha "$SHA" \
+            --owner "${{ github.repository_owner }}" \
+            --repo "${{ github.event.repository.name }}" \
+            --output artifacts/ci/ci_gate.json \
+            "${EXTRA[@]}"
+          CODE=$?
+          set -e
+          echo "result=${CODE}" >> "$GITHUB_OUTPUT"
+          if [ "$CODE" -eq 0 ]; then
+            exit 0
+          fi
+          if [ "$CODE" -eq 3 ] && [ "$AUTO" = "true" ]; then
+            echo "CI incomplete for $SHA — waiting (auto path, not a deploy success)"
+            exit 0
+          fi
+          echo "CI gate hard-failed for $SHA (exit=$CODE)"
+          exit 2
+
+      - name: Upload gate report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ci-gate-${{ needs.resolve.outputs.deploy_sha }}
+          path: artifacts/ci/ci_gate.json
+          if-no-files-found: ignore
+
+  publish-ghcr:
+    name: Publish images to GHCR (SHA tags)
+    needs: [resolve, gate-ci]
+    if: |
+      needs.resolve.outputs.skip != 'true'
+      && needs.gate-ci.outputs.gate_result == '0'
+      && (needs.resolve.outputs.mode == 'publish' || needs.resolve.outputs.mode == 'deploy')
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    environment: staging
+    outputs:
+      api_ref: ${{ steps.push.outputs.api_ref }}
+      models_ref: ${{ steps.push.outputs.models_ref }}
+      frontend_ref: ${{ steps.push.outputs.frontend_ref }}
+    env:
+      SHA: ${{ needs.resolve.outputs.deploy_sha }}
+      IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/credit-scoring
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.SHA }}
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Synthetic artifacts for models image (ephemeral runner only)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-api.txt -r requirements-nn.txt
+          python scripts/ci/generate_synthetic_artifacts.py --output-dir models --force
+
+      - name: Log in to GHCR
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/v0.58.1/contrib/install.sh \
+            | sh -s -- -b /usr/local/bin v0.58.1
+
+      - name: Build scan push
+        id: push
+        run: |
+          mkdir -p artifacts/ci
+          API_REF=""; MODELS_REF=""; FRONTEND_REF=""
+          for NAME in api models frontend; do
+            case "$NAME" in
+              api) FILE=Dockerfile.api ;;
+              models) FILE=Dockerfile.models ;;
+              frontend) FILE=Dockerfile.frontend ;;
+            esac
+            IMG="${IMAGE_PREFIX}-${NAME}"
+            docker build -f "docker/${FILE}" -t "${IMG}:${SHA}" -t "${IMG}:sha-${SHA}" .
+            trivy image --exit-code 1 --severity CRITICAL,HIGH --ignore-unfixed "${IMG}:${SHA}"
+            docker push "${IMG}:${SHA}"
+            docker push "${IMG}:sha-${SHA}"
+            DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${IMG}:${SHA}" | awk -F@ '{print $2}')
+            REF="${IMG}@${DIGEST}"
+            case "$NAME" in
+              api) API_REF="$REF" ;;
+              models) MODELS_REF="$REF" ;;
+              frontend) FRONTEND_REF="$REF" ;;
+            esac
+          done
+          echo "api_ref=${API_REF}" >> "$GITHUB_OUTPUT"
+          echo "models_ref=${MODELS_REF}" >> "$GITHUB_OUTPUT"
+          echo "frontend_ref=${FRONTEND_REF}" >> "$GITHUB_OUTPUT"
+          cat > artifacts/ci/image-digests.json <<EOF
+          {
+            "git_sha": "${SHA}",
+            "registry": "ghcr.io",
+            "api": "${API_REF}",
+            "models": "${MODELS_REF}",
+            "frontend": "${FRONTEND_REF}",
+            "notes": "Immutable SHA tags; do not deploy :latest"
+          }
+          EOF
+
+      - name: Upload digests
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: image-digests-${{ env.SHA }}
+          path: artifacts/ci/image-digests.json
+
+  validate-only:
+    name: Validation-only render
+    needs: [resolve, gate-ci]
+    if: |
+      needs.resolve.outputs.skip != 'true'
+      && needs.gate-ci.outputs.gate_result == '0'
+      && needs.resolve.outputs.mode == 'validation'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.resolve.outputs.deploy_sha }}
+
+      - name: Install PyYAML
+        run: python -m pip install --upgrade pip pyyaml
+
+      - name: Render staging overlay (no publish / no kube)
+        run: |
+          mkdir -p artifacts/ci
+          SHA="${{ needs.resolve.outputs.deploy_sha }}"
+          python scripts/ci/render_cd_images.py \
+            --overlay k8s/overlays/staging \
+            --api-image "ghcr.io/example/credit-scoring-api:sha-${SHA}" \
+            --models-image "ghcr.io/example/credit-scoring-models:sha-${SHA}" \
+            --frontend-image "ghcr.io/example/credit-scoring-frontend:sha-${SHA}" \
+            --output artifacts/ci/kustomize-staging-validation.yaml
+          cat > artifacts/ci/cd-mode.json <<EOF
+          {"mode":"validation","deployed":false,"published":false,"git_sha":"${SHA}"}
+          EOF
+
+      - name: Upload validation artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cicd-validation-${{ needs.resolve.outputs.deploy_sha }}
+          path: artifacts/ci/
+
+  deploy-staging:
+    name: Staging deploy (fail-closed)
+    needs: [resolve, gate-ci, publish-ghcr]
+    if: |
+      needs.resolve.outputs.skip != 'true'
+      && needs.gate-ci.outputs.gate_result == '0'
+      && needs.resolve.outputs.mode == 'deploy'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.resolve.outputs.deploy_sha }}
+
+      - name: Install PyYAML
+        run: python -m pip install --upgrade pip pyyaml
+
+      - name: Require kubeconfig + smoke variables (fail-closed)
+        env:
+          KUBECONFIG_B64: ${{ secrets.STAGING_KUBECONFIG }}
+          SMOKE_URL: ${{ vars.STAGING_SMOKE_BASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${KUBECONFIG_B64}" ]; then
+            echo "FAIL-CLOSED: mode=deploy requires secret STAGING_KUBECONFIG"
+            echo "Use mode=validation or mode=publish if kube deploy is not intended."
+            exit 1
+          fi
+          if [ -z "${SMOKE_URL}" ]; then
+            echo "FAIL-CLOSED: mode=deploy requires variable STAGING_SMOKE_BASE_URL"
+            exit 1
+          fi
+
+      - name: Render staging manifests from digests
+        run: |
+          mkdir -p artifacts/ci
+          python scripts/ci/render_cd_images.py \
+            --overlay k8s/overlays/staging \
+            --api-image "${{ needs.publish-ghcr.outputs.api_ref }}" \
+            --models-image "${{ needs.publish-ghcr.outputs.models_ref }}" \
+            --frontend-image "${{ needs.publish-ghcr.outputs.frontend_ref }}" \
+            --output artifacts/ci/kustomize-staging.yaml
+
+      - name: kubectl apply + rollout
+        env:
+          KUBECONFIG_B64: ${{ secrets.STAGING_KUBECONFIG }}
+        run: |
+          set -euo pipefail
+          echo "$KUBECONFIG_B64" | base64 -d > kubeconfig
+          export KUBECONFIG=$PWD/kubeconfig
+          kubectl apply -f artifacts/ci/kustomize-staging.yaml
+          kubectl -n credit-scoring-staging rollout status deploy/credit-scoring-api --timeout=300s
+          kubectl -n credit-scoring-staging rollout status deploy/credit-scoring-frontend --timeout=300s
+
+      - name: Mandatory smoke tests
+        run: |
+          set -euo pipefail
+          python scripts/ci/smoke_http.py \
+            --base-url "${{ vars.STAGING_SMOKE_BASE_URL }}" \
+            --host "${{ vars.STAGING_SMOKE_HOST }}" \
+            --output artifacts/ci/smoke_staging.json
+
+      - name: Write staging release manifest
+        run: |
+          set -euo pipefail
+          python scripts/ci/staging_release_manifest.py build \
+            --git-sha "${{ needs.resolve.outputs.deploy_sha }}" \
+            --api-ref "${{ needs.publish-ghcr.outputs.api_ref }}" \
+            --models-ref "${{ needs.publish-ghcr.outputs.models_ref }}" \
+            --frontend-ref "${{ needs.publish-ghcr.outputs.frontend_ref }}" \
+            --run-id "${{ github.run_id }}" \
+            --mode deploy \
+            --smoke-json artifacts/ci/smoke_staging.json \
+            --output artifacts/ci/staging-release.json
+          cat > artifacts/ci/cd-mode.json <<EOF
+          {"mode":"deploy","deployed":true,"published":true,"git_sha":"${{ needs.resolve.outputs.deploy_sha }}","run_id":"${{ github.run_id }}"}
+          EOF
+
+      - name: Upload staging release + smoke
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: staging-release-${{ needs.resolve.outputs.deploy_sha }}
+          path: |
+            artifacts/ci/staging-release.json
+            artifacts/ci/smoke_staging.json
+            artifacts/ci/image-digests.json
+            artifacts/ci/cd-mode.json
+            artifacts/ci/kustomize-staging.yaml
+
+  publish-manifest:
+    name: Publish-only release marker
+    needs: [resolve, gate-ci, publish-ghcr]
+    if: |
+      needs.resolve.outputs.skip != 'true'
+      && needs.gate-ci.outputs.gate_result == '0'
+      && needs.resolve.outputs.mode == 'publish'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ needs.resolve.outputs.deploy_sha }}
+
+      - name: Write publish-only manifest (not production-eligible)
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/ci
+          python scripts/ci/staging_release_manifest.py build \
+            --git-sha "${{ needs.resolve.outputs.deploy_sha }}" \
+            --api-ref "${{ needs.publish-ghcr.outputs.api_ref }}" \
+            --models-ref "${{ needs.publish-ghcr.outputs.models_ref }}" \
+            --frontend-ref "${{ needs.publish-ghcr.outputs.frontend_ref }}" \
+            --run-id "${{ github.run_id }}" \
+            --mode publish \
+            --output artifacts/ci/staging-release.json
+          cat > artifacts/ci/cd-mode.json <<EOF
+          {"mode":"publish","deployed":false,"published":true,"git_sha":"${{ needs.resolve.outputs.deploy_sha }}"}
+          EOF
+
+      - name: Upload publish artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: staging-publish-${{ needs.resolve.outputs.deploy_sha }}
+          path: artifacts/ci/
+
+  report-skip:
+    name: Auto-skip notice
+    needs: resolve
+    if: needs.resolve.outputs.skip == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Explain skip (not a deployment)
+        run: |
+          echo "Skipped: ${{ needs.resolve.outputs.skip_reason }}"
+          echo "deployed=false"
