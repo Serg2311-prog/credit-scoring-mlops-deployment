@@ -207,24 +207,26 @@
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
-| 7.1 | DAG: проверка новых данных | Task существует | `airflow_home/dags/credit_scoring_retraining.py` | `implemented` / parse `verified_ci` |
-| 7.2 | Валидация | Task + `src.retraining.data_validation` | unit tests | `verified_local` |
-| 7.3 | Drift detection | Trigger `data_drift` | `triggers.py` + tests | `verified_local` |
-| 7.4 | Решение о переобучении | Branch skip vs train | BranchPythonOperator | `implemented` |
-| 7.5 | Переобучение | Candidate train в run dir | `trainer.py` + tests | `verified_local` |
-| 7.6 | Оценка новой модели | Holdout metrics | `evaluation.py` + tests | `verified_local` |
-| 7.7 | Сравнение с production baseline | Same-holdout gates | evaluation + tests | `verified_local` |
-| 7.8 | Регистрация модели | Atomic registry, **no champion overwrite** | `registry.py` + tests | `verified_local` |
-| 7.9 | Контролируемое развертывание | **`auto_promote=false`** | код + docs | `verified_local` |
-| 7.10 | Retries / failure handling | retries + skip branch | DAG default_args | `implemented` |
+| 7.1 | DAG: проверка новых данных | Task + Docker DagRun `new_data` | E2E A2/A2b + fingerprint baseline | `verified_local` / parse `verified_ci` |
+| 7.2 | Валидация | Task + unit + Docker E2E | `data_validation` + E2E A | `verified_local` |
+| 7.3 | Drift detection | Trigger `data_drift` | unit + Docker E2E B/D | `verified_local` |
+| 7.4 | Решение о переобучении | Branch skip vs train + cron schedule | Docker E2E A/D + scheduler `scheduled__*` | `verified_local` |
+| 7.5 | Переобучение | Candidate train в run dir | Docker E2E A / A2 (logistic) | `verified_local` |
+| 7.6 | Оценка новой модели | Holdout metrics | E2E `evaluation.json` | `verified_local` |
+| 7.7 | Сравнение с production baseline | Same-holdout ONNX champion vs candidate | E2E `champion_status=scored_on_holdout`; else `needs_review` | `verified_local` |
+| 7.8 | Регистрация модели | Atomic registry, **no champion overwrite** | dry_run registry + hashes | `verified_local` |
+| 7.9 | Контролируемое развертывание | **`auto_promote=false`** | E2E report + hashes | `verified_local` |
+| 7.10 | Retries / failure handling | skip branch + missing-input fail | Docker E2E D/E | `verified_local` |
 
 ### Ограничения этапа 7 (обязательно учитывать)
 
 | Тема | Статус |
 | --- | --- |
-| Движок retraining без Airflow (Windows CLI/pytest) | `verified_local` (полный pytest: **137 passed, 1 skipped**) |
-| DAG import/parse в Linux CI (`ci-airflow-dag.yml`) | `verified_ci` на `65de3ad` |
-| Полный Airflow Docker E2E (`docker-compose.airflow.yml up` + end-to-end run) | **`not_executed`** — не утверждается как пройденный |
+| Движок retraining без Airflow (Windows CLI/pytest) | `verified_local` (pytest suite green) |
+| DAG import/parse в Linux CI (`ci-airflow-dag.yml`) | `verified_ci` |
+| Полный Airflow Docker E2E (`e2e_docker.ps1`, A/A2/B/C/D/E + scheduler proof) | **`verified_local`** — `docs/stage7_airflow_e2e_report.md` |
+| Staff cron `0 3 * * 1` + E2E overlay `RETRAIN_SCHEDULE=None` | **`verified_local`** |
+| Airflow Docker E2E в GitHub Actions | **`not_executed`** (не claimed as `verified_ci`) |
 | Airflow в Windows `.venv` | не устанавливается (by design) |
 | Automatic promotion challenger → production | **запрещено** (`auto_promote=false`) |
 | Default candidate backend | logistic + существующий preprocessor; MLP optional/heavier |
@@ -266,7 +268,7 @@
 | G.8 | Учёт 8 GB RAM / CPU-only | Compose профили, torch CPU | процесс |
 | G.9 | Нет auto-promote модели | Stage 6/7 registry + gates | `verified_local` |
 | G.10 | DVC remote/pipeline не выдавать за готовый | Нет `dvc.yaml` → `partial` | процесс |
-| G.11 | Airflow Docker E2E не заявлять без прогона | `not_executed` | процесс |
+| G.11 | Airflow Docker E2E не заявлять без прогона | `verified_local` after `e2e_docker.ps1` | `docs/stage7_airflow_e2e_report.md` |
 
 ---
 
@@ -281,7 +283,7 @@
 | 4 | CI/CD | Готово | **5× SUCCESS на `65de3ad`**; prod deploy `not_executed` |
 | 5 | Observability | Готово локально | `verified_local`; cloud obs `not_executed` |
 | 6 | Drift / A/B | Готово | `verified_local` |
-| 7 | Airflow retraining | Engine+DAG+compose готовы | local tests + CI DAG parse; **Docker E2E `not_executed`**; **no auto-promote** |
+| 7 | Airflow retraining | Engine+DAG+compose+E2E | local Docker A/A2/B/C/D/E + scheduler proof `verified_local`; CI parse `verified_ci`; **no auto-promote** |
 | Docs | README + runbooks + matrix | Готово | `verified_local` |
 
-**Итоговая формулировка для сдачи:** этапы **0–7 реализованы в репозитории** с честным разделением `verified_local` / `verified_ci` / `partial` / `not_executed`. Cloud production и полный Airflow Docker E2E **не утверждаются**.
+**Итоговая формулировка для сдачи:** этапы **0–7 реализованы в репозитории** с честным разделением `verified_local` / `verified_ci` / `partial` / `not_executed`. Cloud production **не утверждается**. Airflow Docker E2E — **`verified_local`** (не `verified_ci`).

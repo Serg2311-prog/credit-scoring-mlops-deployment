@@ -1,0 +1,13 @@
+# Overlay for isolated Docker E2E (use with docker-compose.airflow.yml).
+# Disables cron so scripted DagRuns are not blocked by max_active_runs=1
+# colliding with scheduler-created runs.
+#
+#   docker compose -f docker-compose.airflow.yml -f docker-compose.airflow.e2e.yml up -d
+#
+# Staff/normal mode (cron enabled): use only docker-compose.airflow.yml.
+
+services:
+  airflow:
+    environment:
+      RETRAIN_SCHEDULE: "None"
+      RETRAIN_RETRIES: "0"

@@ -44,6 +44,18 @@ def cmd_validate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_baseline_input(args: argparse.Namespace) -> int:
+    from src.retraining.new_data import save_input_baseline
+
+    payload = save_input_baseline(
+        Path(args.input),
+        state_file=Path(args.state) if args.state else None,
+        note=str(args.note),
+    )
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+    return 0
+
+
 def cmd_triggers(args: argparse.Namespace) -> int:
     cfg = load_retraining_config()
     ref = pd.read_csv(args.reference) if args.reference else None
@@ -51,6 +63,8 @@ def cmd_triggers(args: argparse.Namespace) -> int:
     decision = evaluate_triggers(
         modes=args.modes,
         force_scheduled=args.force_scheduled,
+        input_path=Path(args.input) if args.input else None,
+        input_state_path=Path(args.state) if getattr(args, "state", None) else None,
         reference_features=ref,
         current_features=cur,
         cfg=cfg,
@@ -178,8 +192,19 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--input", required=True)
     p.set_defaults(func=cmd_validate)
 
+    p = sub.add_parser(
+        "baseline-input-state",
+        help="Save input CSV fingerprint baseline for new_data trigger",
+    )
+    p.add_argument("--input", required=True)
+    p.add_argument("--state", default=None, help="Optional state JSON path")
+    p.add_argument("--note", default="baseline")
+    p.set_defaults(func=cmd_baseline_input)
+
     p = sub.add_parser("check-triggers", help="Evaluate retraining triggers")
     p.add_argument("--modes", default="scheduled")
+    p.add_argument("--input", default=None, help="Input CSV for new_data fingerprint")
+    p.add_argument("--state", default=None, help="Fingerprint state JSON path")
     p.add_argument("--reference", default=None)
     p.add_argument("--current", default=None)
     p.add_argument("--force-scheduled", action="store_true")

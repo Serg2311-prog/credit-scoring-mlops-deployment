@@ -23,8 +23,10 @@ RUN pip install --no-cache-dir \
         "PyYAML>=6.0" \
         "pandera>=0.20" \
         "joblib>=1.4" \
+        "matplotlib>=3.8" \
         "evidently==0.7.23" \
-        "prometheus_client>=0.20"
+        "prometheus_client>=0.20" \
+        "onnxruntime>=1.18"
 
 ENV PYTHONPATH=/opt/credit-scoring
 ENV AIRFLOW__CORE__LOAD_EXAMPLES=False

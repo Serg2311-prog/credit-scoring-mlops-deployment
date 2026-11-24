@@ -14,9 +14,15 @@ from src.retraining.config import load_retraining_config
 from src.schema import TARGET_COLUMN
 
 TRIGGER_SCHEDULED = "scheduled"
+TRIGGER_NEW_DATA = "new_data"
 TRIGGER_DATA_DRIFT = "data_drift"
 TRIGGER_QUALITY_DROP = "quality_drop"
-VALID_TRIGGERS = {TRIGGER_SCHEDULED, TRIGGER_DATA_DRIFT, TRIGGER_QUALITY_DROP}
+VALID_TRIGGERS = {
+    TRIGGER_SCHEDULED,
+    TRIGGER_NEW_DATA,
+    TRIGGER_DATA_DRIFT,
+    TRIGGER_QUALITY_DROP,
+}
 
 
 def _as_modes(modes: Iterable[str] | str | None, cfg: dict[str, Any]) -> list[str]:
@@ -33,6 +39,8 @@ def evaluate_triggers(
     *,
     modes: Iterable[str] | str | None = None,
     force_scheduled: bool = False,
+    input_path: str | Path | None = None,
+    input_state_path: str | Path | None = None,
     reference_features: pd.DataFrame | None = None,
     current_features: pd.DataFrame | None = None,
     reference_y=None,
@@ -48,7 +56,8 @@ def evaluate_triggers(
     """
     Decide whether retraining should run.
 
-    - scheduled: fires when requested
+    - scheduled: fires when force_scheduled / explicit scheduled window
+    - new_data: input CSV fingerprint differs from saved baseline (not force_retrain)
     - data_drift: feature distribution change (NOT concept drift proof)
     - quality_drop: multi-metric degradation *signal* (not confirmed concept drift)
 
@@ -58,6 +67,8 @@ def evaluate_triggers(
     - ``unavailable`` — a requested non-scheduled mode lacked required inputs/reports
       (callers must not treat this as a silent successful skip)
     """
+    from src.retraining.new_data import compare_input_to_baseline
+
     cfg = cfg or load_retraining_config()
     trig = cfg.get("triggers", {})
     requested = _as_modes(modes, cfg)
@@ -69,16 +80,84 @@ def evaluate_triggers(
     fired: list[str] = []
     unavailable: list[str] = []
 
-    if TRIGGER_SCHEDULED in requested or force_scheduled:
-        fired.append(TRIGGER_SCHEDULED)
-        reasons.append(
-            {
-                "mode": TRIGGER_SCHEDULED,
-                "fired": True,
-                "availability": "ok",
-                "detail": "Scheduled / manual retraining window",
-            }
-        )
+    if TRIGGER_SCHEDULED in requested:
+        if force_scheduled:
+            fired.append(TRIGGER_SCHEDULED)
+            reasons.append(
+                {
+                    "mode": TRIGGER_SCHEDULED,
+                    "fired": True,
+                    "availability": "ok",
+                    "detail": "Scheduled / manual retraining window",
+                    "reason": "scheduled",
+                }
+            )
+        else:
+            reasons.append(
+                {
+                    "mode": TRIGGER_SCHEDULED,
+                    "fired": False,
+                    "availability": "ok",
+                    "detail": (
+                        "scheduled mode listed but force_scheduled=false "
+                        "(DAG sets force for run_type=scheduled cron windows)"
+                    ),
+                    "reason": "scheduled",
+                }
+            )
+
+    if TRIGGER_NEW_DATA in requested:
+        if not input_path:
+            unavailable.append(TRIGGER_NEW_DATA)
+            reasons.append(
+                {
+                    "mode": TRIGGER_NEW_DATA,
+                    "fired": False,
+                    "availability": "unavailable",
+                    "reason": "new_data",
+                    "detail": "input_path required for new_data trigger",
+                }
+            )
+        else:
+            cmp = compare_input_to_baseline(
+                Path(input_path),
+                state_file=Path(input_state_path) if input_state_path else None,
+            )
+            if cmp["status"] == "triggered":
+                fired.append(TRIGGER_NEW_DATA)
+                reasons.append(
+                    {
+                        "mode": TRIGGER_NEW_DATA,
+                        "fired": True,
+                        "availability": "ok",
+                        "reason": "new_data",
+                        "detail": cmp["message"],
+                        "current_sha256": (cmp.get("current") or {}).get("sha256"),
+                        "baseline_sha256": (cmp.get("baseline") or {}).get("sha256"),
+                    }
+                )
+            elif cmp["status"] == "skipped":
+                reasons.append(
+                    {
+                        "mode": TRIGGER_NEW_DATA,
+                        "fired": False,
+                        "availability": "ok",
+                        "reason": "new_data",
+                        "detail": cmp["message"],
+                        "current_sha256": (cmp.get("current") or {}).get("sha256"),
+                    }
+                )
+            else:
+                unavailable.append(TRIGGER_NEW_DATA)
+                reasons.append(
+                    {
+                        "mode": TRIGGER_NEW_DATA,
+                        "fired": False,
+                        "availability": "unavailable",
+                        "reason": "new_data",
+                        "detail": cmp.get("message"),
+                    }
+                )
 
     if TRIGGER_DATA_DRIFT in requested:
         share_thr = float(trig.get("data_drift_share_threshold", 0.3))

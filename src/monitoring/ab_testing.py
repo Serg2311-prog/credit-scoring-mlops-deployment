@@ -246,8 +246,17 @@ def append_prediction_log(
     return out
 
 
-def write_model_registry(payload: dict[str, Any] | None = None) -> Path:
-    """Lightweight version registry (no MLflow dependency)."""
+def write_model_registry(
+    payload: dict[str, Any] | None = None,
+    *,
+    registry_path: Path | None = None,
+) -> Path:
+    """Lightweight version registry (no MLflow dependency).
+
+    Pass ``registry_path`` from tests to avoid writing production
+    ``models/model_registry.json``. Default path remains the production file
+    for explicit CLI / ops use.
+    """
     cfg = load_stage6_thresholds()
     versions = cfg.get("versions", {})
     ab = cfg.get("ab_testing", {})
@@ -266,11 +275,17 @@ def write_model_registry(payload: dict[str, Any] | None = None) -> Path:
         ),
         **(payload or {}),
     }
-    path = PROJECT_ROOT / "models" / "model_registry.json"
+    path = (
+        Path(registry_path)
+        if registry_path is not None
+        else PROJECT_ROOT / "models" / "model_registry.json"
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
     dump_json(path, registry)
-    # Also mirror under artifacts/monitoring for stage-6 reports.
-    mirror = monitoring_dir() / "model_registry.json"
-    dump_json(mirror, registry)
+    # Mirror under artifacts/monitoring only for the default production write.
+    if registry_path is None:
+        mirror = monitoring_dir() / "model_registry.json"
+        dump_json(mirror, registry)
     return path
 
 

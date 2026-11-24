@@ -19,10 +19,12 @@ tests
 tools
 infra
 k8s
-# Keep DVC pipeline scripts available for the API image DVC stage.
+# Keep DVC pipeline scripts + Airflow entrypoint available for image builds.
 scripts/*
 !scripts/dvc/
 !scripts/dvc/**
+!scripts/airflow/
+!scripts/airflow/entrypoint.sh
 _source_audit
 *.md
 .env

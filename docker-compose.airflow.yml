@@ -23,6 +23,8 @@ services:
       AIRFLOW__CORE__PARALLELISM: "1"
       AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: "1"
       AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: "1"
+      # Local demo convenience; production Airflow should keep DAGs paused by default.
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "false"
       AIRFLOW__WEBSERVER__RBAC: "true"
@@ -32,9 +34,15 @@ services:
       CREDIT_SCORING_ROOT: /opt/credit-scoring
       RETRAIN_DRY_RUN: "true"
       RETRAIN_TRIGGER_MODES: scheduled
-      RETRAIN_SCHEDULE: "0 3 * * 1"
+      # Staff cron: Mondays 03:00 UTC (override via RETRAIN_SCHEDULE env).
+      # For isolated E2E use docker-compose.airflow.e2e.yml (RETRAIN_SCHEDULE=None).
+      RETRAIN_SCHEDULE: ${RETRAIN_SCHEDULE:-0 3 * * 1}
       RETRAIN_INPUT_PATH: /opt/credit-scoring/artifacts/retraining/demo_input/retrain_input.csv
+      # Avoid retry storms during constrained local demos.
+      RETRAIN_RETRIES: "0"
     volumes:
+      # Named volume first for AIRFLOW_HOME metadata; bind mounts overlay dags/logs.
+      - airflow-sqlite:/opt/airflow
       - ./airflow_home/dags:/opt/airflow/dags
       - ./airflow_home/logs:/opt/airflow/logs
       - ./src:/opt/credit-scoring/src
@@ -43,7 +51,6 @@ services:
       - ./models:/opt/credit-scoring/models
       - ./artifacts/retraining:/opt/credit-scoring/artifacts/retraining
       - ./data:/opt/credit-scoring/data
-      - airflow-sqlite:/opt/airflow
     # Entrypoint from Dockerfile handles ordered init (no fragile && / || true / & chains).
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://127.0.0.1:8080/health || exit 1"]

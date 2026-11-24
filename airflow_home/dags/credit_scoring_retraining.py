@@ -104,15 +104,16 @@ def validate_data(**context):
 def check_retraining_trigger(**context):
     from src.retraining.triggers import evaluate_triggers
 
-    conf = context["dag_run"].conf or {}
+    dag_run = context["dag_run"]
+    conf = dag_run.conf or {}
     modes = conf.get("modes", TRIGGER_MODES)
-    modes_list = [m.strip() for m in str(modes).split(",") if m.strip()]
+    meta = context["ti"].xcom_pull(key="input_meta", task_ids="check_input_data")
+    # Cron windows: Airflow sets run_type=scheduled. Manual CLI triggers must pass
+    # force_scheduled explicitly — listing modes=scheduled alone does not force train.
     if "force_scheduled" in conf:
         force = bool(conf["force_scheduled"])
     else:
-        # scheduled mode means the window itself is the trigger; do not invent
-        # scheduled fire when only drift/quality modes were requested.
-        force = "scheduled" in modes_list
+        force = str(getattr(dag_run, "run_type", "") or "") == "scheduled"
 
     run_id = context["ti"].xcom_pull(key="run_id", task_ids="check_input_data")
     decision_path = (
@@ -122,10 +123,14 @@ def check_retraining_trigger(**context):
     cur_path = conf.get("current_path") or os.environ.get("RETRAIN_CURRENT_PATH")
     quality_report = conf.get("quality_report")
     drift_report = conf.get("drift_report")
+    input_path = (
+        conf.get("input_path") or (meta or {}).get("input_path") or DEFAULT_INPUT
+    )
 
     decision = evaluate_triggers(
         modes=modes,
         force_scheduled=force,
+        input_path=input_path,
         reference_features=_optional_csv(ref_path),
         current_features=_optional_csv(cur_path),
         drift_report=drift_report if isinstance(drift_report, dict) else None,
@@ -135,10 +140,12 @@ def check_retraining_trigger(**context):
     )
     context["ti"].xcom_push(key="trigger_status", value=decision["status"])
     context["ti"].xcom_push(key="trigger_path", value=str(decision_path))
+    context["ti"].xcom_push(key="fired_modes", value=decision.get("fired_modes") or [])
     if decision["status"] == "unavailable":
         raise AirflowFailException(
             f"Trigger inputs unavailable: {decision['message']}. "
-            "Provide reference/current CSVs or verified monitoring reports; "
+            "Provide reference/current CSVs, input fingerprint baseline, "
+            "or verified monitoring reports; "
             "do not treat missing signals as a successful skip."
         )
     if decision["status"] == "skipped":
@@ -189,6 +196,7 @@ def train_candidate(**context):
 def evaluate_candidate(**context):
     import pandas as pd
 
+    from src.retraining.champion import try_make_champion_scorer
     from src.retraining.evaluation import evaluate_candidate as _eval
 
     prep = context["ti"].xcom_pull(key="prepare_meta", task_ids="prepare_training_data")
@@ -197,17 +205,21 @@ def evaluate_candidate(**context):
     )
     cand = context["ti"].xcom_pull(key="candidate_meta", task_ids="train_candidate")
     holdout = pd.read_csv(prep["holdout_path"])
+    scorer = try_make_champion_scorer(target=prep["target"])
     result = _eval(
         holdout,
         prep["target"],
         candidate_meta=cand,
         run_directory=directory,
+        champion_scorer=scorer,
     )
     context["ti"].xcom_push(key="evaluation_status", value=result["status"])
+    context["ti"].xcom_push(key="champion_status", value=result.get("champion_status"))
     return result["status"]
 
 
 def register_candidate(**context):
+    from src.retraining.new_data import save_input_baseline
     from src.retraining.registry import register_candidate as _reg
 
     run_id = context["ti"].xcom_pull(key="run_id", task_ids="check_input_data")
@@ -217,6 +229,11 @@ def register_candidate(**context):
     cand = context["ti"].xcom_pull(key="candidate_meta", task_ids="train_candidate")
     status = context["ti"].xcom_pull(
         key="evaluation_status", task_ids="evaluate_candidate"
+    )
+    meta = context["ti"].xcom_pull(key="input_meta", task_ids="check_input_data")
+    fired = (
+        context["ti"].xcom_pull(key="fired_modes", task_ids="check_retraining_trigger")
+        or []
     )
     record = {
         "version": f"candidate-retrain-{run_id}",
@@ -228,7 +245,12 @@ def register_candidate(**context):
         "auto_promote": False,
         "promoted": False,
     }
-    return _reg(record, dry_run=DRY_RUN)
+    result = _reg(record, dry_run=DRY_RUN)
+    if "new_data" in fired and meta and meta.get("input_path"):
+        save_input_baseline(
+            Path(meta["input_path"]), note=f"post_retrain_airflow_{run_id}"
+        )
+    return result
 
 
 def generate_report(**context):
@@ -275,12 +297,20 @@ default_args = {
     "retry_delay": timedelta(minutes=int(os.environ.get("RETRAIN_RETRY_MINUTES", "5"))),
 }
 
+
+def _dag_schedule():
+    raw = os.environ.get("RETRAIN_SCHEDULE", "0 3 * * 1")
+    if str(raw).strip().lower() in {"", "none", "null", "false"}:
+        return None
+    return raw
+
+
 with DAG(
     dag_id="credit_scoring_retraining",
     description="Stage 7 offline retraining (no auto-promote)",
     default_args=default_args,
     start_date=datetime(2026, 1, 1),
-    schedule=os.environ.get("RETRAIN_SCHEDULE", "0 3 * * 1"),
+    schedule=_dag_schedule(),
     catchup=False,
     max_active_runs=1,
     max_active_tasks=1,

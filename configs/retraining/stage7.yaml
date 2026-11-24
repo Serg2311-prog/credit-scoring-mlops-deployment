@@ -24,8 +24,9 @@ retraining:
     num_threads: 1
 
 triggers:
-  # Comma-separated modes accepted by CLI/DAG: scheduled,data_drift,quality_drop
-  enabled_modes: [scheduled, data_drift, quality_drop]
+  # Modes: scheduled | new_data | data_drift | quality_drop
+  # new_data uses input fingerprint baseline (CLI: baseline-input-state), not force_retrain
+  enabled_modes: [scheduled, new_data, data_drift, quality_drop]
   # Absolute share threshold for Evidently/PSI data-drift trigger
   data_drift_share_threshold: 0.3
   # Quality drop uses stage-6 concept signal semantics (signal, not confirmed CD)

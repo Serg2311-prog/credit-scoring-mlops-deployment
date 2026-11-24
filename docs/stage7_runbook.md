@@ -7,6 +7,7 @@ Offline, reproducible candidate retraining orchestrated for Apache Airflow.
 - Engine: `src/retraining/` (runs on Windows without Airflow)
 - DAG: `airflow_home/dags/credit_scoring_retraining.py` (folder name avoids shadowing the `airflow` Python package)
 - Compose (optional Linux demo): `docker-compose.airflow.yml`
+- E2E overlay (schedule off): `docker-compose.airflow.e2e.yml`
 - Entrypoint: `scripts/airflow/entrypoint.sh` (ordered migrate → user → webserver health → scheduler)
 - **No automatic production promotion** (`auto_promote: false`)
 
@@ -63,24 +64,28 @@ XCom carries only paths / small JSON (run_id, statuses). Models and DataFrames s
 
 | Mode | Fires when | If inputs missing |
 | --- | --- | --- |
-| `scheduled` | Planned / forced window | N/A |
+| `scheduled` | Cron `run_type=scheduled` or explicit `force_scheduled` (listing `modes=scheduled` alone does **not** force train) | N/A |
+| `new_data` | Input CSV fingerprint ≠ saved baseline (`baseline-input-state`); **not** `force_retrain` | No baseline / no path → `unavailable` → **fail** |
 | `data_drift` | Verified drift report or Evidently share ≥ threshold (feature shift ≠ concept drift) | `status=unavailable` → **fail** (CLI exit 3 / DAG fail) |
 | `quality_drop` | Multi-metric labeled degradation **signal** (never “confirmed concept drift”) | `status=unavailable` → **fail** |
 
 - `skipped` — modes evaluated with available inputs; none fired → branch `skip_retraining` (success).
-- `unavailable` — required frames/reports absent or not evaluable → **must not** silent-succeed.
+- `unavailable` — required frames/reports/baseline absent or not evaluable → **must not** silent-succeed.
 - Quality degradation is a **review signal**, not confirmed concept drift.
+- After a successful `new_data` train, the fingerprint baseline is refreshed so unchanged inputs skip.
 
 ## Gates (candidate vs champion)
 
 Config: `configs/retraining/stage7.yaml`
 
 - Absolute floors: `min_roc_auc`, `min_f1`
-- Relative: max drop vs champion on the **same holdout**
+- Relative: max drop vs champion on the **same holdout** (ONNX + production preprocessor when loadable)
+- If same-holdout scoring is impossible → `needs_review` with explicit reason (historical metadata ≠ equal comparison)
 - Outcomes: `accepted` | `rejected` | `needs_review`
-- `auto_promote` always `false`
+- `auto_promote` always `false` (accepted still needs manual promotion; no forced candidate superiority)
 
 Holdout is never used for hyperparameter search. Train metrics are not used for release gates.
+Synthetic demo metrics are **not** production performance.
 
 ## Backends
 
@@ -100,8 +105,10 @@ $env:OMP_NUM_THREADS = "1"
 
 .\.venv\Scripts\python.exe -m src.retraining.cli prepare-demo-input
 .\.venv\Scripts\python.exe -m src.retraining.cli validate-data --input artifacts/retraining/demo_input/retrain_input.csv
-.\.venv\Scripts\python.exe -m src.retraining.cli check-triggers --modes scheduled
-.\.venv\Scripts\python.exe -m src.retraining.cli dry-run --input artifacts/retraining/demo_input/retrain_input.csv --modes scheduled
+.\.venv\Scripts\python.exe -m src.retraining.cli baseline-input-state --input artifacts/retraining/demo_input/retrain_input.csv
+.\.venv\Scripts\python.exe -m src.retraining.cli check-triggers --modes scheduled --force-scheduled
+.\.venv\Scripts\python.exe -m src.retraining.cli check-triggers --modes new_data --input artifacts/retraining/demo_input/retrain_input.csv
+.\.venv\Scripts\python.exe -m src.retraining.cli dry-run --input artifacts/retraining/demo_input/retrain_input.csv --modes scheduled --force-scheduled
 .\.venv\Scripts\python.exe -m src.retraining.cli train-candidate --input artifacts/retraining/demo_input/retrain_input.csv --dry-run
 .\.venv\Scripts\python.exe -m src.retraining.cli demo
 ```
@@ -110,16 +117,25 @@ Dry-run writes under `artifacts/retraining/dry_run/` and **does not** update pro
 
 ## Docker Airflow (optional local demo)
 
+### Staff / normal mode (cron enabled)
+
 ```powershell
-# 1) Prepare host-side demo CSV (mounted into the container)
 .\.venv\Scripts\python.exe -m src.retraining.cli prepare-demo-input
-
-# 2) Validate compose file (no stack start)
 docker compose -f docker-compose.airflow.yml config
-
-# 3) Optional full stack — resource-heavy; do not combine with observability stack
 docker compose -f docker-compose.airflow.yml up --build
+# RETRAIN_SCHEDULE default: 0 3 * * 1 (Mondays 03:00 UTC); max_active_runs=1
 # UI http://127.0.0.1:8080  (local demo user admin/admin)
+```
+
+### Isolated E2E mode (schedule off)
+
+```powershell
+# Stop observability/kind first on 8 GB RAM
+docker compose -f docker-compose.airflow.yml -f docker-compose.airflow.e2e.yml config
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/airflow/e2e_docker.ps1
+# Overlay sets RETRAIN_SCHEDULE=None so scripted DagRuns do not collide with cron
+# Results: artifacts/retraining/e2e_diagnostics/e2e_results.json
+# Report: docs/stage7_airflow_e2e_report.md
 ```
 
 Init order (entrypoint, no fragile `&&` / `|| true` / background chains for control flow):
@@ -130,6 +146,7 @@ Init order (entrypoint, no fragile `&&` / `|| true` / background chains for cont
 4. Run scheduler in foreground
 
 Local stack: Airflow **2.9.3**, Python **3.12**, SequentialExecutor, SQLite. **Not production.** No Celery/Redis/Postgres/observability required.
+Documented cron also in `configs/retraining/stage7.yaml` (`airflow.schedule_cron`).
 
 ## Manual promotion
 
@@ -149,5 +166,5 @@ Local stack: Airflow **2.9.3**, Python **3.12**, SequentialExecutor, SQLite. **N
 ## Limits
 
 - Default candidate backend is **logistic**. MLP is supported when torch is installed; otherwise set `retraining.backend: logistic`.
-- Airflow Docker E2E is optional and must not be claimed unless actually run.
+- Airflow Docker E2E: claim only after `scripts/airflow/e2e_docker.ps1` (see `docs/stage7_airflow_e2e_report.md`).
 - Do not install Airflow into the project Windows venv.

@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 
+from src.config import PROJECT_ROOT
 from src.monitoring.ab_router import decide_route
 from src.monitoring.ab_testing import (
     assign_ab_group,
@@ -94,9 +97,17 @@ def test_offline_ab_insufficient_and_single_class():
     assert single["status"] == "not_evaluable"
 
 
-def test_registry_and_rollback_plan():
-    path = write_model_registry({"note_test": True})
+def test_registry_and_rollback_plan(tmp_path: Path):
+    """Must never write production models/model_registry.json."""
+    production = PROJECT_ROOT / "models" / "model_registry.json"
+    before = production.read_bytes() if production.is_file() else None
+    dest = tmp_path / "model_registry.json"
+    path = write_model_registry({"note_test": True}, registry_path=dest)
+    assert path == dest
     assert path.is_file()
+    assert b"note_test" in path.read_bytes()
+    after = production.read_bytes() if production.is_file() else None
+    assert after == before
     plan = rollback_to_champion_plan()
     assert plan["auto_executed"] is False
     assert "steps" in plan

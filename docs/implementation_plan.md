@@ -14,7 +14,7 @@
 | GitHub Actions на `65de3ad` | 5× SUCCESS (Python, Docker, Infrastructure, Kubernetes, Airflow DAG) |
 | Локальный pytest (этап 7) | **137 passed, 1 skipped** |
 | `terraform apply` / YC production | **`not_executed`** |
-| Полный Airflow Docker E2E | **`not_executed`** (не утверждается) |
+| Полный Airflow Docker E2E | **`verified_local`** (Block 4.1: cron + scheduler DagRun + `new_data` + same-holdout gate; `docs/stage7_airflow_e2e_report.md`; CI compose E2E not claimed) |
 | Auto-promote модели | **запрещён** (`auto_promote=false`) |
 | Рабочий DVC pipeline (`dvc.yaml` + local remote) | **есть** (synthetic demo; см. `docs/stage3_completion_report.md`) |
 
@@ -327,7 +327,7 @@ credit-scoring-mlops-deployment/
 | 4 | GitHub Actions | Готово | **verified_ci** на `65de3ad` (5 workflows); prod deploy `not_executed` |
 | 5 | Observability stack | Готово локально | `verified_local`; cloud obs `not_executed` |
 | 6 | Evidently, quality signals, A/B | Готово | `verified_local`; **no auto-promote** |
-| 7 | Airflow retraining (gated) | Engine+DAG+compose готовы | local tests + CI DAG parse; **Docker E2E `not_executed`**; **no auto-promote** |
+| 7 | Airflow retraining (gated) | Engine+DAG+compose+E2E | Docker A/A2/B/C/D/E + scheduler cron proof `verified_local`; CI parse `verified_ci`; **no auto-promote** |
 | Docs | README, runbooks, matrix | Готово | `verified_local` |
 
 **Правило честности (сохранено):** static validate ≠ cloud success; skip без credentials ≠ fake green; concept drift не объявлять без оснований.
@@ -428,7 +428,7 @@ black --check src tests
 Остаются намеренные ограничения:
 
 1. **Нет** cloud `terraform apply` и **нет** production в Yandex Cloud.
-2. **Нет** утверждения полного Airflow Docker E2E.
+2. Airflow Docker E2E — **`verified_local`** only (см. `stage7_airflow_e2e_report.md`).
 3. **Нет** auto-promote candidate/challenger в production.
 4. DVC demo-pipeline подтверждён локально; cloud remote — по желанию позже.
 5. Frontend / Ingress подтверждены локально; NP deny/allow на kindnet не enforce.

@@ -8,7 +8,7 @@
 
 Подтверждённый коммит этапа 7: [`65de3ad`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/65de3ad680a2fc7f3fcbe374aeb07f485d773b63).
 
-Cloud `terraform apply` **не выполнялся**. Production в Yandex Cloud **не развёрнут**. Airflow Docker E2E **не заявлялся как пройденный**.
+Cloud `terraform apply` **не выполнялся**. Production в Yandex Cloud **не развёрнут**. Airflow Docker E2E — **VERIFIED_LOCAL** (см. `docs/stage7_airflow_e2e_report.md`); **VERIFIED_CI** для compose E2E не заявляется.
 
 Исходный ML-проект: [credit-default-prediction](https://github.com/Serg2311-prog/credit-default-prediction).
 
@@ -319,12 +319,13 @@ $env:OMP_NUM_THREADS = "1"
 ### Реализованные компоненты
 
 - Движок `src/retraining/` (validate → triggers → prepare → train → evaluate → register → report)
-- Триггеры: `scheduled`, `data_drift`, `quality_drop`
+- Триггеры: `scheduled`, `new_data` (fingerprint), `data_drift`, `quality_drop`
+- Same-holdout champion scoring (ONNX + preprocessor) или явный `needs_review`
 - Candidate training в отдельный run-dir (production artifacts не перезаписываются)
 - Atomic update `models/model_registry.json` без смены `production_champion`
-- DAG: `airflow_home/dags/credit_scoring_retraining.py`
-- Compose (опционально): `docker-compose.airflow.yml` + `docker/Dockerfile.airflow`
-- CLI: `python -m src.retraining.cli`
+- DAG: `airflow_home/dags/credit_scoring_retraining.py` (`max_active_runs=1`)
+- Compose: `docker-compose.airflow.yml` (cron `0 3 * * 1`) + E2E overlay `docker-compose.airflow.e2e.yml` (`RETRAIN_SCHEDULE=None`)
+- CLI: `python -m src.retraining.cli` (`baseline-input-state`, `check-triggers`, …)
 - CI parse job: `.github/workflows/ci-airflow-dag.yml`
 
 ### Отсутствие automatic promotion
@@ -337,12 +338,14 @@ $env:OMP_NUM_THREADS = "1"
 ### Проверка
 
 - Локальные тесты и CLI dry-run/demo (без установки Airflow в Windows venv)
-- На `65de3ad`: workflow **CI Airflow DAG = SUCCESS**
-- Локальный Docker Airflow E2E **не заявлялся как пройденный**
+- Workflow **CI Airflow DAG** (parse) — SUCCESS на GitHub Actions
+- Локальный Docker Airflow E2E — **VERIFIED_LOCAL** (`scripts/airflow/e2e_docker.ps1`: A/A2/B/C/D/E + scheduler `scheduled__*` proof)
+- Отчёт: [docs/stage7_airflow_e2e_report.md](docs/stage7_airflow_e2e_report.md)
 
 ### Документация
 
 - [docs/stage7_runbook.md](docs/stage7_runbook.md)
+- [docs/stage7_airflow_e2e_report.md](docs/stage7_airflow_e2e_report.md)
 - [docs/stage7_validation_report.md](docs/stage7_validation_report.md)
 - Конфиг: `configs/retraining/stage7.yaml`
 
@@ -355,8 +358,9 @@ $env:OMP_NUM_THREADS = "1"
 ```
 
 ```powershell
-# Опционально и ресурсоёмко — не требуется для unit-проверок:
+# Staff (cron on) / E2E (schedule off) — ресурсоёмко; см. stage7_runbook.md
 # docker compose -f docker-compose.airflow.yml up --build
+# powershell -File scripts/airflow/e2e_docker.ps1
 ```
 
 ---
@@ -430,8 +434,8 @@ $env:OMP_NUM_THREADS = "1"
 - Учебный объём: акцент на воспроизводимость и честные артефакты, не на cloud production SLA.
 - **Нет** выполненного `terraform apply` и **нет** production в Yandex Cloud.
 - Реальные кредитные/персональные данные не хранятся в Git.
-- Airflow не устанавливается в Windows `.venv`; Linux-контейнер — только для опциональной демонстрации.
-- Airflow Docker E2E на локальной машине **не подтверждён** в validation-отчётах.
+- Airflow не устанавливается в Windows `.venv`; Linux-контейнер — для локального Docker E2E.
+- Airflow Docker E2E: `docs/stage7_airflow_e2e_report.md` (не путать с GHA parse-only CI).
 - Default candidate backend этапа 7 — logistic + существующий preprocessor; полный MLP-retrain опционален и тяжелее по ресурсам.
 - **Нет автоматического продвижения** challenger/candidate в production.
 
@@ -454,4 +458,5 @@ $env:OMP_NUM_THREADS = "1"
 | [docs/stage5_runbook.md](docs/stage5_runbook.md) | Observability runbook |
 | [docs/stage6_runbook.md](docs/stage6_runbook.md) | Drift / A/B runbook |
 | [docs/stage7_runbook.md](docs/stage7_runbook.md) | Retraining / Airflow runbook |
+| [docs/stage7_airflow_e2e_report.md](docs/stage7_airflow_e2e_report.md) | Airflow Docker E2E (A/A2/B/C/D/E + scheduler) |
 | [docs/stage1_audit_report.md](docs/stage1_audit_report.md) … [docs/stage7_validation_report.md](docs/stage7_validation_report.md) | Отчёты валидации по этапам |

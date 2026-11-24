@@ -19,7 +19,7 @@ from src.retraining.mlflow_tracking import log_run
 from src.retraining.prepare import prepare_training_splits
 from src.retraining.registry import register_candidate
 from src.retraining.trainer import train_candidate
-from src.retraining.triggers import evaluate_triggers
+from src.retraining.triggers import TRIGGER_NEW_DATA, evaluate_triggers
 
 
 def _new_run_id(seed_material: str) -> str:
@@ -101,6 +101,7 @@ def run_retraining_pipeline(
         modes=modes,
         force_scheduled=force_trigger
         or (modes == "scheduled" or modes == ["scheduled"]),
+        input_path=input_path,
         reference_features=ref_df,
         current_features=cur_df,
         reference_y=(
@@ -156,7 +157,12 @@ def run_retraining_pipeline(
         cfg=cfg,
     )
 
-    # 6. evaluate
+    # 6. evaluate (same-holdout champion scorer when production ONNX is loadable)
+    if champion_scorer is None:
+        from src.retraining.champion import try_make_champion_scorer
+
+        champion_scorer = try_make_champion_scorer(target=validated["target"])
+
     evaluation = evaluate_candidate(
         holdout_df,
         validated["target"],
@@ -193,6 +199,13 @@ def run_retraining_pipeline(
         registry_path=registry_path,
         dry_run=dry_run,
     )
+
+    # After a successful new_data-triggered train, refresh fingerprint baseline
+    # so unchanged inputs do not retrain on the next check.
+    if TRIGGER_NEW_DATA in (trigger.get("fired_modes") or []):
+        from src.retraining.new_data import save_input_baseline
+
+        save_input_baseline(input_path, note=f"post_retrain_{rid}")
 
     # tracking
     tracking = log_run(
