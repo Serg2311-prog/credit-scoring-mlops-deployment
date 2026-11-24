@@ -1,0 +1,626 @@
+{
+  "status": "completed",
+  "benchmark_scope": "model_only_synthetic",
+  "quality_evaluation": false,
+  "note": "Synthetic standard_normal features \u2014 latency/throughput only. NOT a holdout quality score.",
+  "experiment": {
+    "batch_sizes": [
+      1,
+      8,
+      32,
+      64,
+      128
+    ],
+    "warmup_runs": 20,
+    "timed_runs": 100,
+    "repeats": 3,
+    "parity_atol": 1e-05,
+    "parity_rtol": 0.0001,
+    "modes": [
+      "model_only_on_device",
+      "with_h2d"
+    ]
+  },
+  "models": {
+    "pytorch_checkpoint": {
+      "path": "models/credit_scoring_nn.pt",
+      "sha256": "d6e05563bb7790c34bf3e444db7c0e1d5ceea0aa92e26aa0b69f5d1f26d1c2ae",
+      "size_bytes": 67315
+    },
+    "onnx_fp32": {
+      "path": "models/credit_scoring_nn.onnx",
+      "sha256": "48051065162f98c0842f0f4bca80ce4105e343924a7b62001114c08adc7521a4",
+      "size_bytes": 62934
+    }
+  },
+  "inputs": {
+    "seed": 42,
+    "n_rows": 1024,
+    "input_dim": 47,
+    "dtype": "float32",
+    "distribution": "iid standard_normal",
+    "purpose": "latency/throughput synthetic inputs only \u2014 NOT holdout quality evaluation",
+    "sha256": "0cadfac94133179073d3b3940a9ced3f45cf0644034691cb3be4f281ba736670"
+  },
+  "environment": {
+    "os": "Linux-6.6.159+-x86_64-with-glibc2.39",
+    "python": "3.13.16",
+    "torch": "2.14.1+cu130",
+    "torch_cuda_is_available": true,
+    "onnxruntime": "1.32.0",
+    "onnxruntime_providers": [
+      "TensorrtExecutionProvider",
+      "CUDAExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "cuda_device_name": "Tesla T4",
+    "cuda_device_count": 1,
+    "cuda_runtime_version": "13.0"
+  },
+  "results": [
+    {
+      "variant": "pytorch_cpu_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 1,
+      "device": "cpu",
+      "execution_provider": "pytorch:cpu",
+      "latency_mean_ms_mean_over_repeats": 0.14844413333624593,
+      "latency_p50_ms_mean_over_repeats": 0.14515116663460503,
+      "latency_p95_ms_mean_over_repeats": 0.17236450004626627,
+      "latency_p99_ms_mean_over_repeats": 0.1876995799269329,
+      "throughput_samples_per_s_mean_over_repeats": 6738.388926803819,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cpu_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 8,
+      "device": "cpu",
+      "execution_provider": "pytorch:cpu",
+      "latency_mean_ms_mean_over_repeats": 0.1958334733353695,
+      "latency_p50_ms_mean_over_repeats": 0.1931048332911208,
+      "latency_p95_ms_mean_over_repeats": 0.2345853832745585,
+      "latency_p99_ms_mean_over_repeats": 0.2619114967607556,
+      "throughput_samples_per_s_mean_over_repeats": 40892.03726269785,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cpu_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 32,
+      "device": "cpu",
+      "execution_provider": "pytorch:cpu",
+      "latency_mean_ms_mean_over_repeats": 0.21686444000351912,
+      "latency_p50_ms_mean_over_repeats": 0.2135683333411483,
+      "latency_p95_ms_mean_over_repeats": 0.25688139991567976,
+      "latency_p99_ms_mean_over_repeats": 0.2772238733162647,
+      "throughput_samples_per_s_mean_over_repeats": 147590.51159461716,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cpu_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 64,
+      "device": "cpu",
+      "execution_provider": "pytorch:cpu",
+      "latency_mean_ms_mean_over_repeats": 0.2843816800107864,
+      "latency_p50_ms_mean_over_repeats": 0.27432433330432104,
+      "latency_p95_ms_mean_over_repeats": 0.3499466833469948,
+      "latency_p99_ms_mean_over_repeats": 0.3773595265677938,
+      "throughput_samples_per_s_mean_over_repeats": 230579.7842432283,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cpu_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 128,
+      "device": "cpu",
+      "execution_provider": "pytorch:cpu",
+      "latency_mean_ms_mean_over_repeats": 0.34365733334349596,
+      "latency_p50_ms_mean_over_repeats": 0.3449934999935067,
+      "latency_p95_ms_mean_over_repeats": 0.42850078330047836,
+      "latency_p99_ms_mean_over_repeats": 0.46903661340517705,
+      "throughput_samples_per_s_mean_over_repeats": 376615.58810392785,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cpu_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 1,
+      "device": "CPUExecutionProvider",
+      "execution_provider": "CPUExecutionProvider",
+      "all_providers": [
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.02881879667863056,
+      "latency_p50_ms_mean_over_repeats": 0.025296499946610613,
+      "latency_p95_ms_mean_over_repeats": 0.04164761679324632,
+      "latency_p99_ms_mean_over_repeats": 0.11592456003957836,
+      "throughput_samples_per_s_mean_over_repeats": 35073.669162497514,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cpu_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 8,
+      "device": "CPUExecutionProvider",
+      "execution_provider": "CPUExecutionProvider",
+      "all_providers": [
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.05390927667122014,
+      "latency_p50_ms_mean_over_repeats": 0.03537933321240416,
+      "latency_p95_ms_mean_over_repeats": 0.05275236660509108,
+      "latency_p99_ms_mean_over_repeats": 0.08855486993525963,
+      "throughput_samples_per_s_mean_over_repeats": 150424.65618947204,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cpu_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 32,
+      "device": "CPUExecutionProvider",
+      "execution_provider": "CPUExecutionProvider",
+      "all_providers": [
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.08225912334031212,
+      "latency_p50_ms_mean_over_repeats": 0.04956999994950214,
+      "latency_p95_ms_mean_over_repeats": 0.08529818336834676,
+      "latency_p99_ms_mean_over_repeats": 0.6790175865838514,
+      "throughput_samples_per_s_mean_over_repeats": 394743.01489260653,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cpu_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 64,
+      "device": "CPUExecutionProvider",
+      "execution_provider": "CPUExecutionProvider",
+      "all_providers": [
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.07563236666555895,
+      "latency_p50_ms_mean_over_repeats": 0.07167416674747074,
+      "latency_p95_ms_mean_over_repeats": 0.09706511669567892,
+      "latency_p99_ms_mean_over_repeats": 0.16892541319824309,
+      "throughput_samples_per_s_mean_over_repeats": 846386.258650809,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cpu_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 128,
+      "device": "CPUExecutionProvider",
+      "execution_provider": "CPUExecutionProvider",
+      "all_providers": [
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.12485516331859496,
+      "latency_p50_ms_mean_over_repeats": 0.11716933333142758,
+      "latency_p95_ms_mean_over_repeats": 0.144207300142322,
+      "latency_p99_ms_mean_over_repeats": 0.17922322663253296,
+      "throughput_samples_per_s_mean_over_repeats": 1029260.7987109047,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cuda_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 1,
+      "device": "cuda",
+      "execution_provider": "pytorch:cuda",
+      "latency_mean_ms_mean_over_repeats": 0.5405954900091577,
+      "latency_p50_ms_mean_over_repeats": 0.5401763332884002,
+      "latency_p95_ms_mean_over_repeats": 0.62389395000082,
+      "latency_p99_ms_mean_over_repeats": 0.8452764033745566,
+      "throughput_samples_per_s_mean_over_repeats": 1856.5126663107594,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cuda_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 8,
+      "device": "cuda",
+      "execution_provider": "pytorch:cuda",
+      "latency_mean_ms_mean_over_repeats": 0.38378377666807256,
+      "latency_p50_ms_mean_over_repeats": 0.3731111667093501,
+      "latency_p95_ms_mean_over_repeats": 0.5002128497835655,
+      "latency_p99_ms_mean_over_repeats": 0.5563616198787714,
+      "throughput_samples_per_s_mean_over_repeats": 21213.860229204027,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cuda_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 32,
+      "device": "cuda",
+      "execution_provider": "pytorch:cuda",
+      "latency_mean_ms_mean_over_repeats": 0.3550939233309691,
+      "latency_p50_ms_mean_over_repeats": 0.34734649996911077,
+      "latency_p95_ms_mean_over_repeats": 0.424114816587462,
+      "latency_p99_ms_mean_over_repeats": 0.4861593166636646,
+      "throughput_samples_per_s_mean_over_repeats": 90146.00759037728,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cuda_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 64,
+      "device": "cuda",
+      "execution_provider": "pytorch:cuda",
+      "latency_mean_ms_mean_over_repeats": 0.3431725233319109,
+      "latency_p50_ms_mean_over_repeats": 0.33594949991311296,
+      "latency_p95_ms_mean_over_repeats": 0.4169697999789908,
+      "latency_p99_ms_mean_over_repeats": 0.45630129324308677,
+      "throughput_samples_per_s_mean_over_repeats": 186499.95600234988,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cuda_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 128,
+      "device": "cuda",
+      "execution_provider": "pytorch:cuda",
+      "latency_mean_ms_mean_over_repeats": 0.4041620633324783,
+      "latency_p50_ms_mean_over_repeats": 0.3597178333620832,
+      "latency_p95_ms_mean_over_repeats": 0.5981679832530062,
+      "latency_p99_ms_mean_over_repeats": 0.6492528235033519,
+      "throughput_samples_per_s_mean_over_repeats": 317786.4424533188,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cuda_fp32",
+      "mode": "with_h2d",
+      "batch_size": 1,
+      "device": "cuda",
+      "execution_provider": "pytorch:cuda",
+      "latency_mean_ms_mean_over_repeats": 0.3887380099998457,
+      "latency_p50_ms_mean_over_repeats": 0.3668016665111888,
+      "latency_p95_ms_mean_over_repeats": 0.48574686680543283,
+      "latency_p99_ms_mean_over_repeats": 0.5607206564567003,
+      "throughput_samples_per_s_mean_over_repeats": 2588.7297387397252,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cuda_fp32",
+      "mode": "with_h2d",
+      "batch_size": 8,
+      "device": "cuda",
+      "execution_provider": "pytorch:cuda",
+      "latency_mean_ms_mean_over_repeats": 0.3807218533347623,
+      "latency_p50_ms_mean_over_repeats": 0.3727808333072365,
+      "latency_p95_ms_mean_over_repeats": 0.4641442667661977,
+      "latency_p99_ms_mean_over_repeats": 0.5206210567651702,
+      "throughput_samples_per_s_mean_over_repeats": 21068.439496304854,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cuda_fp32",
+      "mode": "with_h2d",
+      "batch_size": 32,
+      "device": "cuda",
+      "execution_provider": "pytorch:cuda",
+      "latency_mean_ms_mean_over_repeats": 0.3933307333333384,
+      "latency_p50_ms_mean_over_repeats": 0.38424983320813527,
+      "latency_p95_ms_mean_over_repeats": 0.48026391652153205,
+      "latency_p99_ms_mean_over_repeats": 0.535687966777611,
+      "throughput_samples_per_s_mean_over_repeats": 81395.2109673606,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cuda_fp32",
+      "mode": "with_h2d",
+      "batch_size": 64,
+      "device": "cuda",
+      "execution_provider": "pytorch:cuda",
+      "latency_mean_ms_mean_over_repeats": 0.385529869987901,
+      "latency_p50_ms_mean_over_repeats": 0.3783769999093541,
+      "latency_p95_ms_mean_over_repeats": 0.4570359499894039,
+      "latency_p99_ms_mean_over_repeats": 0.5144089166666771,
+      "throughput_samples_per_s_mean_over_repeats": 166031.36472756532,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "pytorch_cuda_fp32",
+      "mode": "with_h2d",
+      "batch_size": 128,
+      "device": "cuda",
+      "execution_provider": "pytorch:cuda",
+      "latency_mean_ms_mean_over_repeats": 0.39888749666867324,
+      "latency_p50_ms_mean_over_repeats": 0.3947914999571367,
+      "latency_p95_ms_mean_over_repeats": 0.4596657666752435,
+      "latency_p99_ms_mean_over_repeats": 0.5230843699897983,
+      "throughput_samples_per_s_mean_over_repeats": 320902.33810634684,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cuda_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 1,
+      "device": "CUDAExecutionProvider",
+      "execution_provider": "CUDAExecutionProvider",
+      "all_providers": [
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.14048958002604195,
+      "latency_p50_ms_mean_over_repeats": 0.13461049995081945,
+      "latency_p95_ms_mean_over_repeats": 0.18632761664321143,
+      "latency_p99_ms_mean_over_repeats": 0.2222411166258099,
+      "throughput_samples_per_s_mean_over_repeats": 7120.309040205376,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cuda_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 8,
+      "device": "CUDAExecutionProvider",
+      "execution_provider": "CUDAExecutionProvider",
+      "all_providers": [
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.13679151665201061,
+      "latency_p50_ms_mean_over_repeats": 0.13022750007015324,
+      "latency_p95_ms_mean_over_repeats": 0.18063041651051512,
+      "latency_p99_ms_mean_over_repeats": 0.2101754300080454,
+      "throughput_samples_per_s_mean_over_repeats": 58501.53938555252,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cuda_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 32,
+      "device": "CUDAExecutionProvider",
+      "execution_provider": "CUDAExecutionProvider",
+      "all_providers": [
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.19630172666135573,
+      "latency_p50_ms_mean_over_repeats": 0.18787116672077295,
+      "latency_p95_ms_mean_over_repeats": 0.2321031666042472,
+      "latency_p99_ms_mean_over_repeats": 0.31327481674149393,
+      "throughput_samples_per_s_mean_over_repeats": 170854.08096280092,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cuda_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 64,
+      "device": "CUDAExecutionProvider",
+      "execution_provider": "CUDAExecutionProvider",
+      "all_providers": [
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.1867451199783924,
+      "latency_p50_ms_mean_over_repeats": 0.17747616667899516,
+      "latency_p95_ms_mean_over_repeats": 0.22052761660991863,
+      "latency_p99_ms_mean_over_repeats": 0.2602365433237246,
+      "throughput_samples_per_s_mean_over_repeats": 344550.37227301724,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cuda_fp32",
+      "mode": "model_only_on_device",
+      "batch_size": 128,
+      "device": "CUDAExecutionProvider",
+      "execution_provider": "CUDAExecutionProvider",
+      "all_providers": [
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.19900434331399688,
+      "latency_p50_ms_mean_over_repeats": 0.19541666665645607,
+      "latency_p95_ms_mean_over_repeats": 0.224102766477093,
+      "latency_p99_ms_mean_over_repeats": 0.23779759669196224,
+      "throughput_samples_per_s_mean_over_repeats": 644292.0306029158,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cuda_fp32",
+      "mode": "with_h2d",
+      "batch_size": 1,
+      "device": "CUDAExecutionProvider",
+      "execution_provider": "CUDAExecutionProvider",
+      "all_providers": [
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.17180269000315698,
+      "latency_p50_ms_mean_over_repeats": 0.16947116660048778,
+      "latency_p95_ms_mean_over_repeats": 0.22696696666268204,
+      "latency_p99_ms_mean_over_repeats": 0.2570235665825749,
+      "throughput_samples_per_s_mean_over_repeats": 5990.183734627962,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cuda_fp32",
+      "mode": "with_h2d",
+      "batch_size": 8,
+      "device": "CUDAExecutionProvider",
+      "execution_provider": "CUDAExecutionProvider",
+      "all_providers": [
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.15000836998145436,
+      "latency_p50_ms_mean_over_repeats": 0.14248283332563005,
+      "latency_p95_ms_mean_over_repeats": 0.20239708327759823,
+      "latency_p99_ms_mean_over_repeats": 0.2371751367324275,
+      "throughput_samples_per_s_mean_over_repeats": 53399.12053403733,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cuda_fp32",
+      "mode": "with_h2d",
+      "batch_size": 32,
+      "device": "CUDAExecutionProvider",
+      "execution_provider": "CUDAExecutionProvider",
+      "all_providers": [
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.1633893200126598,
+      "latency_p50_ms_mean_over_repeats": 0.15711366654613812,
+      "latency_p95_ms_mean_over_repeats": 0.20509203334313497,
+      "latency_p99_ms_mean_over_repeats": 0.23463644331968694,
+      "throughput_samples_per_s_mean_over_repeats": 195948.927637656,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cuda_fp32",
+      "mode": "with_h2d",
+      "batch_size": 64,
+      "device": "CUDAExecutionProvider",
+      "execution_provider": "CUDAExecutionProvider",
+      "all_providers": [
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.17927807332853263,
+      "latency_p50_ms_mean_over_repeats": 0.1741346667737768,
+      "latency_p95_ms_mean_over_repeats": 0.21516349981235786,
+      "latency_p99_ms_mean_over_repeats": 0.2400427132639987,
+      "throughput_samples_per_s_mean_over_repeats": 357109.3692873173,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    },
+    {
+      "variant": "onnx_cuda_fp32",
+      "mode": "with_h2d",
+      "batch_size": 128,
+      "device": "CUDAExecutionProvider",
+      "execution_provider": "CUDAExecutionProvider",
+      "all_providers": [
+        "CUDAExecutionProvider",
+        "CPUExecutionProvider"
+      ],
+      "latency_mean_ms_mean_over_repeats": 0.21441830667299655,
+      "latency_p50_ms_mean_over_repeats": 0.2083738333264288,
+      "latency_p95_ms_mean_over_repeats": 0.24956104995605224,
+      "latency_p99_ms_mean_over_repeats": 0.2734377600169562,
+      "throughput_samples_per_s_mean_over_repeats": 597114.1774531527,
+      "repeats": 3,
+      "warmup_runs": 20,
+      "timed_runs": 100
+    }
+  ],
+  "parity": [
+    {
+      "pair": "pytorch_cpu_vs_onnx_cpu",
+      "n": 128,
+      "max_abs": 4.76837158203125e-07,
+      "mae": 6.833579391241074e-08,
+      "max_rel": 7.484995257720862e-06,
+      "atol": 1e-05,
+      "rtol": 0.0001,
+      "passed": true
+    },
+    {
+      "pair": "pytorch_cpu_vs_pytorch_cuda",
+      "n": 128,
+      "max_abs": 7.152557373046875e-07,
+      "mae": 1.36176822707057e-07,
+      "max_rel": 4.2771401472690635e-06,
+      "atol": 1e-05,
+      "rtol": 0.0001,
+      "passed": true
+    },
+    {
+      "pair": "onnx_cpu_vs_onnx_cuda",
+      "n": 128,
+      "max_abs": 7.152557373046875e-07,
+      "mae": 1.1123484000563622e-07,
+      "max_rel": 6.059327229333417e-06,
+      "atol": 1e-05,
+      "rtol": 0.0001,
+      "passed": true
+    },
+    {
+      "pair": "pytorch_cuda_vs_onnx_cuda",
+      "n": 128,
+      "max_abs": 4.76837158203125e-07,
+      "mae": 1.0311487130820751e-07,
+      "max_rel": 3.0772472767592498e-06,
+      "atol": 1e-05,
+      "rtol": 0.0001,
+      "passed": true
+    }
+  ],
+  "ort_cuda_profile": {
+    "profile_file": "onnxruntime_profile__2026-11-24_15-19-30_623.json",
+    "providers": [
+      "CUDAExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "cudaexecutionprovider_mentions": 8,
+    "cpuexecutionprovider_mentions": 0,
+    "note": "Session created with providers=['CUDAExecutionProvider'] only. CPU EP mentions in profile may include host-side bookkeeping; primary provider must remain CUDA.",
+    "primary_provider_ok": true
+  },
+  "quantized_gpu": {
+    "status": "SKIPPED_NOT_IN_PACKAGE",
+    "reason": "quantized ONNX not included in Colab package"
+  },
+  "gpu_status": "VERIFIED_GPU",
+  "parity_status": "PASS"
+}

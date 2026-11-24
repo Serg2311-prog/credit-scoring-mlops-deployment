@@ -1,0 +1,12 @@
+{
+  "name": "colab_gpu_benchmark_hardened_block73",
+  "quality_evaluation": false,
+  "input_dim": 47,
+  "batch_sizes": [1, 8, 32, 64, 128],
+  "warmup_runs": 20,
+  "timed_runs": 100,
+  "repeats": 3,
+  "require_gpu_flag": "--require-gpu",
+  "historical_evidence": "results/block7/colab/",
+  "note": "Hardened runner — requires a new GPU run before claiming VERIFIED_GPU for this code path"
+}

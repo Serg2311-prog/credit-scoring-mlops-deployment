@@ -343,7 +343,7 @@ credit-scoring-mlops-deployment/
 > [`docs/stage1_model_optimization_completion_report.md`](stage1_model_optimization_completion_report.md) (Block 7),
 > [`docs/production_resource_sizing.md`](production_resource_sizing.md).
 > Baseline RF test ROC-AUC **0.7771**; MLP/ONNX FP32 **0.7742**.
-> Block 7: CPU batches 1/8/32/64/128, API load VERIFIED_LOCAL, GPU **BLOCKED_NO_GPU**, production artifacts unchanged.
+> Block 7: CPU/API local VERIFIED; hardened Colab GPU `VERIFIED_GPU` (`results/block7/colab/hardened/`); historical Colab kept separate; production artifacts unchanged.
 
 ### 8.1. Цели (план)
 

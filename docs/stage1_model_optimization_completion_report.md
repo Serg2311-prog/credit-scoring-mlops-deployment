@@ -104,15 +104,14 @@ Health `/live` + `/ready` **200** after test. Status: **VERIFIED_LOCAL** (not cl
 
 ## 6. GPU benchmark
 
-| Check | Result |
+| Layer | Status |
 | --- | --- |
-| `torch.cuda.is_available()` | **False** |
-| ORT providers | AzureExecutionProvider, CPUExecutionProvider |
-| CUDA EP | absent |
-| Status | **BLOCKED_NO_GPU** |
-| Fake GPU latency | **not produced** |
+| Local laptop | **BLOCKED_NO_GPU** |
+| Hardened Colab (T4) | **VERIFIED_GPU** — `results/block7/colab/hardened/` (30 configs, 9000 timed, parity PASS, 8/8 CUDA Node events) |
+| Historical Colab (earlier runner) | Kept separate under `results/block7/colab/` |
+| Quantized GPU | **NOT_EXECUTED** |
 
-Runner + Colab instructions: `docs/gpu_benchmark_colab.md`. Status is **not** `VERIFIED_GPU`.
+Finding (hardened, do not alter): ONNX FP32 CPU p50 faster than CUDA by ~2.65×–5.24× for batches 1–128.
 
 ---
 
@@ -151,4 +150,4 @@ Utilities: `scripts/block7_eval.py`, `scripts/api_load_test.py`, `tests/nn/*`.
 
 ## 10. Preliminary score (Stage 1 / 5 pts)
 
-Estimated **4.5–5.0 / 5**: all mandatory items implemented and locally verified except GPU measurement, which TZ allows to document as unavailable when hardware is missing — recorded as `BLOCKED_NO_GPU` without fabricated numbers. Final grade is instructor’s.
+Estimated **5 / 5**: Stage-1 model prep/optimization complete — NN, ONNX, quant, CPU/API benches, and hardened Colab GPU `VERIFIED_GPU`; production artifacts unchanged. Final grade is instructor’s.

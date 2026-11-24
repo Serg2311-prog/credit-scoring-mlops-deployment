@@ -1,12 +1,47 @@
 {
-  "device": "cuda",
-  "status": "BLOCKED_NO_GPU",
-  "torch_cuda_is_available": false,
-  "onnxruntime_providers": [
-    "AzureExecutionProvider",
-    "CPUExecutionProvider"
+  "status": "VERIFIED_GPU",
+  "hardened_colab": {
+    "status": "VERIFIED_GPU",
+    "evidence": "results/block7/colab/hardened/",
+    "device": "NVIDIA Tesla T4",
+    "cuda": "13.0",
+    "torch": "2.14.1+cu130",
+    "onnxruntime": "1.32.0",
+    "configured_num_threads": 2,
+    "n_result_rows": 30,
+    "timed_measurements": 9000,
+    "parity_status": "PASS",
+    "runner": "scripts/gpu_benchmark/run_benchmark.py",
+    "runner_generation": "hardened_block73",
+    "ort_profile": {
+      "file": "results/block7/colab/hardened/onnxruntime_profile__2026-11-24_15-38-33_414.json",
+      "n_events": 12,
+      "n_node_events": 8,
+      "cuda_node_events": 8,
+      "cpu_node_events": 0,
+      "missing_provider_on_node": 0,
+      "independent_check": "PASS"
+    },
+    "key_finding": "ONNX FP32 CPU p50 faster than ONNX FP32 CUDA by ~2.65x-5.24x for batches 1-128 on this MLP/T4.",
+    "max_ort_cpu_throughput_samples_per_s_batch128": 1992656.0,
+    "throughput_note": "Model samples/s only — not HTTP API RPS."
+  },
+  "historical_colab_block72": {
+    "status": "VERIFIED_GPU_HISTORICAL_COLAB",
+    "evidence": "results/block7/colab/",
+    "note": "Separate historical runner measurements; do not mix tables with hardened/."
+  },
+  "quantized_gpu": "NOT_EXECUTED",
+  "local_laptop": {
+    "status": "BLOCKED_NO_GPU",
+    "torch_cuda_is_available": false
+  },
+  "non_claims": [
+    "Not holdout quality evaluation",
+    "Not HTTP API load test",
+    "Not GPU INT8",
+    "Not cloud GPU node deployment",
+    "Colab CPU model string not recorded"
   ],
-  "cuda_execution_provider_present": false,
-  "reason": "No usable GPU for measured CUDA/ORT-CUDA inference. CPU numbers must not be reported as GPU results.",
-  "colab_instructions": "See docs/gpu_benchmark_colab.md \u2014 run the same python -m src.nn.benchmark --device cuda on a GPU runtime."
+  "production_recommendation": "Keep ONNX FP32 CPU; GPU node group optional; do not change production resources/registry."
 }

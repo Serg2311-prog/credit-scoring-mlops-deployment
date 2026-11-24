@@ -56,7 +56,7 @@
 | 1.8 | Сравнение size/ROC-AUC/F1/latency/… | Измеренные значения + abs/rel Δ | `docs/model_benchmark.md`, `artifacts/block7/quantization_deltas.json` | `verified_local` |
 | 1.9 | CPU benchmarks, несколько batch sizes | Block7 batch∈{1,8,32,64,128} + historical {1,16,64,256} | `artifacts/block7/benchmark_cpu_block7.json` | `verified_local` |
 | 1.10 | Честный benchmark-отчёт | RF baseline не подменён (ROC-AUC **0.7771**; MLP **0.7742**) | `docs/model_benchmark.md` | `verified_local` |
-| 1.11 | GPU benchmark | Нет GPU → `BLOCKED_NO_GPU` (не CPU-as-GPU) | `artifacts/block7/benchmark_gpu.json` | `blocked_no_gpu` |
+| 1.11 | GPU benchmark | Hardened Colab T4 `VERIFIED_GPU`; local blocked; historical kept separate | `results/block7/colab/hardened/`, `gpu_status.json` | `verified_gpu` / local `blocked_no_gpu` |
 | 1.12 | Test не для подбора HP | Val только из train | код split + отчёт | `verified_local` |
 | 1.13 | Тесты этапа 1 | pytest model/export/parity/benchmark utils | suite в полном pytest | `verified_local` |
 | 1.14 | API load testing | Concurrent synthetic HTTP | `scripts/api_load_test.py`, `results/block7/api_load_summary.json` | `verified_local` |

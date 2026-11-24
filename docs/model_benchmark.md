@@ -181,14 +181,34 @@ End-to-end почти одинаков для backends: доминирует pre
 
 ## 7. GPU benchmark
 
-Исторический артефакт мог содержать `SKIPPED`. Block 7 фиксирует явный статус:
+### 7.1 Local laptop
 
-```json
-{"device": "cuda", "status": "BLOCKED_NO_GPU", "torch_cuda_is_available": false}
-```
+`BLOCKED_NO_GPU` (`torch.cuda.is_available()==false`). No fabricated GPU latency.
 
-Команда: `python -m src.nn.benchmark --device cuda` — **без** silent CPU fallback и **без** выдуманных GPU latency.
-Инструкция внешнего прогона: [`gpu_benchmark_colab.md`](gpu_benchmark_colab.md). Статус **не** `VERIFIED_GPU`.
+### 7.2 Historical Colab (Block 7.2 runner) — separate archive
+
+[`results/block7/colab/`](../results/block7/colab/) — do not mix with hardened tables.
+Status: `VERIFIED_GPU_HISTORICAL_COLAB`.
+
+### 7.3 Hardened Colab evidence — **VERIFIED_GPU** (current runner)
+
+[`results/block7/colab/hardened/`](../results/block7/colab/hardened/). Tesla T4, CUDA 13.0, PT 2.14.1+cu130, ORT 1.32.0, threads=2.
+Synthetic model-only (not holdout quality). Parity PASS. ORT profile 8/8 CUDA Node events.
+Throughput is model samples/s — **not** HTTP RPS. Quantized GPU NOT_EXECUTED.
+
+**Hardened model_only p50 (ms)** — original measurements (do not alter):
+
+| Batch | PT CPU | PT CUDA | ORT CPU | ORT CUDA | CUDA/CPU |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 0.15042 | 0.37429 | **0.01966** | 0.10087 | 5.13× |
+| 8 | 0.17811 | 0.31522 | **0.01946** | 0.10200 | 5.24× |
+| 32 | 0.19419 | 0.33113 | **0.02608** | 0.12845 | 4.93× |
+| 64 | 0.19277 | 0.32517 | **0.03808** | 0.14349 | 3.77× |
+| 128 | 0.24009 | 0.32341 | **0.06248** | 0.16529 | 2.65× |
+
+Plots: `results/block7/colab/hardened/plots/`. Status: `results/block7/gpu_status.json` → **`VERIFIED_GPU`**.
+
+See [`gpu_benchmark_colab.md`](gpu_benchmark_colab.md).
 
 ---
 
@@ -226,7 +246,7 @@ $env:PYTHONPATH = (Get-Location).Path
 ## 9. Ограничения эксперимента
 
 1. Локально установлен Python **3.13**, не 3.11.
-2. Нет GPU — GPU numbers отсутствуют (`BLOCKED_NO_GPU`).
+2. Local laptop: `BLOCKED_NO_GPU`. Hardened Colab T4 evidence is `VERIFIED_GPU` (synthetic model-only).
 3. MLP не превзошла RF baseline по ключевым метрикам качества.
 4. Dynamic quantization даёт сжатие, но ухудшает parity вероятностей (max abs ~0.12).
 5. На batch=1 quantized ONNX **медленнее** FP32 ONNX в прогонах; ускорение **не** утверждается без измерений.
@@ -245,6 +265,6 @@ $env:PYTHONPATH = (Get-Location).Path
 | Быстрый CPU inference с паритетом к обученной NN | **ONNX FP32** (`models/credit_scoring_nn.onnx`) |
 | Минимальный размер артефакта | ONNX Quantized — только после продуктового решения о допуске Δp / flips |
 | API / K8s resources | См. [`production_resource_sizing.md`](production_resource_sizing.md) — текущие overlays **оставить** |
-| GPU | Не нужен для этой MLP; IaC GPU opt-in остаётся выключенным |
+| GPU | Colab shows ONNX CPU faster than CUDA for this MLP; keep GPU node group **optional** |
 
-**Итог:** NN→ONNX→quant→CPU/API benchmarks **измерены**. Serving default — **ONNX FP32**. Quantized — опциональный кандидат, не default. GPU — `BLOCKED_NO_GPU`.
+**Итог:** Serving default — **ONNX FP32 CPU**. Quantized — optional. Historical Colab confirms CPU preference for batches 1–128; production resources unchanged.

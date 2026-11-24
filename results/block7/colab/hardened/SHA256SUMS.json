@@ -1,0 +1,70 @@
+{
+  "experiment": "hardened_block73_colab_verified",
+  "gpu_status": "VERIFIED_GPU",
+  "parity_status": "PASS",
+  "n_result_rows": 30,
+  "timed_measurements": 9000,
+  "runner_sha256": "5218db258454af6a1e9de6be3ca334b75f833376f180e43944c0e1cbf1986298",
+  "mlp_model_sha256": "d4775db23de53484d740c72cb7d56695e18829ab628165edd11f0a7dfe7a50f5",
+  "runner_matches_scripts_gpu_benchmark": true,
+  "profile_note": "Archive contained two identical profiling files; one original copy retained.",
+  "profile_sha256": "ac9fb85c4c7262c9b7c4f906aad635ba5eddf0473c903d9e09199977576d1d12",
+  "model_sha256_crosscheck": {
+    "onnx_evidence": "48051065162f98c0842f0f4bca80ce4105e343924a7b62001114c08adc7521a4",
+    "onnx_local": "48051065162f98c0842f0f4bca80ce4105e343924a7b62001114c08adc7521a4",
+    "pt_evidence": "d6e05563bb7790c34bf3e444db7c0e1d5ceea0aa92e26aa0b69f5d1f26d1c2ae",
+    "pt_local": "d6e05563bb7790c34bf3e444db7c0e1d5ceea0aa92e26aa0b69f5d1f26d1c2ae",
+    "onnx_match": true,
+    "pt_match": true
+  },
+  "files": {
+    "colab_gpu_benchmark.csv": {
+      "sha256": "fb39da448a347f9005e6185884cd3bdc720b22aade1ea4d3a395e96a4bca8260",
+      "size_bytes": 5443
+    },
+    "colab_gpu_benchmark.json": {
+      "sha256": "24a65ba1d4d7c83156555e5dd278f7f348291eb5dbffe565c722569112662ffd",
+      "size_bytes": 26956
+    },
+    "experiment_config.json": {
+      "sha256": "343b4f4b1aeef70c5cf2b1f294088ed7a275e321be8378c15684fcf1a5500d1c",
+      "size_bytes": 392
+    },
+    "onnxruntime_profile__2026-11-24_15-38-33_414.json": {
+      "sha256": "ac9fb85c4c7262c9b7c4f906aad635ba5eddf0473c903d9e09199977576d1d12",
+      "size_bytes": 5666
+    },
+    "plots/onnx_cpu_vs_cuda_p50.csv": {
+      "sha256": "2de95a524deae478afdf9010f5466da26b550bbaff6d68126c6f075f4370bb36",
+      "size_bytes": 198
+    },
+    "plots/plot_hardened_p50_latency.png": {
+      "sha256": "85cc528bfc04fdb3dfb24fcf2809310bd0cc28d4af9904dbd6fd4ec54133f8cb",
+      "size_bytes": 45824
+    },
+    "plots/plot_hardened_p95_latency.png": {
+      "sha256": "91a5957d2fdd4ebdf5fe386b883ee8eb264ce52ea2183bca5c3d095ac0651c8b",
+      "size_bytes": 43737
+    },
+    "plots/plot_hardened_throughput.png": {
+      "sha256": "657022e43377baa673359c22701432b885c71d02ed0dc62a8e9256993e0bb746",
+      "size_bytes": 59792
+    },
+    "README.md": {
+      "sha256": "9adfa473f7b9b42b0498d961b3646fa05855c6873cb2bf326d6f3240ea7a6c58",
+      "size_bytes": 2212
+    },
+    "runner_used/mlp_model.py": {
+      "sha256": "d4775db23de53484d740c72cb7d56695e18829ab628165edd11f0a7dfe7a50f5",
+      "size_bytes": 2239
+    },
+    "runner_used/run_benchmark.py": {
+      "sha256": "5218db258454af6a1e9de6be3ca334b75f833376f180e43944c0e1cbf1986298",
+      "size_bytes": 24863
+    },
+    "synthetic_features_meta.json": {
+      "sha256": "8faf57a7b34dbd6e91bf3bca4970288844c16e0769c531a54af061f7245da02e",
+      "size_bytes": 301
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "generated_for": "Block7.3 Colab GPU evidence",
+  "files": {
+    "colab_gpu_benchmark.csv": {
+      "sha256": "66bada37132899d599e34de04d9e430b91b0caf06dda2b872934502afd82407c",
+      "size_bytes": 5435
+    },
+    "colab_gpu_benchmark.json": {
+      "sha256": "8b895cf9df3da6f8a55a403a86e8fabcf26764a2c9ef5cd0bbf1679a3fb7de0d",
+      "size_bytes": 22000
+    },
+    "experiment_config.json": {
+      "sha256": "4ede3d87342218fa9b201198f300c0704d4f6c306c47893d2d0e98934e06ebac",
+      "size_bytes": 828
+    },
+    "historical_runner/mlp_model.py": {
+      "sha256": "56b9273ed435f17a46535a74a451449aaeab54f3899f535cadf47922719bd57e",
+      "size_bytes": 1543
+    },
+    "historical_runner/run_benchmark.py": {
+      "sha256": "d833272b14f76e6598a5135ae3049147e146821d3f1f3323aadbc73c6321d0aa",
+      "size_bytes": 21497
+    },
+    "onnxruntime_profile__2026-11-24_15-19-30_623.json": {
+      "sha256": "82003fdbb45cdc3a4491e83b54ee9b6db699a9ee62154726e2f55379f47a78e0",
+      "size_bytes": 5642
+    },
+    "plots/onnx_cpu_vs_cuda_p50.csv": {
+      "sha256": "0ffef977812f352f3fedbd24fecc6b809052e098e3cfb92df80d0a5c4e528b27",
+      "size_bytes": 196
+    },
+    "plots/plot_colab_p50_latency.png": {
+      "sha256": "6bf1d4294cb27cfd89ce86a89b1651d96eb24c6413f3bec70d198145bc53cfd7",
+      "size_bytes": 48750
+    },
+    "plots/plot_colab_p95_latency.png": {
+      "sha256": "b0237a95166f56191c27ab1dca5bc48709dd4a00fdd20357332e80a5d7350cac",
+      "size_bytes": 52543
+    },
+    "plots/plot_colab_parity_mae.png": {
+      "sha256": "49f826c80a301683565b295f33f10ce07287836fb81346dff818bdd20bdc92f8",
+      "size_bytes": 33510
+    },
+    "plots/plot_colab_throughput.png": {
+      "sha256": "fd5e780ffe03744cfaa0b6a5c7cb25aed2e4450d4ff5df4d5d805908c0d9fa34",
+      "size_bytes": 63441
+    },
+    "plots/plot_ort_cuda_ops.png": {
+      "sha256": "36f3b8eb7a6ffbfe8f833b14ab2481da1afa620c3a038718f4608b4106f7fab6",
+      "size_bytes": 22937
+    },
+    "README.md": {
+      "sha256": "00b7dc895ae4a15d9862de2bb680a75e36dea777335a72383bbd45bc069dcdc8",
+      "size_bytes": 2140
+    },
+    "synthetic_features_meta.json": {
+      "sha256": "8faf57a7b34dbd6e91bf3bca4970288844c16e0769c531a54af061f7245da02e",
+      "size_bytes": 301
+    }
+  },
+  "model_sha256_crosscheck": {
+    "onnx_fp32_evidence": "48051065162f98c0842f0f4bca80ce4105e343924a7b62001114c08adc7521a4",
+    "onnx_fp32_local": "48051065162f98c0842f0f4bca80ce4105e343924a7b62001114c08adc7521a4",
+    "onnx_match": true,
+    "pt_evidence": "d6e05563bb7790c34bf3e444db7c0e1d5ceea0aa92e26aa0b69f5d1f26d1c2ae",
+    "pt_local": "d6e05563bb7790c34bf3e444db7c0e1d5ceea0aa92e26aa0b69f5d1f26d1c2ae",
+    "pt_match": true
+  },
+  "environment_summary": {
+    "gpu": "Tesla T4",
+    "cuda": "13.0",
+    "torch": "2.14.1+cu130",
+    "onnxruntime": "1.32.0",
+    "n_result_rows": 30,
+    "timed_measurements": 9000,
+    "parity_status": "PASS",
+    "gpu_status_historical_label": "VERIFIED_GPU",
+    "note": "Historical VERIFIED_GPU label from Colab run; independent ORT profile confirms 8/8 CUDA Node events."
+  }
+}

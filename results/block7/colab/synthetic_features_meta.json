@@ -1,0 +1,9 @@
+{
+  "seed": 42,
+  "n_rows": 1024,
+  "input_dim": 47,
+  "dtype": "float32",
+  "distribution": "iid standard_normal",
+  "purpose": "latency/throughput synthetic inputs only \u2014 NOT holdout quality evaluation",
+  "sha256": "0cadfac94133179073d3b3940a9ced3f45cf0644034691cb3be4f281ba736670"
+}

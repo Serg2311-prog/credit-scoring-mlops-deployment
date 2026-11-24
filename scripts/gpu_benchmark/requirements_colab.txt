@@ -1,0 +1,3 @@
+# Install ONLY if missing. Do NOT reinstall working PyTorch.
+# Do NOT pip install onnxruntime (CPU) over onnxruntime-gpu.
+numpy>=1.26

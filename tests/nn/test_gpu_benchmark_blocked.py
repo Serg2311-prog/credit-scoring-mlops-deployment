@@ -50,7 +50,10 @@ def test_tracked_gpu_status_evidence_schema():
     path = Path("results/block7/gpu_status.json")
     assert path.is_file(), "Git-tracked GPU evidence missing"
     data = json.loads(path.read_text(encoding="utf-8"))
-    assert data["status"] == "BLOCKED_NO_GPU"
+    assert data["status"] == "VERIFIED_GPU"
+    assert data["hardened_colab"]["status"] == "VERIFIED_GPU"
+    assert data["local_laptop"]["status"] == "BLOCKED_NO_GPU"
+    assert data["quantized_gpu"] == "NOT_EXECUTED"
     assert data.get("results") in (None, [], {})
 
 

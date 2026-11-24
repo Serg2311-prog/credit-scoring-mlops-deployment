@@ -88,16 +88,16 @@ UCI raw CSV
 - Экспорт ONNX FP32 и dynamic quantization
 - Parity PyTorch ↔ ONNX, CPU benchmark (batch 1/8/32/64/128 + thread probe)
 - API load test (synthetic, local uvicorn) — `scripts/api_load_test.py`
-- GPU benchmark как отдельный сценарий (`BLOCKED_NO_GPU` без CUDA; см. Colab instructions)
-- Production resource sizing vs K8s overlays — без необоснованной смены manifests
+- GPU: local `BLOCKED_NO_GPU`; hardened Colab T4 **`VERIFIED_GPU`** in [results/block7/colab/hardened/](results/block7/colab/hardened/); historical run kept separately under [results/block7/colab/](results/block7/colab/)
+- Production sizing — ONNX FP32 CPU preferred; manifests/registry unchanged
 
 ### Проверка
 
 - Локальные unit/integration-тесты модели, экспорта и benchmark utilities
 - Зафиксированные метрики: MLP/ONNX FP32 test ROC-AUC **0.7742**
 - Block 7: [docs/stage1_model_optimization_completion_report.md](docs/stage1_model_optimization_completion_report.md)
-- Git-tracked evidence: [results/block7/](results/block7/) (parity, quality, CPU CSV, API load, GPU status)
-- Отчёт: [docs/model_benchmark.md](docs/model_benchmark.md), [docs/stage1_audit_report.md](docs/stage1_audit_report.md)
+- Git-tracked evidence: [results/block7/](results/block7/) (parity, quality, CPU, API load, **Colab GPU**)
+- Отчёт: [docs/model_benchmark.md](docs/model_benchmark.md), [docs/gpu_benchmark_colab.md](docs/gpu_benchmark_colab.md)
 
 ### Документация
 

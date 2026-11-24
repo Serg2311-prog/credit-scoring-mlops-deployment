@@ -1,65 +1,55 @@
-# GPU benchmark — external runner (Google Colab / any CUDA host)
+# GPU benchmark — Colab evidence (historical + hardened)
 
-Local laptop status: **BLOCKED_NO_GPU** (`torch.cuda.is_available()==False`).
-Do **not** treat CPU latency as GPU results.
-Tracked evidence: [`results/block7/gpu_status.json`](../results/block7/gpu_status.json).
+## Status layers
 
-## Goal
+| Layer | Status | Location |
+| --- | --- | --- |
+| Local laptop | `BLOCKED_NO_GPU` | no CUDA |
+| Historical Colab (Block 7.2 runner) | `VERIFIED_GPU_HISTORICAL_COLAB` | [`results/block7/colab/`](../results/block7/colab/) |
+| **Hardened Colab (Block 7.3/7.4 runner)** | **`VERIFIED_GPU`** | [`results/block7/colab/hardened/`](../results/block7/colab/hardened/) |
 
-Produce a real `artifacts/benchmark_gpu.json` (and optionally copy into
-`results/block7/gpu_status.json`) with `"status": "completed"` on a machine that has CUDA.
+Do **not** mix measurement tables across the two Colab experiments.
 
-## Runner guarantees (`python -m src.nn.benchmark --device cuda`)
+## Hardened VERIFIED_GPU (authoritative for current runner)
 
-| Check | Behavior |
-| --- | --- |
-| Explicit device | `--device cuda` (alias `gpu`) |
-| `torch.cuda.is_available()` | Required; else `BLOCKED_NO_GPU` |
-| `CUDAExecutionProvider` in ORT | Required; else `BLOCKED_NO_GPU` |
-| Silent CPU fallback | **Forbidden** — `allow_cpu_fallback` raises; no CPU latency under GPU label |
-| Model placement | Checkpoint moved to `cuda`; fails if parameter device ≠ cuda |
-| Synchronization | `torch.cuda.synchronize()` around timed forward |
-| Warm-up | Same as CPU (`warmup_runs` from `params.yaml`, default 20) |
-| Inputs | Same holdout feature matrix as CPU path |
-| Output format | JSON with `status`, `results` rows (p50/p95/p99, throughput, repeats) |
+- Tesla T4, CUDA 13.0, PyTorch 2.14.1+cu130, ORT 1.32.0, threads=2
+- 30 configs, 9000 timed measurements, parity **PASS**
+- ORT profile: 8/8 Node events on `CUDAExecutionProvider`, 0 CPU
+- `session.disable_cpu_ep_fallback=1` + `disable_fallback()` in runner
+- Separate profiling session (not inside latency timings)
+- Finding: **ORT FP32 CPU p50 ~2.65×–5.24× faster than ORT CUDA** (batches 1–128)
+- Max ORT CPU throughput ≈ **1.99e6 samples/s** at batch=128 (**not** HTTP RPS)
+- Quantized GPU: **NOT_EXECUTED**
 
-## Colab sketch (operator runs manually — not automated from this repo)
+Evidence: `results/block7/colab/hardened/`.
+Runner used: `results/block7/colab/hardened/runner_used/` (SHA in `SHA256SUMS.json`).
 
-1. Upload or clone the project (minimum: `models/*.pt`, `models/*.onnx`,
-   `data/processed/test.csv` or regenerate, `params.yaml`, `src/`).
-2. Runtime → **GPU**.
-3. Install deps (GPU builds of torch / onnxruntime as available):
+### Hardened model_only p50 (ms)
+
+| Batch | PT CPU | PT CUDA | ORT CPU | ORT CUDA |
+| ---: | ---: | ---: | ---: | ---: |
+| 1 | 0.15042 | 0.37429 | **0.01966** | 0.10087 |
+| 8 | 0.17811 | 0.31522 | **0.01946** | 0.10200 |
+| 32 | 0.19419 | 0.33113 | **0.02608** | 0.12845 |
+| 64 | 0.19277 | 0.32517 | **0.03808** | 0.14349 |
+| 128 | 0.24009 | 0.32341 | **0.06248** | 0.16529 |
+
+## Non-claims
+
+- Synthetic model-only ≠ holdout quality
+- Model throughput ≠ HTTP API throughput
+- No GPU INT8, no GPU API load, no cloud GPU nodes provisioned
+- Colab CPU model string not recorded in environment JSON
+
+## Production implication
+
+Prefer **ONNX FP32 CPU** for this MLP. GPU node group remains optional.
+No production registry / model / Kubernetes resource changes.
+
+## Package rebuild (optional)
 
 ```bash
-pip install torch onnxruntime-gpu onnx pandas scikit-learn joblib pyyaml psutil
+python scripts/gpu_benchmark/package_zip.py
 ```
 
-4. Verify before measuring:
-
-```python
-import torch, onnxruntime as ort
-assert torch.cuda.is_available(), "no CUDA"
-assert any("CUDA" in p for p in ort.get_available_providers()), "no CUDA EP"
-print(torch.cuda.get_device_name(0))
-print(ort.get_available_providers())
-```
-
-5. Run:
-
-```bash
-export PYTHONPATH=.
-python -m src.nn.benchmark --device cuda --batch-sizes 1,8,32,64,128 \
-  --output artifacts/benchmark_gpu.json
-```
-
-6. Confirm JSON has `"status": "completed"` and a non-empty `results` list.
-   Copy anonymized summary into `results/block7/gpu_status.json` only from that file.
-   Append measured numbers to `docs/model_benchmark.md` only from that file.
-
-7. Download the JSON from Colab if the runtime is ephemeral.
-
-## Policy
-
-- No silent CPU fallback when `--device cuda`.
-- Do not commit Colab credentials or personal data.
-- Until a real GPU run exists, status remains **BLOCKED_NO_GPU** / not `VERIFIED_GPU`.
+Cells: `scripts/gpu_benchmark/COLAB_CELLS.md`.

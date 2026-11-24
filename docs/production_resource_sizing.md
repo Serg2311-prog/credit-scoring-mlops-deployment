@@ -22,7 +22,8 @@ Git-tracked numbers: [`results/block7/`](../results/block7/).
 | API health after load | `/live` + `/ready` 200 | same |
 | Process RSS (bench) | ~340–391 MB with torch imported | CPU CSV `peak_rss_mb_observed_row` |
 | API CPU% | **NOT_MEASURED** | — |
-| GPU | `BLOCKED_NO_GPU` | `gpu_status.json` |
+| GPU (local) | `BLOCKED_NO_GPU` | laptop |
+| GPU (hardened Colab T4) | ORT CPU faster than CUDA (p50 ~2.65×–5.24×); VERIFIED_GPU | `results/block7/colab/hardened/` |
 
 Saturation (local, single uvicorn worker): RPS max at concurrency **1**, lower at 2/4/8 while latency rises — enough to say this process saturates beyond c=1 on this host. **Not** a profiled attribution to model vs preprocess vs HTTP.
 
@@ -42,7 +43,7 @@ Saturation (local, single uvicorn worker): RPS max at concurrency **1**, lower a
 | ORT inter-op | ConfigMap **1** | same | **1** | Keep |
 | Model | FP32 ONNX path in ConfigMap | same | Keep FP32 default | Quant not faster on this CPU for API-shaped load; 2.18% flips |
 | Load / replica (guidance) | — | — | ~40–55 synthetic RPS; client concurrency 1–2 for low latency | **Local uvicorn only** — re-measure in cluster |
-| GPU | Terraform GPU off | same | Not required | `BLOCKED_NO_GPU` |
+| GPU | Terraform GPU off | same | Keep optional / off for serving | Colab evidence prefers ORT CPU for this MLP |
 
 **Action:** no Kubernetes manifest changes in Block 7.1 — current overlays already align with measured evidence + conservative headroom.
 

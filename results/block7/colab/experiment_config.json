@@ -1,0 +1,29 @@
+{
+  "name": "colab_gpu_benchmark_model_only",
+  "quality_evaluation": false,
+  "input_dim": 47,
+  "batch_sizes": [1, 8, 32, 64, 128],
+  "warmup_runs": 20,
+  "timed_runs": 100,
+  "repeats": 3,
+  "variants": [
+    "pytorch_cpu_fp32",
+    "pytorch_cuda_fp32",
+    "onnx_cpu_fp32",
+    "onnx_cuda_fp32"
+  ],
+  "modes": {
+    "model_only_on_device": "Tensor already on device; time forward (+ CUDA sync)",
+    "with_h2d": "Include host-to-device transfer in the timed region"
+  },
+  "quantized_onnx_gpu": "only if CUDAExecutionProvider session succeeds without CPU fallback; default package omits quant model",
+  "parity": {
+    "atol": 1e-5,
+    "rtol": 1e-4
+  },
+  "models": {
+    "pytorch": "models/credit_scoring_nn.pt",
+    "onnx_fp32": "models/credit_scoring_nn.onnx"
+  },
+  "synthetic_inputs": "data/synthetic_features.npy"
+}
