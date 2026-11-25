@@ -1,0 +1,18 @@
+{
+  "ready": {
+    "status": "ready",
+    "model_loaded": true,
+    "preprocessor_loaded": true,
+    "backend": "onnx",
+    "model_version": "mlp-onnx-fp32-v1"
+  },
+  "model_info": {
+    "model_name": "credit_scoring_mlp",
+    "model_version": "mlp-onnx-fp32-v1",
+    "backend": "onnx",
+    "model_format": "onnx-fp32",
+    "input_features_count": 47,
+    "threshold": 0.5,
+    "max_batch_size": 256
+  }
+}

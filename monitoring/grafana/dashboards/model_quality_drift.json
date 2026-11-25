@@ -1,0 +1,110 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Data drift share",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "targets": [
+        {
+          "expr": "ml_data_drift_share{job=\"drift-metrics-exporter\"}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Data drift detected",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "ml_data_drift_detected{job=\"drift-metrics-exporter\"}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "ROC-AUC (last labeled run)",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "ml_model_roc_auc{job=\"drift-metrics-exporter\"}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Degradation signal",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "ml_performance_degradation_signal{job=\"drift-metrics-exporter\"}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Drift share over time",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "ml_data_drift_share{job=\"drift-metrics-exporter\"}",
+          "legendFormat": "share",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "PR-AUC / ROC-AUC",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "ml_model_roc_auc{job=\"drift-metrics-exporter\"}",
+          "legendFormat": "roc_auc",
+          "refId": "A"
+        },
+        {
+          "expr": "ml_model_pr_auc{job=\"drift-metrics-exporter\"}",
+          "legendFormat": "pr_auc",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Last monitoring success (unix)",
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 12 },
+      "id": 7,
+      "targets": [
+        {
+          "expr": "ml_monitoring_last_success_unixtime{job=\"drift-metrics-exporter\"}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["credit-scoring", "drift", "quality"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timezone": "browser",
+  "title": "Model Quality & Drift",
+  "uid": "credit-scoring-model-quality-drift",
+  "version": 2,
+  "description": "Offline monitoring gauges from drift-metrics-exporter only. Do not use unlabeled API defaults (unset gauges read as 0)."
+}

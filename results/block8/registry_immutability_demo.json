@@ -1,0 +1,8 @@
+{
+  "registry_after_run1": "ffea203ba3e3854f7817b64f533ef8ee616cca6217096e6c6ab701dba6ce204d",
+  "demo_registry_sha": "27c74e923a4755c5fa166fa3e333ff98c9e904dc1fa5f097b3433f01cafe2905",
+  "production_unchanged": true,
+  "registry_before": "ffea203ba3e3854f7817b64f533ef8ee616cca6217096e6c6ab701dba6ce204d",
+  "registry_after_run2": "ffea203ba3e3854f7817b64f533ef8ee616cca6217096e6c6ab701dba6ce204d",
+  "demo_registry_path": "artifacts/monitoring/demo_model_registry.json"
+}

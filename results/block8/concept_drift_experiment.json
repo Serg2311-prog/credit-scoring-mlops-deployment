@@ -1,0 +1,136 @@
+{
+  "seed": 42,
+  "n": 400,
+  "feature_columns": [
+    "LIMIT_BAL",
+    "AGE",
+    "SEX",
+    "EDUCATION"
+  ],
+  "reference_target_rate": 0.53,
+  "note": "Controlled synthetic experiment. Falling ROC-AUC alone does not prove real-world concept drift; scenario C has a known P(Y|X) change.",
+  "scenarios": {
+    "A_stable": {
+      "mechanism": "Same P(X) and P(Y|X) as reference generative process",
+      "data_drift_detected": false,
+      "data_drift_share": 0.25,
+      "mean_abs_feature_shift": 0.05264842097223985,
+      "mean_abs_feature_shift_unit": "standardized_by_reference_std",
+      "target_rate": 0.49,
+      "metrics": {
+        "roc_auc": 0.9697378951580633,
+        "pr_auc": 0.9708355594792994,
+        "precision": 0.9057591623036649,
+        "recall": 0.8826530612244898,
+        "f1": 0.8940568475452196,
+        "accuracy": 0.8975
+      },
+      "reference_metrics": {
+        "roc_auc": 0.9737806101967081,
+        "pr_auc": 0.9789136362147115,
+        "precision": 0.9032258064516129,
+        "recall": 0.9245283018867925,
+        "f1": 0.9137529137529138,
+        "accuracy": 0.9075
+      },
+      "degradation_signal": false,
+      "x_comparable_to_reference": true
+    },
+    "B_data_drift": {
+      "mechanism": "P(X) shifted (+1.5/+1.2 on x0/x1); P(Y|X) rule unchanged",
+      "data_drift_detected": true,
+      "data_drift_share": 0.5,
+      "mean_abs_feature_shift": 0.6848620279927872,
+      "mean_abs_feature_shift_unit": "standardized_by_reference_std",
+      "target_rate": 0.99,
+      "metrics": {
+        "roc_auc": 0.9785353535353535,
+        "pr_auc": 0.9997797993547058,
+        "precision": 0.9949494949494949,
+        "recall": 0.9949494949494949,
+        "f1": 0.9949494949494949,
+        "accuracy": 0.99
+      },
+      "reference_metrics": {
+        "roc_auc": 0.9737806101967081,
+        "pr_auc": 0.9789136362147115,
+        "precision": 0.9032258064516129,
+        "recall": 0.9245283018867925,
+        "f1": 0.9137529137529138,
+        "accuracy": 0.9075
+      },
+      "degradation_signal": false,
+      "x_comparable_to_reference": false
+    },
+    "C_concept_drift": {
+      "mechanism": "X identical to reference; P(Y|X) inverted (sign flip of linear rule) — synthetic known concept change",
+      "data_drift_detected": false,
+      "data_drift_share": 0.0,
+      "mean_abs_feature_shift": 0.0,
+      "mean_abs_feature_shift_unit": "standardized_by_reference_std",
+      "target_rate": 0.4725,
+      "metrics": {
+        "roc_auc": 0.017352491286140578,
+        "pr_auc": 0.28821943201491607,
+        "precision": 0.09216589861751152,
+        "recall": 0.10582010582010581,
+        "f1": 0.09852216748768473,
+        "accuracy": 0.085
+      },
+      "reference_metrics": {
+        "roc_auc": 0.9737806101967081,
+        "pr_auc": 0.9789136362147115,
+        "precision": 0.9032258064516129,
+        "recall": 0.9245283018867925,
+        "f1": 0.9137529137529138,
+        "accuracy": 0.9075
+      },
+      "degradation_signal": true,
+      "x_comparable_to_reference": true
+    },
+    "D_performance_degradation": {
+      "mechanism": "Stable X/Y with deliberately corrupted score channel",
+      "data_drift_detected": false,
+      "data_drift_share": 0.25,
+      "mean_abs_feature_shift": 0.05264842097223985,
+      "mean_abs_feature_shift_unit": "standardized_by_reference_std",
+      "target_rate": 0.49,
+      "metrics": {
+        "roc_auc": 0.810999399759904,
+        "pr_auc": 0.8106325578028954,
+        "precision": 0.636986301369863,
+        "recall": 0.9489795918367347,
+        "f1": 0.7622950819672131,
+        "accuracy": 0.71
+      },
+      "reference_metrics": {
+        "roc_auc": 0.9737806101967081,
+        "pr_auc": 0.9789136362147115,
+        "precision": 0.9032258064516129,
+        "recall": 0.9245283018867925,
+        "f1": 0.9137529137529138,
+        "accuracy": 0.9075
+      },
+      "degradation_signal": true,
+      "x_comparable_to_reference": true
+    }
+  },
+  "expectations": {
+    "A_stable": {
+      "data_drift_detected": false,
+      "x_comparable_to_reference": true
+    },
+    "B_data_drift": {
+      "data_drift_detected": true,
+      "x_comparable_to_reference": false
+    },
+    "C_concept_drift": {
+      "x_comparable_to_reference": true,
+      "known_py_given_x_change": true
+    },
+    "D_performance_degradation": {
+      "degradation_signal": true
+    }
+  },
+  "report_path": "artifacts/monitoring/concept_drift/concept_drift_experiment.json"
+}

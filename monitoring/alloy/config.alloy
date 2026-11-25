@@ -53,12 +53,11 @@ loki.process "api_json" {
     }
   }
 
+  // Keep label set low-cardinality (no per-request request_id).
   stage.labels {
     values = {
-      level      = "level",
-      service    = "service",
-      request_id = "request_id",
-      endpoint   = "endpoint",
+      level   = "level",
+      service = "service",
     }
   }
 

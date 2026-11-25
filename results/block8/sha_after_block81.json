@@ -1,0 +1,8 @@
+{
+  "models/model_registry.json": "ffea203ba3e3854f7817b64f533ef8ee616cca6217096e6c6ab701dba6ce204d",
+  "models/credit_scoring_nn.pt": "d6e05563bb7790c34bf3e444db7c0e1d5ceea0aa92e26aa0b69f5d1f26d1c2ae",
+  "models/credit_scoring_nn.onnx": "48051065162f98c0842f0f4bca80ce4105e343924a7b62001114c08adc7521a4",
+  "models/credit_scoring_nn.quant.onnx": "e4ceed53c08ad0fe9592563f05e11069c4db6aa5c1172c7ff55945df21c65954",
+  "models/preprocessor.joblib": "f949b92907853f09683ba0d82c9ec8aeb3d51bd6c06d37ffed82a8b867828b64",
+  "dvc.lock": "eba4c5b671e05700fc925a6a616f7a8da69c5ccdc4e2514271b29e5d03f273da"
+}

@@ -1,0 +1,329 @@
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\base\\configmap.yaml": error va
+lidating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tcp 127.0.0.1:645
+67: connectex: No connection could be made because the target machine actively refused it.; if you choose to ignore the
+se errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\base\\deployment.yaml": error v
+alidating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tcp 127.0.0.1:64
+567: connectex: No connection could be made because the target machine actively refused it.; if you choose to ignore th
+ese errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\base\\frontend-deployment.yaml"
+: error validating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tcp 127
+.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if you choose to
+ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\base\\frontend-service.yaml": e
+rror validating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tcp 127.0.
+0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if you choose to ign
+ore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\base\\ingress.yaml": error vali
+dating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tcp 127.0.0.1:64567
+: connectex: No connection could be made because the target machine actively refused it.; if you choose to ignore these
+ errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\base\\kustomization.yaml": erro
+r validating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tcp 127.0.0.1
+:64567: connectex: No connection could be made because the target machine actively refused it.; if you choose to ignore
+ these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\base\\namespace.yaml": error va
+lidating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tcp 127.0.0.1:645
+67: connectex: No connection could be made because the target machine actively refused it.; if you choose to ignore the
+se errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\base\\networkpolicy.yaml": erro
+r validating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tcp 127.0.0.1
+:64567: connectex: No connection could be made because the target machine actively refused it.; if you choose to ignore
+ these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\base\\secret.example.yaml": err
+or validating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tcp 127.0.0.
+1:64567: connectex: No connection could be made because the target machine actively refused it.; if you choose to ignor
+e these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\base\\service.yaml": error vali
+dating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tcp 127.0.0.1:64567
+: connectex: No connection could be made because the target machine actively refused it.; if you choose to ignore these
+ errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\examples\\gpu-workload\\deploym
+ent-gpu-example.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>
+ut=32s": dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused i
+t.; if you choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\kind\\cluster.yaml": error vali
+dating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tcp 127.0.0.1:64567
+: connectex: No connection could be made because the target machine actively refused it.; if you choose to ignore these
+ errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\cd-demo-production\\k
+ustomization.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>
+32s": dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.;
+ if you choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\cd-demo-production\\p
+atch-host.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>
+": dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if
+ you choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\cd-demo-production\\p
+atch-replicas.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>
+=32s": dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.
+; if you choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\cd-demo-staging\\kust
+omization.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>
+": dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if
+ you choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\cd-demo-staging\\patc
+h-host.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>":
+dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if yo
+u choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\cd-demo-staging\\patc
+h-replicas.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>
+s": dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; i
+f you choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\local\\kustomization.
+yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>": dial tc
+p 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if you choos
+e to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\local\\patch-resource
+s.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>": dial
+tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if you cho
+ose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\production\\kustomiza
+tion.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>": di
+al tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if you
+choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\production\\patch-ing
+ress-host.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>
+": dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if
+ you choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\production\\patch-res
+ources.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>":
+dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if yo
+u choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\production\\patch-rol
+ling-update.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>
+2s": dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.;
+if you choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\production\\secret.ex
+ample.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>": d
+ial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if you
+ choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\staging\\kustomizatio
+n.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>": dial
+tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if you cho
+ose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\staging\\patch-ingres
+s-host.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>":
+dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if yo
+u choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\staging\\patch-resour
+ces.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>": dia
+l tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if you c
+hoose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\staging\\patch-rollin
+g-update.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>"
+: dial tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if
+you choose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+kubectl : error: error validating "<REDACTED_PATH>
+авки и развертывания ML-моделей\\<REDACTED_PATH>\\k8s\\overlays\\staging\\secret.examp
+le.yaml": error validating data: failed to download openapi: Get "http<REDACTED_PATH>": dial
+ tcp 127.0.0.1:64567: connectex: No connection could be made because the target machine actively refused it.; if you ch
+oose to ignore these errors, turn validation off with --validate=false
+строка:19 знак:7
++       kubectl apply --dry-run=client -f $_.FullName 2>&1
++       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (error: error va...-validate=false:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError

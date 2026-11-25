@@ -1,0 +1,868 @@
+{
+  "captured_at_utc": "2026-11-25T07:45:35.968250+00:00",
+  "status": {
+    "api_target_up": true,
+    "cadvisor_target_up": true
+  },
+  "prometheus_targets": {
+    "status": "success",
+    "data": {
+      "activeTargets": [
+        {
+          "discoveredLabels": {
+            "__address__": "cadvisor:8080",
+            "__metrics_path__": "/metrics",
+            "__scheme__": "http",
+            "__scrape_interval__": "15s",
+            "__scrape_timeout__": "10s",
+            "job": "cadvisor",
+            "service": "cadvisor"
+          },
+          "labels": {
+            "instance": "cadvisor:8080",
+            "job": "cadvisor",
+            "service": "cadvisor"
+          },
+          "scrapePool": "cadvisor",
+          "scrapeUrl": "htt<REDACTED_PATH>",
+          "globalUrl": "htt<REDACTED_PATH>",
+          "lastError": "",
+          "lastScrape": "2026-11-25T07:45:21.107011928Z",
+          "lastScrapeDuration": 0.007810656,
+          "health": "up",
+          "scrapeInterval": "15s",
+          "scrapeTimeout": "10s"
+        },
+        {
+          "discoveredLabels": {
+            "__address__": "api:8000",
+            "__metrics_path__": "/metrics",
+            "__scheme__": "http",
+            "__scrape_interval__": "10s",
+            "__scrape_timeout__": "10s",
+            "job": "credit-scoring-api",
+            "service": "credit-scoring-api"
+          },
+          "labels": {
+            "instance": "api:8000",
+            "job": "credit-scoring-api",
+            "service": "credit-scoring-api"
+          },
+          "scrapePool": "credit-scoring-api",
+          "scrapeUrl": "htt<REDACTED_PATH>",
+          "globalUrl": "htt<REDACTED_PATH>",
+          "lastError": "",
+          "lastScrape": "2026-11-25T07:45:27.030698107Z",
+          "lastScrapeDuration": 0.006090195,
+          "health": "up",
+          "scrapeInterval": "10s",
+          "scrapeTimeout": "10s"
+        },
+        {
+          "discoveredLabels": {
+            "__address__": "localhost:9090",
+            "__metrics_path__": "/metrics",
+            "__scheme__": "http",
+            "__scrape_interval__": "15s",
+            "__scrape_timeout__": "10s",
+            "job": "prometheus"
+          },
+          "labels": {
+            "instance": "localhost:9090",
+            "job": "prometheus"
+          },
+          "scrapePool": "prometheus",
+          "scrapeUrl": "htt<REDACTED_PATH>",
+          "globalUrl": "htt<REDACTED_PATH>",
+          "lastError": "",
+          "lastScrape": "2026-11-25T07:45:33.634209495Z",
+          "lastScrapeDuration": 0.004413527,
+          "health": "up",
+          "scrapeInterval": "15s",
+          "scrapeTimeout": "10s"
+        }
+      ],
+      "droppedTargets": [],
+      "droppedTargetCounts": {
+        "cadvisor": 0,
+        "credit-scoring-api": 0,
+        "prometheus": 0
+      }
+    }
+  },
+  "promql": {
+    "request_rate_1m": {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": [
+          {
+            "metric": {},
+            "value": [
+              1795592736.07,
+              "0.17286921136549419"
+            ]
+          }
+        ]
+      }
+    },
+    "error_rate_5xx_1m": {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": []
+      }
+    },
+    "inference_count": {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": [
+          {
+            "metric": {},
+            "value": [
+              1795592736.074,
+              "45"
+            ]
+          }
+        ]
+      }
+    },
+    "p50_latency": {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": [
+          {
+            "metric": {},
+            "value": [
+              1795592736.076,
+              "0.0025"
+            ]
+          }
+        ]
+      }
+    },
+    "p95_latency": {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": [
+          {
+            "metric": {},
+            "value": [
+              1795592736.078,
+              "0.004750000000000001"
+            ]
+          }
+        ]
+      }
+    },
+    "p99_latency": {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": [
+          {
+            "metric": {},
+            "value": [
+              1795592736.08,
+              "0.00495"
+            ]
+          }
+        ]
+      }
+    },
+    "model_ready": {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": [
+          {
+            "metric": {
+              "__name__": "credit_scoring_model_ready",
+              "instance": "api:8000",
+              "job": "credit-scoring-api",
+              "service": "credit-scoring-api"
+            },
+            "value": [
+              1795592736.082,
+              "1"
+            ]
+          }
+        ]
+      }
+    },
+    "process_cpu": {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": [
+          {
+            "metric": {
+              "__name__": "process_cpu_seconds_total",
+              "instance": "localhost:9090",
+              "job": "prometheus"
+            },
+            "value": [
+              1795592736.084,
+              "0.92"
+            ]
+          },
+          {
+            "metric": {
+              "__name__": "process_cpu_seconds_total",
+              "instance": "cadvisor:8080",
+              "job": "cadvisor",
+              "service": "cadvisor"
+            },
+            "value": [
+              1795592736.084,
+              "0.59"
+            ]
+          }
+        ]
+      }
+    },
+    "process_rss": {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": [
+          {
+            "metric": {
+              "__name__": "process_resident_memory_bytes",
+              "instance": "localhost:9090",
+              "job": "prometheus"
+            },
+            "value": [
+              1795592736.086,
+              "97726464"
+            ]
+          },
+          {
+            "metric": {
+              "__name__": "process_resident_memory_bytes",
+              "instance": "cadvisor:8080",
+              "job": "cadvisor",
+              "service": "cadvisor"
+            },
+            "value": [
+              1795592736.086,
+              "42467328"
+            ]
+          }
+        ]
+      }
+    },
+    "cadvisor_cpu": {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": []
+      }
+    },
+    "cadvisor_memory": {
+      "status": "success",
+      "data": {
+        "resultType": "vector",
+        "result": []
+      }
+    }
+  },
+  "prometheus_rules": {
+    "group_count": 1,
+    "alerts": [
+      {
+        "name": "APIDown",
+        "state": "inactive",
+        "health": "ok",
+        "type": "alerting"
+      },
+      {
+        "name": "HighHTTP5xxRate",
+        "state": "inactive",
+        "health": "ok",
+        "type": "alerting"
+      },
+      {
+        "name": "HighP95Latency",
+        "state": "inactive",
+        "health": "ok",
+        "type": "alerting"
+      },
+      {
+        "name": "ModelNotReady",
+        "state": "inactive",
+        "health": "ok",
+        "type": "alerting"
+      },
+      {
+        "name": "APIMetricsAbsent",
+        "state": "inactive",
+        "health": "ok",
+        "type": "alerting"
+      }
+    ]
+  },
+  "alertmanager_alerts": [],
+  "grafana_health": {
+    "database": "ok",
+    "version": "11.5.2",
+    "commit": "598e0338d5374d6bc404b02a58094132c5eeceb8"
+  },
+  "grafana_datasources": [
+    {
+      "id": 2,
+      "uid": "loki",
+      "orgId": 1,
+      "name": "Loki",
+      "type": "loki",
+      "typeName": "Loki",
+      "typeLogoUrl": "public/app/plugins/datasource/loki/img/loki_icon.svg",
+      "access": "proxy",
+      "url": "htt<REDACTED_PATH>",
+      "user": "",
+      "database": "",
+      "basicAuth": false,
+      "isDefault": false,
+      "jsonData": {
+        "maxLines": 1000
+      },
+      "readOnly": true
+    },
+    {
+      "id": 1,
+      "uid": "prometheus",
+      "orgId": 1,
+      "name": "Prometheus",
+      "type": "prometheus",
+      "typeName": "Prometheus",
+      "typeLogoUrl": "public/app/plugins/datasource/prometheus/img/prometheus_logo.svg",
+      "access": "proxy",
+      "url": "htt<REDACTED_PATH>",
+      "user": "",
+      "database": "",
+      "basicAuth": false,
+      "isDefault": true,
+      "jsonData": {
+        "timeInterval": "15s"
+      },
+      "readOnly": true
+    }
+  ],
+  "grafana_dashboards": [
+    {
+      "id": 2,
+      "uid": "credit-scoring-api-overview",
+      "orgId": 1,
+      "title": "API Overview",
+      "uri": "db/api-overview",
+      "url": "/d/credit-scoring-api-overview/api-overview",
+      "slug": "",
+      "type": "dash-db",
+      "tags": [
+        "api",
+        "credit-scoring"
+      ],
+      "isStarred": false,
+      "folderId": 1,
+      "folderUid": "dg52ilrb3pwjkf",
+      "folderTitle": "Credit Scoring",
+      "folderUrl": "/dashboards/f/dg52ilrb3pwjkf/Credit Scoring",
+      "sortMeta": 0,
+      "isDeleted": false
+    },
+    {
+      "id": 3,
+      "uid": "credit-scoring-application-logs",
+      "orgId": 1,
+      "title": "Application Logs",
+      "uri": "db/application-logs",
+      "url": "/d/credit-scoring-application-logs/application-logs",
+      "slug": "",
+      "type": "dash-db",
+      "tags": [
+        "credit-scoring",
+        "logs"
+      ],
+      "isStarred": false,
+      "folderId": 1,
+      "folderUid": "dg52ilrb3pwjkf",
+      "folderTitle": "Credit Scoring",
+      "folderUrl": "/dashboards/f/dg52ilrb3pwjkf/Credit Scoring",
+      "sortMeta": 0,
+      "isDeleted": false
+    },
+    {
+      "id": 4,
+      "uid": "credit-scoring-infrastructure",
+      "orgId": 1,
+      "title": "Infrastructure",
+      "uri": "db/infrastructure",
+      "url": "/d/credit-scoring-infrastructure/infrastructure",
+      "slug": "",
+      "type": "dash-db",
+      "tags": [
+        "credit-scoring",
+        "infra"
+      ],
+      "isStarred": false,
+      "folderId": 1,
+      "folderUid": "dg52ilrb3pwjkf",
+      "folderTitle": "Credit Scoring",
+      "folderUrl": "/dashboards/f/dg52ilrb3pwjkf/Credit Scoring",
+      "sortMeta": 0,
+      "isDeleted": false
+    },
+    {
+      "id": 5,
+      "uid": "credit-scoring-model-inference",
+      "orgId": 1,
+      "title": "Model Inference",
+      "uri": "db/model-inference",
+      "url": "/d/credit-scoring-model-inference/model-inference",
+      "slug": "",
+      "type": "dash-db",
+      "tags": [
+        "credit-scoring",
+        "model"
+      ],
+      "isStarred": false,
+      "folderId": 1,
+      "folderUid": "dg52ilrb3pwjkf",
+      "folderTitle": "Credit Scoring",
+      "folderUrl": "/dashboards/f/dg52ilrb3pwjkf/Credit Scoring",
+      "sortMeta": 0,
+      "isDeleted": false
+    }
+  ],
+  "loki_labels": {
+    "status": "success",
+    "data": [
+      "container",
+      "endpoint",
+      "env",
+      "job",
+      "level",
+      "platform",
+      "request_id",
+      "service",
+      "service_name"
+    ]
+  },
+  "loki_sample": {
+    "status": "success",
+    "data": {
+      "resultType": "streams",
+      "result": [
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "INFO",
+            "endpoint": "/metrics",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "INFO",
+            "platform": "docker",
+            "request_id": "3ecd22d6-1e36-48c7-9ac1-e77309ffe6b0",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795592717034063000",
+              "request completed"
+            ]
+          ]
+        },
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "INFO",
+            "endpoint": "/metrics",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "INFO",
+            "platform": "docker",
+            "request_id": "8d0a1aeb-b69c-4e38-9674-58e30ae691c4",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795592727035955000",
+              "request completed"
+            ]
+          ]
+        },
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "INFO",
+            "endpoint": "/predict",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "INFO",
+            "platform": "docker",
+            "request_id": "40654f21-7aff-4e89-91d9-8ed7f00d3da3",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795592715196238000",
+              "request completed"
+            ]
+          ]
+        },
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "INFO",
+            "endpoint": "/predict",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "INFO",
+            "platform": "docker",
+            "request_id": "5b46ed1c-df04-48e3-aa64-51830ddb21ae",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795592715096489000",
+              "request completed"
+            ]
+          ]
+        },
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "INFO",
+            "endpoint": "/predict",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "INFO",
+            "platform": "docker",
+            "request_id": "76b73dd1-5708-4f75-adf4-809aef6f6f6f",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795592715698353000",
+              "request completed"
+            ]
+          ]
+        },
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "INFO",
+            "endpoint": "/predict",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "INFO",
+            "platform": "docker",
+            "request_id": "87af88ea-73db-42d8-91e6-103ce369c1f6",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795592715613080000",
+              "request completed"
+            ]
+          ]
+        },
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "INFO",
+            "endpoint": "/predict",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "INFO",
+            "platform": "docker",
+            "request_id": "cd48fc7e-0a92-4dbf-b1c8-d2333e22a21c",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795592715418636000",
+              "request completed"
+            ]
+          ]
+        },
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "INFO",
+            "endpoint": "/predict",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "INFO",
+            "platform": "docker",
+            "request_id": "d5fdc6cd-b1aa-48dc-8a53-0144cf08d198",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795592714987138000",
+              "request completed"
+            ]
+          ]
+        },
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "INFO",
+            "endpoint": "/predict",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "INFO",
+            "platform": "docker",
+            "request_id": "e1cbcb30-6afc-401e-ae76-b56f3bff9ac1",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795592715304642000",
+              "request completed"
+            ]
+          ]
+        },
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "INFO",
+            "endpoint": "/predict",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "INFO",
+            "platform": "docker",
+            "request_id": "e900b126-55e6-4f5e-bf7c-acc60e51b7c6",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795592715515772000",
+              "request completed"
+            ]
+          ]
+        },
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "info",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "platform": "docker",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795592727036347710",
+              "INFO:     172.18.0.6:47606 - \"GET /metrics HTTP/1.1\" 200 OK"
+            ],
+            [
+              "1795592717034293563",
+              "INFO:     172.18.0.6:49182 - \"GET /metrics HTTP/1.1\" 200 OK"
+            ],
+            [
+              "1795592715698697732",
+              "INFO:     172.18.0.1:58514 - \"POST /predict HTTP/1.1\" 422 Unprocessable Entity"
+            ],
+            [
+              "1795592715613431073",
+              "INFO:     172.18.0.1:58504 - \"POST /predict HTTP/1.1\" 200 OK"
+            ],
+            [
+              "1795592715516083325",
+              "INFO:     172.18.0.1:58490 - \"POST /predict HTTP/1.1\" 200 OK"
+            ],
+            [
+              "1795592715418988208",
+              "INFO:     172.18.0.1:58488 - \"POST /predict HTTP/1.1\" 200 OK"
+            ],
+            [
+              "1795592715304990311",
+              "INFO:     172.18.0.1:58482 - \"POST /predict HTTP/1.1\" 200 OK"
+            ],
+            [
+              "1795592715196646079",
+              "INFO:     172.18.0.1:58472 - \"POST /predict HTTP/1.1\" 200 OK"
+            ],
+            [
+              "1795592715096862305",
+              "INFO:     172.18.0.1:58470 - \"POST /predict HTTP/1.1\" 200 OK"
+            ],
+            [
+              "1795592714987485450",
+              "INFO:     172.18.0.1:58454 - \"POST /predict HTTP/1.1\" 200 OK"
+            ]
+          ]
+        }
+      ],
+      "stats": {
+        "summary": {
+          "bytesProcessedPerSecond": 16443734,
+          "linesProcessedPerSecond": 154140,
+          "totalBytesProcessed": 181890,
+          "totalLinesProcessed": 1705,
+          "execTime": 0.011061,
+          "queueTime": 0.00025,
+          "subqueries": 0,
+          "totalEntriesReturned": 20,
+          "splits": 0,
+          "shards": 1,
+          "totalPostFilterLines": 1705,
+          "totalStructuredMetadataBytesProcessed": 49764
+        },
+        "querier": {
+          "store": {
+            "totalChunksRef": 0,
+            "totalChunksDownloaded": 0,
+            "chunksDownloadTime": 0,
+            "queryReferencedStructuredMetadata": false,
+            "chunk": {
+              "headChunkBytes": 0,
+              "headChunkLines": 0,
+              "decompressedBytes": 0,
+              "decompressedLines": 0,
+              "compressedBytes": 0,
+              "totalDuplicates": 0,
+              "postFilterLines": 0,
+              "headChunkStructuredMetadataBytes": 0,
+              "decompressedStructuredMetadataBytes": 0
+            },
+            "chunkRefsFetchTime": 0,
+            "congestionControlLatency": 0,
+            "pipelineWrapperFilteredLines": 0
+          }
+        },
+        "ingester": {
+          "totalReached": 1,
+          "totalChunksMatched": 64,
+          "totalBatches": 1,
+          "totalLinesSent": 20,
+          "store": {
+            "totalChunksRef": 1,
+            "totalChunksDownloaded": 1,
+            "chunksDownloadTime": 860657,
+            "queryReferencedStructuredMetadata": false,
+            "chunk": {
+              "headChunkBytes": 1620,
+              "headChunkLines": 63,
+              "decompressedBytes": 180270,
+              "decompressedLines": 1642,
+              "compressedBytes": 21022,
+              "totalDuplicates": 9,
+              "postFilterLines": 1705,
+              "headChunkStructuredMetadataBytes": 504,
+              "decompressedStructuredMetadataBytes": 49260
+            },
+            "chunkRefsFetchTime": 269402,
+            "congestionControlLatency": 0,
+            "pipelineWrapperFilteredLines": 0
+          }
+        },
+        "cache": {
+          "chunk": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "index": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "result": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "statsResult": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "volumeResult": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "seriesResult": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "labelResult": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "instantMetricResult": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          }
+        },
+        "index": {
+          "totalChunks": 0,
+          "postFilterChunks": 0,
+          "shardsDuration": 0,
+          "usedBloomFilters": false
+        }
+      }
+    }
+  },
+  "loki_ruler_rules_error": "Expecting value: line 1 column 1 (char 0)"
+}

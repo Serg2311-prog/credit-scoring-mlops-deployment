@@ -106,9 +106,14 @@ services:
     command: ["-config.file=/etc/loki/loki.yml"]
     volumes:
       - ./monitoring/loki/loki.yml:/etc/loki/loki.yml:ro
+      # Tenant dir "fake" is Loki's default when auth_enabled=false.
+      - ./monitoring/loki/rules:/loki/rules:ro
       - loki-data:/loki
     ports:
       - "3100:3100"
+    depends_on:
+      alertmanager:
+        condition: service_started
     healthcheck:
       test:
         [

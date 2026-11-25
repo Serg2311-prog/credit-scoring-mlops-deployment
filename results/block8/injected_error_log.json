@@ -1,0 +1,10 @@
+{
+  "captured_at_utc": "2026-11-25T08:18:44.341941+00:00",
+  "method": "e2e_log_probe_service",
+  "marker": "BLOCK8_CONTROLLED_ERROR_LOG",
+  "probe": "htt<REDACTED_PATH>",
+  "http_status": 200,
+  "body": {
+    "status": "logged"
+  }
+}

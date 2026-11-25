@@ -79,3 +79,6 @@ _source_audit/
 
 # Local scanner noise (do not commit)
 trivy_failure_log.txt
+
+# Local unsanitized evidence originals (PII paths); hashes in sanitation_summary.json
+results/block8/_raw_encoding_backup/

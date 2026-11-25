@@ -1,7 +1,7 @@
 # Requirements Matrix — критерии проверки
 
-**Актуализация:** 2026-11-22 (перед сдачей).
-**Согласовано с:** [`README.md`](../README.md), отчётами `docs/stage*_*.md`, коммитом [`65de3ad`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/65de3ad680a2fc7f3fcbe374aeb07f485d773b63).
+**Актуализация:** 2026-11-25 (Block 8.1 monitoring/drift hardening; uncommitted on HEAD `871f467`).
+**Согласовано с:** [`README.md`](../README.md), `docs/stage5_monitoring_completion_report.md`, `docs/stage6_drift_completion_report.md`, `results/block8/`.
 
 Нумерация ниже — **учебная** (как в README): 0 → 1 → 2 (Terraform) → 3 (Docker/K8s/DVC) → 4 → 5 → 6 → 7.
 История «проектных» подэтапов (API+Docker как P2, kind как P3A) сохранена внутри соответствующих секций.
@@ -173,18 +173,19 @@
 
 | ID | Требование | Критерий приёмки | Как проверить | Статус |
 | --- | --- | --- | --- | --- |
-| 5.1 | Prometheus | scrape API `/metrics` | compose + `scripts/observability/check.ps1` | `verified_local` |
+| 5.1 | Prometheus | scrape API `/metrics` | compose + Block 8/8.1 E2E | `verified_local` |
 | 5.2 | Метрики FastAPI | latency/throughput/error/inference | `/metrics` + tests | `verified_local` |
-| 5.3 | Grafana dashboards | JSON + provisioning | `monitoring/grafana/` | `verified_local` |
-| 5.4 | Loki + централизованные логи | Alloy → Loki | Explore Loki | `verified_local` |
-| 5.5 | Structured JSON logging | timestamp/level/service/request_id | API stdout | `verified_local` |
+| 5.3 | Grafana dashboards | JSON + provisioning + drift panels | `monitoring/grafana/` + Block 8.1 | `verified_local` |
+| 5.4 | Loki + централизованные логи | Alloy → Loki | Explore Loki + Block 8.1 | `verified_local` |
+| 5.5 | Structured JSON logging | timestamp/level/service/request_id | API stdout; `request_id` not a Loki stream label | `verified_local` |
 | 5.6 | Latency / throughput / error rate | Dashboards | Grafana | `verified_local` |
 | 5.7 | Availability metrics | `up` + `credit_scoring_model_ready` | Prom + alerts | `verified_local` |
-| 5.8 | Alerting rules | YAML + Alertmanager | `monitoring/prometheus/alerts.yml` | `verified_local` |
-| 5.9 | Runbook | Типовые инциденты | `docs/stage5_runbook.md` | `implemented` |
+| 5.8 | Alerting rules | Metric + log (Loki ruler) → Alertmanager | `alerts.yml` + Loki rules; E2E firing/resolved | `verified_local` |
+| 5.9 | Runbook | Типовые инциденты + E2E probe isolation | `docs/stage5_runbook.md` | `verified_local` |
+| 5.10 | Infra metrics (cAdvisor) | container CPU/mem where labels exist | Docker Desktop: cgroup `id` only — `blocked` name labels | `partial_verified` |
 
 Облачный observability в Yandex Cloud: `not_executed`.
-Отчёт: [`docs/stage5_validation_report.md`](stage5_validation_report.md).
+Отчёты: [`docs/stage5_monitoring_completion_report.md`](stage5_monitoring_completion_report.md), [`results/block8/`](../results/block8/).
 
 ---
 
@@ -194,15 +195,15 @@
 | --- | --- | --- | --- | --- |
 | 6.1 | Evidently data drift | Отчёт HTML/JSON | `python -m src.monitoring.cli` / tests | `verified_local` |
 | 6.2 | Model performance decay при метках | Метрики vs reference | `concept-drift` + tests | `verified_local` |
-| 6.3 | Approach к concept drift | Когда можно/нельзя утверждать | `docs/stage6_runbook.md` | `implemented` |
-| 6.4 | Не утверждать concept drift без данных | Только signal | `confirmed_concept_drift=False` | `verified_local` |
+| 6.3 | Approach к concept drift | Controlled P(Y\|X) experiment + runbook | `concept_drift_experiment` + `docs/stage6_runbook.md` | `verified_local` |
+| 6.4 | Не утверждать concept drift без данных | Только signal / known synthetic | `confirmed_concept_drift=False` | `verified_local` |
 | 6.5 | Сравнение моделей | Offline A/B + RF/NN benchmark | CLI + `docs/model_benchmark.md` | `verified_local` |
-| 6.6 | A/B routing двух версий | Router + доли (AB off by default) | `ab_router` + tests | `verified_local` |
-| 6.7 | Учёт версий моделей | `models/model_registry.json` | demo / registry | `verified_local` |
-| 6.8 | Отчёты мониторинга | drift/performance reports | `artifacts/monitoring/` (gitignored) | `verified_local` |
+| 6.6 | A/B routing двух версий | Isolated dual-ONNX HTTP E2E; AB off by default | `docker-compose.ab.e2e.yml` + `online_ab_evidence.json` | `verified_local` |
+| 6.7 | Учёт версий моделей | Production registry immutable under demo | demo → `artifacts/monitoring/demo_model_registry.json` | `verified_local` |
+| 6.8 | Отчёты мониторинга | drift/performance + Prometheus export | `artifacts/monitoring/` + drift-metrics-exporter | `verified_local` |
 
 Опционально: Seldon, shadow deployment — вне обязательного объёма.
-Отчёт: [`docs/stage6_validation_report.md`](stage6_validation_report.md).
+Отчёт: [`docs/stage6_drift_completion_report.md`](stage6_drift_completion_report.md), [`results/block8/`](../results/block8/).
 
 ---
 

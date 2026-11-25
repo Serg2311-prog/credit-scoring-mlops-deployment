@@ -1,0 +1,51 @@
+{
+  "captured_at_utc": "2026-11-25T08:24:31.797359+00:00",
+  "mode": "online_routing_verification_synthetic_http",
+  "not_real_clients": true,
+  "auto_promote": false,
+  "model_info": {
+    "model_name": "credit_scoring_mlp",
+    "model_version": "mlp-onnx-fp32-v1",
+    "backend": "onnx",
+    "model_format": "onnx-fp32",
+    "input_features_count": 47,
+    "threshold": 0.5,
+    "max_batch_size": 256
+  },
+  "ready": {
+    "status": "ready",
+    "model_loaded": true,
+    "preprocessor_loaded": true,
+    "backend": "onnx",
+    "model_version": "mlp-onnx-fp32-v1"
+  },
+  "assignment": {
+    "n_ids": 1000,
+    "challenger_share_configured": 0.3,
+    "challenger_share_observed": 0.293,
+    "counts": {
+      "champion": 707,
+      "challenger": 293
+    },
+    "reproducible": true,
+    "within_tolerance": true
+  },
+  "http": {
+    "n_requests": 150,
+    "errors": 0,
+    "model_versions": {
+      "mlp-onnx-int8-exp-v1": 46,
+      "mlp-onnx-fp32-v1": 104
+    },
+    "expected_groups": {
+      "challenger": 46,
+      "champion": 104
+    },
+    "both_branches_seen": true
+  },
+  "prometheus": {
+    "ml_ab_experiment_samples_present": true
+  },
+  "challenger_variant": "credit_scoring_nn.quant.onnx (experimental INT8)",
+  "champion_variant": "credit_scoring_nn.onnx (FP32 production champion bytes)"
+}

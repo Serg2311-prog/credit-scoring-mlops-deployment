@@ -1,0 +1,90 @@
+{
+  "metric_counts": {
+    "status": "success",
+    "data": {
+      "resultType": "vector",
+      "result": [
+        {
+          "metric": {
+            "__name__": "container_cpu_usage_seconds_total"
+          },
+          "value": [
+            1795594934.416,
+            "4"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "container_fs_usage_bytes"
+          },
+          "value": [
+            1795594934.416,
+            "92"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "container_memory_usage_bytes"
+          },
+          "value": [
+            1795594934.416,
+            "8"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "container_network_receive_bytes_total"
+          },
+          "value": [
+            1795594934.416,
+            "3"
+          ]
+        }
+      ]
+    }
+  },
+  "label_key_freq": {
+    "__name__": 8,
+    "id": 8,
+    "instance": 8,
+    "job": 8,
+    "service": 8
+  },
+  "sample_series": [
+    {
+      "id": "/",
+      "instance": "cadvisor:8080",
+      "job": "cadvisor",
+      "service": "cadvisor"
+    },
+    {
+      "id": "/docker",
+      "instance": "cadvisor:8080",
+      "job": "cadvisor",
+      "service": "cadvisor"
+    },
+    {
+      "id": "/docker/buildx",
+      "instance": "cadvisor:8080",
+      "job": "cadvisor",
+      "service": "cadvisor"
+    },
+    {
+      "id": "/kubepods",
+      "instance": "cadvisor:8080",
+      "job": "cadvisor",
+      "service": "cadvisor"
+    },
+    {
+      "id": "/podruntime",
+      "instance": "cadvisor:8080",
+      "job": "cadvisor",
+      "service": "cadvisor"
+    }
+  ],
+  "name_like_labels_present": [
+    "__name__",
+    "id"
+  ],
+  "n_series_memory": 8
+}

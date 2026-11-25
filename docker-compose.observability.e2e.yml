@@ -1,0 +1,67 @@
+# Block 8 / 8.1 E2E overlay — shorter alert windows + test-only log probe.
+# Usage (PowerShell):
+#   docker compose -f docker-compose.yml -f docker-compose.observability.yml `
+#     -f docker-compose.observability.e2e.yml up -d --build --scale frontend=0
+#
+# Production API routes unchanged. E2E log probe is a separate container.
+
+services:
+  api:
+    # Mount current source so production entrypoint reflects probe removal
+    # without requiring a full image rebuild for every Block 8.1 iteration.
+    volumes:
+      - ./src:/app/src:ro
+      - ./models/credit_scoring_nn.onnx:/app/models/credit_scoring_nn.onnx:ro
+      - ./models/preprocessor.joblib:/app/models/preprocessor.joblib:ro
+
+  prometheus:
+    volumes:
+      - ./monitoring/prometheus/prometheus.e2e.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts.e2e.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+
+  alloy:
+    volumes:
+      - ./monitoring/alloy/config.e2e.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  e2e-log-probe:
+    build:
+      context: ./monitoring/e2e-log-probe
+      dockerfile: Dockerfile
+    image: credit-scoring-e2e-log-probe:block81
+    container_name: credit-scoring-e2e-log-probe
+    ports:
+      - "9109:8080"
+    cpus: 0.10
+    mem_limit: 64m
+    restart: unless-stopped
+
+  drift-metrics-exporter:
+    image: credit-scoring-api:stage2
+    container_name: credit-scoring-drift-metrics
+    working_dir: /app
+    environment:
+      PYTHONPATH: /app
+    command:
+      [
+        "python",
+        "scripts/block8/drift_metrics_exporter.py",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "9108",
+        "--artifacts-root",
+        "/app/artifacts/monitoring",
+      ]
+    volumes:
+      - ./scripts/block8:/app/scripts/block8:ro
+      - ./src:/app/src:ro
+      - ./artifacts/monitoring:/app/artifacts/monitoring:ro
+      - ./configs:/app/configs:ro
+    ports:
+      - "9108:9108"
+    cpus: 0.25
+    mem_limit: 256m
+    restart: unless-stopped

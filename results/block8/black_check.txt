@@ -1,0 +1,8 @@
+./.venv\Scripts\python.exe : All done! ✨ 🍰 ✨
+строка:7 знак:1
++ ./.venv\Scripts\python.exe -m black --check src tests scripts/ci airf ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (All done! ✨ 🍰 ✨:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+120 files would be left unchanged.

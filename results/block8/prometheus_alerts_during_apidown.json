@@ -1,0 +1,24 @@
+{
+  "status": "success",
+  "data": {
+    "alerts": [
+      {
+        "labels": {
+          "alertname": "APIDown",
+          "e2e_overlay": "true",
+          "instance": "api:8000",
+          "job": "credit-scoring-api",
+          "service": "credit-scoring-api",
+          "severity": "critical"
+        },
+        "annotations": {
+          "description": "Prometheus cannot scrape credit-scoring-api for more than 15s (E2E).",
+          "summary": "Credit scoring API scrape target is down (E2E overlay)"
+        },
+        "state": "firing",
+        "activeAt": "2026-11-25T07:46:04.426385259Z",
+        "value": "0e+00"
+      }
+    ]
+  }
+}

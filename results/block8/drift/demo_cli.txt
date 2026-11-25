@@ -1,0 +1,23 @@
+./.venv\Scripts\python.exe : <REDACTED_PATH>\Sergey\<REDACTED_PATH>
+тывания ML-моделей\<REDACTED_PATH>\.venv\Lib\site-packages\scipy\stats\_stats_py.py:727
+7: RuntimeWarning:
+строка:20 знак:1
++ ./.venv\Scripts\python.exe -m src.monitoring.cli demo 2>&1 | Tee-Obje ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (<REDACTED_PATH>\Sergey...RuntimeWarning::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+
+divide by zero encountered in divide
+
+<REDACTED_PATH>\Sergey\<REDACTED_PATH>
+РОЕКТ\credit-scoring-mlops-deployment\.venv\Lib\site-packages\scipy\stats\_stats_py.py:7277: RuntimeWarning:
+
+divide by zero encountered in divide
+
+<REDACTED_PATH>\Sergey\<REDACTED_PATH>
+РОЕКТ\credit-scoring-mlops-deployment\.venv\Lib\site-packages\scipy\stats\_stats_py.py:7277: RuntimeWarning:
+
+divide by zero encountered in divide
+
+Stage 6 demo summary: ./artifacts\monitoring\demo_summary.json

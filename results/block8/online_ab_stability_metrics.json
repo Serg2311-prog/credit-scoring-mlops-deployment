@@ -1,0 +1,26 @@
+{
+  "uid": "stable-ab-id-42",
+  "versions": [
+    "mlp-onnx-fp32-v1",
+    "mlp-onnx-fp32-v1",
+    "mlp-onnx-fp32-v1",
+    "mlp-onnx-fp32-v1",
+    "mlp-onnx-fp32-v1",
+    "mlp-onnx-fp32-v1",
+    "mlp-onnx-fp32-v1",
+    "mlp-onnx-fp32-v1",
+    "mlp-onnx-fp32-v1",
+    "mlp-onnx-fp32-v1"
+  ],
+  "stable": true,
+  "ab_metric_lines": [
+    "# HELP ml_ab_experiment_samples_total Prediction samples routed in A/B experiment",
+    "# TYPE ml_ab_experiment_samples_total counter",
+    "ml_ab_experiment_samples_total{ab_group=\"challenger\"} 46.0",
+    "ml_ab_experiment_samples_total{ab_group=\"champion\"} 114.0",
+    "# HELP ml_ab_experiment_samples_created Prediction samples routed in A/B experiment",
+    "# TYPE ml_ab_experiment_samples_created gauge",
+    "ml_ab_experiment_samples_created{ab_group=\"challenger\"} 1.7955950663135428e+09",
+    "ml_ab_experiment_samples_created{ab_group=\"champion\"} 1.7955950663436172e+09"
+  ]
+}

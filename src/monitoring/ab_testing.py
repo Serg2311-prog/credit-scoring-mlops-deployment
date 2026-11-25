@@ -246,16 +246,21 @@ def append_prediction_log(
     return out
 
 
+def production_model_registry_path() -> Path:
+    return PROJECT_ROOT / "models" / "model_registry.json"
+
+
 def write_model_registry(
     payload: dict[str, Any] | None = None,
     *,
     registry_path: Path | None = None,
+    allow_production_write: bool = False,
 ) -> Path:
-    """Lightweight version registry (no MLflow dependency).
+    """Write an experiment/ops model registry JSON.
 
-    Pass ``registry_path`` from tests to avoid writing production
-    ``models/model_registry.json``. Default path remains the production file
-    for explicit CLI / ops use.
+    Default target is ``artifacts/monitoring/model_registry.json`` — never the
+    production ``models/model_registry.json`` unless
+    ``allow_production_write=True`` is set explicitly with that path.
     """
     cfg = load_stage6_thresholds()
     versions = cfg.get("versions", {})
@@ -275,17 +280,20 @@ def write_model_registry(
         ),
         **(payload or {}),
     }
+    production = production_model_registry_path().resolve()
     path = (
         Path(registry_path)
         if registry_path is not None
-        else PROJECT_ROOT / "models" / "model_registry.json"
+        else monitoring_dir() / "model_registry.json"
     )
+    resolved = path.resolve()
+    if resolved == production and not allow_production_write:
+        raise PermissionError(
+            "Refusing to write production models/model_registry.json without "
+            "allow_production_write=True. Use artifacts/ or a temp path for demos."
+        )
     path.parent.mkdir(parents=True, exist_ok=True)
     dump_json(path, registry)
-    # Mirror under artifacts/monitoring only for the default production write.
-    if registry_path is None:
-        mirror = monitoring_dir() / "model_registry.json"
-        dump_json(mirror, registry)
     return path
 
 

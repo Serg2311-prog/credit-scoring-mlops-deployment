@@ -1,0 +1,296 @@
+{
+  "utf16_converted": 33,
+  "utf8_bom_converted": 2,
+  "encoding_converted_total": 35,
+  "deidentified_files": [
+    "results/block8/README.md",
+    "results/block8/alertmanager_during_apidown.json",
+    "results/block8/alloy_fmt_base.txt",
+    "results/block8/alloy_fmt_e2e.txt",
+    "results/block8/compose_observability_up.txt",
+    "results/block8/concept_drift_experiment.json",
+    "results/block8/drift/demo_cli.txt",
+    "results/block8/drift/demo_cli_run1.txt",
+    "results/block8/drift/demo_cli_run2.txt",
+    "results/block8/drift/demo_summary.json",
+    "results/block8/grafana_datasources.json",
+    "results/block8/injected_error_log.json",
+    "results/block8/injected_error_log_2.json",
+    "results/block8/k8s_dry_run.txt",
+    "results/block8/k8s_manifest_list.txt",
+    "results/block8/loki_verify_config.txt",
+    "results/block8/metric_alert_firing.json",
+    "results/block8/online_ab_run.txt",
+    "results/block8/prometheus_targets.json",
+    "results/block8/pytest_full_not_k8s_e2e.txt",
+    "results/block8/pytest_monitoring_block81.txt",
+    "results/block8/pytest_monitoring_retraining.txt",
+    "results/block8/snapshot_after_load.json",
+    "results/block8/snapshot_before_load.json",
+    "results/block8/snapshot_block81_obs.json",
+    "results/block8/snapshot_final.json",
+    "results/block8/webhook_after_apidown.log",
+    "results/block8/webhook_after_log_alert.log",
+    "results/block8/webhook_after_resolve.log"
+  ],
+  "deidentified_count": 29,
+  "path_replacements_total": 233,
+  "converted": [
+    {
+      "path": "results/block8/ab_default_disabled_model_info.json",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "2e4a7218d2c3c67fa3001918dcac6fdca4e03d9c2420dc99a30423c766ed8da0",
+      "backup": "results/block8/_raw_encoding_backup/ab_default_disabled_model_info.json.orig"
+    },
+    {
+      "path": "results/block8/ab_enabled_model_info.json",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "6d823fdb8e9102594a683305885d6f95166b6a9159a27f74f1cd257ed193f903",
+      "backup": "results/block8/_raw_encoding_backup/ab_enabled_model_info.json.orig"
+    },
+    {
+      "path": "results/block8/alloy_fmt_base.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "cca87daa0abca77e70cbfd51aeab8da8934bd35a142e3ddd127512122f8558b0",
+      "backup": "results/block8/_raw_encoding_backup/alloy_fmt_base.txt.orig"
+    },
+    {
+      "path": "results/block8/alloy_fmt_e2e.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "66a9509e7b2f631a0dd31145ae66321d7831a5d6b56f61116e766528e3621ed8",
+      "backup": "results/block8/_raw_encoding_backup/alloy_fmt_e2e.txt.orig"
+    },
+    {
+      "path": "results/block8/api_probe_absent_runtime.json",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "97ecdce8a8b0c31801299787e3be56756870395f267b4bc189471744e5a2ca07",
+      "backup": "results/block8/_raw_encoding_backup/api_probe_absent_runtime.json.orig"
+    },
+    {
+      "path": "results/block8/black_check.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "4a86cd3476d8f08cae658288a848bd3d5a75f5dc7947e5d88e09a3d7df8a99ed",
+      "backup": "results/block8/_raw_encoding_backup/black_check.txt.orig"
+    },
+    {
+      "path": "results/block8/changed_files.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "bfceed0d6eb57edad95cd70b95375b301272195796dff23cd027865b140e4766",
+      "backup": "results/block8/_raw_encoding_backup/changed_files.txt.orig"
+    },
+    {
+      "path": "results/block8/changed_paths_scan.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "46ecc2b9ac279b393e040f8ea85396e5e8f1e175ab4ffaa1d992b75b877e2920",
+      "backup": "results/block8/_raw_encoding_backup/changed_paths_scan.txt.orig"
+    },
+    {
+      "path": "results/block8/compose_observability_down.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "f7ba6582b9e91933fed03aee2d1922035a50051890b44167a3db9912dda8bdfc",
+      "backup": "results/block8/_raw_encoding_backup/compose_observability_down.txt.orig"
+    },
+    {
+      "path": "results/block8/compose_observability_up.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "4a6eca694851300c39cd95b8aa5b565d8c0384ad79ae52b32146d5b178515462",
+      "backup": "results/block8/_raw_encoding_backup/compose_observability_up.txt.orig"
+    },
+    {
+      "path": "results/block8/drift/demo_cli.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "f0327138fc9500c47b327258b48ae706e8b64a3f626d8dde886ad078ec3f4d43",
+      "backup": "results/block8/_raw_encoding_backup/drift__demo_cli.txt.orig"
+    },
+    {
+      "path": "results/block8/drift/demo_cli_run1.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "bba20017332d9c8a41b2d772af1b741bdc23c64460e366fe5f3e39f40f0b0a45",
+      "backup": "results/block8/_raw_encoding_backup/drift__demo_cli_run1.txt.orig"
+    },
+    {
+      "path": "results/block8/drift/demo_cli_run2.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "a6ad3ef8223bbfb5947c006a17f52aad19cf632aa22e681b76e07766bc4be38e",
+      "backup": "results/block8/_raw_encoding_backup/drift__demo_cli_run2.txt.orig"
+    },
+    {
+      "path": "results/block8/drift_metrics_scrape.txt",
+      "from_encoding": "utf-8-bom",
+      "original_sha256": "d4bdc6a3e2ecec8da62ff28c8a02d161d53ebc8ca1b7f7be372b7cf15d46a35d",
+      "backup": "results/block8/_raw_encoding_backup/drift_metrics_scrape.txt.orig"
+    },
+    {
+      "path": "results/block8/git_diff_stat_block81.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "f4ca0c628f726f3c2cd65ed97b820b689a1c2aca76f6f8f76a1a778ed7593aaa",
+      "backup": "results/block8/_raw_encoding_backup/git_diff_stat_block81.txt.orig"
+    },
+    {
+      "path": "results/block8/git_status_block81.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "71b7a3083d34f8b8b4d27331c20612311ea2ee5202ddeb097390a7123df39baa",
+      "backup": "results/block8/_raw_encoding_backup/git_status_block81.txt.orig"
+    },
+    {
+      "path": "results/block8/k8s_dry_run.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "e608320a089d7b930e566074a14bc8eea64c2a63a11f5c6fd4a0be1d3ef15c21",
+      "backup": "results/block8/_raw_encoding_backup/k8s_dry_run.txt.orig"
+    },
+    {
+      "path": "results/block8/k8s_manifest_list.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "c7bb89e7221d10e699b4d007a2cd20729203176d1ebd1cb956349a350d2a94d6",
+      "backup": "results/block8/_raw_encoding_backup/k8s_manifest_list.txt.orig"
+    },
+    {
+      "path": "results/block8/log_alert_resolved.json",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "6f43b57c73b45f3599c7e2ee20f145e2bcd7effd32448e83ebf1012a29d17782",
+      "backup": "results/block8/_raw_encoding_backup/log_alert_resolved.json.orig"
+    },
+    {
+      "path": "results/block8/loki_ruler_rules_snapshot.yml",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "a2259232917d83e88b4b73d4471ae44cb5b4c7ab53bee8b905de3d27b97ef161",
+      "backup": "results/block8/_raw_encoding_backup/loki_ruler_rules_snapshot.yml.orig"
+    },
+    {
+      "path": "results/block8/loki_verify_config.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "301a59018e2a5cf205f44a20696d5a26af96bfe6abe76df8a5ad527f8b917ded",
+      "backup": "results/block8/_raw_encoding_backup/loki_verify_config.txt.orig"
+    },
+    {
+      "path": "results/block8/online_ab_run.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "ea78ae86c6f34c76d08dc74c21a18a0a64d949f4b0ad54bbb1d7f6ea3e46c048",
+      "backup": "results/block8/_raw_encoding_backup/online_ab_run.txt.orig"
+    },
+    {
+      "path": "results/block8/prometheus_targets.json",
+      "from_encoding": "utf-8-bom",
+      "original_sha256": "b17668c7d55f4232d0af90fd406dd9834d734b92d4193c9465b369b7da26e23a",
+      "backup": "results/block8/_raw_encoding_backup/prometheus_targets.json.orig"
+    },
+    {
+      "path": "results/block8/promtool_config.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "6c2d6a5ddb39852cebbda32b1a4d16dccd30506c039b2ae6dbeb76b1967f780f",
+      "backup": "results/block8/_raw_encoding_backup/promtool_config.txt.orig"
+    },
+    {
+      "path": "results/block8/promtool_config_e2e.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "4e99a71aeaea1a93e0a9661ef2fe81d791586ffd2c63a872392ca6ba09986023",
+      "backup": "results/block8/_raw_encoding_backup/promtool_config_e2e.txt.orig"
+    },
+    {
+      "path": "results/block8/promtool_rules.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "81650e7837ecbb1cd57e3ed8d86f773ddf7d5543a213523d58eda85c66499be7",
+      "backup": "results/block8/_raw_encoding_backup/promtool_rules.txt.orig"
+    },
+    {
+      "path": "results/block8/promtool_rules_e2e.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "2fc387888ef61486fd495893ba7fbac4c79ecbf9749255accd248177aba4dd76",
+      "backup": "results/block8/_raw_encoding_backup/promtool_rules_e2e.txt.orig"
+    },
+    {
+      "path": "results/block8/pytest_full_not_k8s_e2e.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "214d3ea105d8e899e7e0c517eebbc6d2c7994597ac1e4ced237082d9e3bd9840",
+      "backup": "results/block8/_raw_encoding_backup/pytest_full_not_k8s_e2e.txt.orig"
+    },
+    {
+      "path": "results/block8/pytest_monitoring_block81.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "d9880c5c15f7b381e7c5308c277f02cc04121a93834b725ea4c55d710a08c98f",
+      "backup": "results/block8/_raw_encoding_backup/pytest_monitoring_block81.txt.orig"
+    },
+    {
+      "path": "results/block8/pytest_monitoring_retraining.txt",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "3527a862867940d3569d680fd3c870f8a20add4a164c51f37c225e795349d807",
+      "backup": "results/block8/_raw_encoding_backup/pytest_monitoring_retraining.txt.orig"
+    },
+    {
+      "path": "results/block8/registry_immutability_demo.json",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "244a01c162bc76ee4f7e9563fa2face33f84322dbb5fcc96beddbd52925efcd5",
+      "backup": "results/block8/_raw_encoding_backup/registry_immutability_demo.json.orig"
+    },
+    {
+      "path": "results/block8/secrets_pii_scan.json",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "510918120cf6bd76fabf6d0473e32aba7bc59b78925e597222d4eecce6201274",
+      "backup": "results/block8/_raw_encoding_backup/secrets_pii_scan.json.orig"
+    },
+    {
+      "path": "results/block8/webhook_after_apidown.log",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "78b6f84c0f1edb1dfb5aaa4c0d08b7859ee97f4d415045ed4e69a451fb1f2021",
+      "backup": "results/block8/_raw_encoding_backup/webhook_after_apidown.log.orig"
+    },
+    {
+      "path": "results/block8/webhook_after_log_alert.log",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "4a9e1f7233427e03d89671ff63542942bb64e9563051a028b6628ed6bd8c52d9",
+      "backup": "results/block8/_raw_encoding_backup/webhook_after_log_alert.log.orig"
+    },
+    {
+      "path": "results/block8/webhook_after_resolve.log",
+      "from_encoding": "utf-16-bom",
+      "original_sha256": "83836bc597b9782c1193df582432dc0420edaa6fb0a82b3f0f1f718a48c13f81",
+      "backup": "results/block8/_raw_encoding_backup/webhook_after_resolve.log.orig"
+    }
+  ],
+  "json_validation": {
+    "results/block8/ab_default_disabled_http.json": "ok",
+    "results/block8/ab_default_disabled_model_info.json": "ok",
+    "results/block8/ab_enabled_model_info.json": "ok",
+    "results/block8/airflow_trigger_decisions.json": "ok",
+    "results/block8/alertmanager_during_apidown.json": "ok",
+    "results/block8/api_probe_absent_runtime.json": "ok",
+    "results/block8/cadvisor_labels_evidence.json": "ok",
+    "results/block8/concept_drift_experiment.json": "ok",
+    "results/block8/drift/demo_summary.json": "ok",
+    "results/block8/grafana_dashboards.json": "ok",
+    "results/block8/grafana_datasources.json": "ok",
+    "results/block8/injected_error_log.json": "ok",
+    "results/block8/injected_error_log_2.json": "ok",
+    "results/block8/load_summary.json": "ok",
+    "results/block8/log_alert_firing.json": "ok",
+    "results/block8/log_alert_resolved.json": "ok",
+    "results/block8/loki_error_query.json": "ok",
+    "results/block8/loki_error_query_retry.json": "ok",
+    "results/block8/loki_prom_rules.json": "ok",
+    "results/block8/loki_ruler_rules.json": "ok",
+    "results/block8/metric_alert_firing.json": "ok",
+    "results/block8/metric_alert_resolved.json": "ok",
+    "results/block8/online_ab_challenger_unavailable.json": "ok",
+    "results/block8/online_ab_evidence.json": "ok",
+    "results/block8/online_ab_stability_metrics.json": "ok",
+    "results/block8/prometheus_alerts_during_apidown.json": "ok",
+    "results/block8/prometheus_ml_metrics.json": "ok",
+    "results/block8/prometheus_ml_metrics_by_job.json": "ok",
+    "results/block8/prometheus_rules_e2e.json": "ok",
+    "results/block8/prometheus_targets.json": "ok",
+    "results/block8/registry_immutability_demo.json": "ok",
+    "results/block8/secrets_pii_scan.json": "ok",
+    "results/block8/sha_after_block81.json": "ok",
+    "results/block8/snapshot_after_load.json": "ok",
+    "results/block8/snapshot_before_load.json": "ok",
+    "results/block8/snapshot_block81_obs.json": "ok",
+    "results/block8/snapshot_final.json": "ok"
+  },
+  "yaml_validation": {
+    "results/block8/loki_ruler_rules_snapshot.yml": "ok"
+  },
+  "json_fail": [],
+  "yaml_fail": [],
+  "remaining_issues": [],
+  "note": "Original bytes for encoding-converted files are under results/block8/_raw_encoding_backup/*.orig with SHA256 in converted[].original_sha256"
+}

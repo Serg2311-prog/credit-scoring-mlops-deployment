@@ -1,0 +1,229 @@
+{
+  "query": "{service=\"credit-scoring-api\"} |= \"BLOCK8\"",
+  "data": {
+    "status": "success",
+    "data": {
+      "resultType": "streams",
+      "result": [
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "ERROR",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "ERROR",
+            "platform": "docker",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795593586585162000",
+              "BLOCK8_CONTROLLED_ERROR_LOG synthetic incident (no PII)"
+            ],
+            [
+              "1795593585306761000",
+              "BLOCK8_CONTROLLED_ERROR_LOG synthetic incident (no PII)"
+            ],
+            [
+              "1795593584042096000",
+              "BLOCK8_CONTROLLED_ERROR_LOG synthetic incident (no PII)"
+            ],
+            [
+              "1795593582733715000",
+              "BLOCK8_CONTROLLED_ERROR_LOG synthetic incident (no PII)"
+            ],
+            [
+              "1795593581443282000",
+              "BLOCK8_CONTROLLED_ERROR_LOG synthetic incident (no PII)"
+            ],
+            [
+              "1795593580168737000",
+              "BLOCK8_CONTROLLED_ERROR_LOG synthetic incident (no PII)"
+            ],
+            [
+              "1795593578869862000",
+              "BLOCK8_CONTROLLED_ERROR_LOG synthetic incident (no PII)"
+            ],
+            [
+              "1795593577557166000",
+              "BLOCK8_CONTROLLED_ERROR_LOG synthetic incident (no PII)"
+            ]
+          ]
+        },
+        {
+          "stream": {
+            "container": "credit-scoring-api",
+            "detected_level": "ERROR",
+            "endpoint": "/internal/e2e/log-error",
+            "env": "local",
+            "job": "credit-scoring-api",
+            "level": "ERROR",
+            "platform": "docker",
+            "request_id": "1c1cf485-9677-4cf0-b9ba-2e6e14563536",
+            "service": "credit-scoring-api",
+            "service_name": "credit-scoring-api"
+          },
+          "values": [
+            [
+              "1795593540595766000",
+              "BLOCK8_CONTROLLED_ERROR_LOG synthetic incident (no PII)"
+            ]
+          ]
+        }
+      ],
+      "stats": {
+        "summary": {
+          "bytesProcessedPerSecond": 41495869,
+          "linesProcessedPerSecond": 392283,
+          "totalBytesProcessed": 403658,
+          "totalLinesProcessed": 3816,
+          "execTime": 0.009728,
+          "queueTime": 0.000561,
+          "subqueries": 0,
+          "totalEntriesReturned": 9,
+          "splits": 2,
+          "shards": 2,
+          "totalPostFilterLines": 9,
+          "totalStructuredMetadataBytesProcessed": 110388
+        },
+        "querier": {
+          "store": {
+            "totalChunksRef": 0,
+            "totalChunksDownloaded": 0,
+            "chunksDownloadTime": 0,
+            "queryReferencedStructuredMetadata": false,
+            "chunk": {
+              "headChunkBytes": 0,
+              "headChunkLines": 0,
+              "decompressedBytes": 0,
+              "decompressedLines": 0,
+              "compressedBytes": 0,
+              "totalDuplicates": 0,
+              "postFilterLines": 0,
+              "headChunkStructuredMetadataBytes": 0,
+              "decompressedStructuredMetadataBytes": 0
+            },
+            "chunkRefsFetchTime": 0,
+            "congestionControlLatency": 0,
+            "pipelineWrapperFilteredLines": 0
+          }
+        },
+        "ingester": {
+          "totalReached": 2,
+          "totalChunksMatched": 164,
+          "totalBatches": 3,
+          "totalLinesSent": 9,
+          "store": {
+            "totalChunksRef": 3,
+            "totalChunksDownloaded": 3,
+            "chunksDownloadTime": 791022,
+            "queryReferencedStructuredMetadata": false,
+            "chunk": {
+              "headChunkBytes": 5082,
+              "headChunkLines": 186,
+              "decompressedBytes": 398576,
+              "decompressedLines": 3630,
+              "compressedBytes": 46606,
+              "totalDuplicates": 0,
+              "postFilterLines": 9,
+              "headChunkStructuredMetadataBytes": 1488,
+              "decompressedStructuredMetadataBytes": 108900
+            },
+            "chunkRefsFetchTime": 448583,
+            "congestionControlLatency": 0,
+            "pipelineWrapperFilteredLines": 0
+          }
+        },
+        "cache": {
+          "chunk": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "index": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "result": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "statsResult": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "volumeResult": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "seriesResult": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "labelResult": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          },
+          "instantMetricResult": {
+            "entriesFound": 0,
+            "entriesRequested": 0,
+            "entriesStored": 0,
+            "bytesReceived": 0,
+            "bytesSent": 0,
+            "requests": 0,
+            "downloadTime": 0,
+            "queryLengthServed": 0
+          }
+        },
+        "index": {
+          "totalChunks": 0,
+          "postFilterChunks": 0,
+          "shardsDuration": 0,
+          "usedBloomFilters": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+git : warning: in the working copy of 'docs/requirements_matrix.md', LF will be replaced by CRLF the next time Git touc
+hes it
+строка:11 знак:1
++ git diff --stat HEAD 2>&1 | Tee-Object results/block8/git_diff_stat_b ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+ docker-compose.observability.yml |  5 +++++
+ docs/requirements_matrix.md      | 31 +++++++++++++-------------
+ docs/stage5_runbook.md           | 48 ++++++++++++++++++++++++++++++++++++++--
+ monitoring/alloy/config.alloy    |  7 +++---
+ monitoring/loki/loki.yml         |  4 ++++
+ src/api/main.py                  |  3 +++
+ src/api/schemas.py               |  3 +++
+ src/monitoring/ab_testing.py     | 26 ++++++++++++++--------
+ src/monitoring/cli.py            | 11 +++++++--
+ 9 files changed, 106 insertions(+), 32 deletions(-)

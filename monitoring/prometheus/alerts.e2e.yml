@@ -1,0 +1,63 @@
+# E2E overlay only — shorter pending windows than production alerts.yml.
+# Mount via docker-compose.observability.e2e.yml. Do not use as production defaults.
+groups:
+  - name: credit-scoring-api-e2e
+    rules:
+      - alert: APIDown
+        expr: up{job="credit-scoring-api"} == 0
+        for: 15s
+        labels:
+          severity: critical
+          e2e_overlay: "true"
+        annotations:
+          summary: "Credit scoring API scrape target is down (E2E overlay)"
+          description: "Prometheus cannot scrape credit-scoring-api for more than 15s (E2E)."
+
+      - alert: HighHTTP5xxRate
+        expr: |
+          (
+            sum(rate(credit_scoring_http_requests_total{status_code=~"5.."}[1m]))
+            /
+            clamp_min(sum(rate(credit_scoring_http_requests_total[1m])), 0.001)
+          ) > 0.05
+        for: 30s
+        labels:
+          severity: warning
+          e2e_overlay: "true"
+        annotations:
+          summary: "High HTTP 5xx rate on credit-scoring API (E2E overlay)"
+          description: "More than 5% of requests are 5xx over the last 1 minute (E2E)."
+
+      - alert: HighP95Latency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(credit_scoring_http_request_latency_seconds_bucket[1m]))
+          ) > 1
+        for: 45s
+        labels:
+          severity: warning
+          e2e_overlay: "true"
+        annotations:
+          summary: "High p95 HTTP latency (E2E overlay)"
+          description: "API HTTP p95 latency is above 1s for 45s (E2E)."
+
+      - alert: ModelNotReady
+        expr: credit_scoring_model_ready == 0
+        for: 30s
+        labels:
+          severity: critical
+          e2e_overlay: "true"
+        annotations:
+          summary: "ONNX model runtime is not ready (E2E overlay)"
+          description: "credit_scoring_model_ready has been 0 for more than 30s (E2E)."
+
+      - alert: APIMetricsAbsent
+        expr: absent(up{job="credit-scoring-api"})
+        for: 30s
+        labels:
+          severity: critical
+          e2e_overlay: "true"
+        annotations:
+          summary: "API metrics job missing from Prometheus (E2E overlay)"
+          description: "The credit-scoring-api scrape job is absent from Prometheus (E2E)."

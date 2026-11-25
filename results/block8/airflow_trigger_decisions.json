@@ -1,0 +1,33 @@
+{
+  "captured_at_utc": "2026-11-25T08:16:12.811931+00:00",
+  "scope": "decision_layer_only",
+  "full_retrain_executed": false,
+  "auto_promote": false,
+  "cases": {
+    "stable_baseline": {
+      "status": "skipped",
+      "fired": null,
+      "expect": "skipped"
+    },
+    "detected_drift": {
+      "status": "triggered",
+      "fired": [
+        "data_drift"
+      ],
+      "expect": "triggered"
+    },
+    "performance_degradation": {
+      "status": "triggered",
+      "fired": [
+        "quality_drop"
+      ],
+      "expect": "triggered",
+      "auto_promote": false
+    },
+    "invalid_artifact": {
+      "status": "unavailable",
+      "fired": null,
+      "expect": "unavailable"
+    }
+  }
+}

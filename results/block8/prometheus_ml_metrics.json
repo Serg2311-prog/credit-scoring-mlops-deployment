@@ -1,0 +1,166 @@
+{
+  "ml_data_drift_share": {
+    "status": "success",
+    "data": {
+      "resultType": "vector",
+      "result": [
+        {
+          "metric": {
+            "__name__": "ml_data_drift_share",
+            "instance": "api:8000",
+            "job": "credit-scoring-api",
+            "service": "credit-scoring-api"
+          },
+          "value": [
+            1795594927.449,
+            "0"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "ml_data_drift_share",
+            "instance": "drift-metrics-exporter:9108",
+            "job": "drift-metrics-exporter",
+            "service": "drift-metrics-exporter"
+          },
+          "value": [
+            1795594927.449,
+            "0.375"
+          ]
+        }
+      ]
+    }
+  },
+  "ml_data_drift_detected": {
+    "status": "success",
+    "data": {
+      "resultType": "vector",
+      "result": [
+        {
+          "metric": {
+            "__name__": "ml_data_drift_detected",
+            "instance": "api:8000",
+            "job": "credit-scoring-api",
+            "service": "credit-scoring-api"
+          },
+          "value": [
+            1795594927.457,
+            "0"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "ml_data_drift_detected",
+            "instance": "drift-metrics-exporter:9108",
+            "job": "drift-metrics-exporter",
+            "service": "drift-metrics-exporter"
+          },
+          "value": [
+            1795594927.457,
+            "1"
+          ]
+        }
+      ]
+    }
+  },
+  "ml_model_roc_auc": {
+    "status": "success",
+    "data": {
+      "resultType": "vector",
+      "result": [
+        {
+          "metric": {
+            "__name__": "ml_model_roc_auc",
+            "instance": "drift-metrics-exporter:9108",
+            "job": "drift-metrics-exporter",
+            "service": "drift-metrics-exporter"
+          },
+          "value": [
+            1795594927.459,
+            "0.7042606516290727"
+          ]
+        }
+      ]
+    }
+  },
+  "ml_model_pr_auc": {
+    "status": "success",
+    "data": {
+      "resultType": "vector",
+      "result": [
+        {
+          "metric": {
+            "__name__": "ml_model_pr_auc",
+            "instance": "drift-metrics-exporter:9108",
+            "job": "drift-metrics-exporter",
+            "service": "drift-metrics-exporter"
+          },
+          "value": [
+            1795594927.461,
+            "0.709772075859905"
+          ]
+        }
+      ]
+    }
+  },
+  "ml_performance_degradation_signal": {
+    "status": "success",
+    "data": {
+      "resultType": "vector",
+      "result": [
+        {
+          "metric": {
+            "__name__": "ml_performance_degradation_signal",
+            "instance": "drift-metrics-exporter:9108",
+            "job": "drift-metrics-exporter",
+            "service": "drift-metrics-exporter"
+          },
+          "value": [
+            1795594927.463,
+            "1"
+          ]
+        }
+      ]
+    }
+  },
+  "ml_monitoring_last_success_unixtime": {
+    "status": "success",
+    "data": {
+      "resultType": "vector",
+      "result": [
+        {
+          "metric": {
+            "__name__": "ml_monitoring_last_success_unixtime",
+            "instance": "drift-metrics-exporter:9108",
+            "job": "drift-metrics-exporter",
+            "service": "drift-metrics-exporter"
+          },
+          "value": [
+            1795594927.465,
+            "1795594633"
+          ]
+        }
+      ]
+    }
+  },
+  "up{job=\"drift-metrics-exporter\"}": {
+    "status": "success",
+    "data": {
+      "resultType": "vector",
+      "result": [
+        {
+          "metric": {
+            "__name__": "up",
+            "instance": "drift-metrics-exporter:9108",
+            "job": "drift-metrics-exporter",
+            "service": "drift-metrics-exporter"
+          },
+          "value": [
+            1795594927.467,
+            "1"
+          ]
+        }
+      ]
+    }
+  }
+}

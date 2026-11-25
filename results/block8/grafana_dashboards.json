@@ -1,0 +1,89 @@
+{
+  "value": [
+    {
+      "id": 2,
+      "uid": "credit-scoring-api-overview",
+      "orgId": 1,
+      "title": "API Overview",
+      "uri": "db/api-overview",
+      "url": "/d/credit-scoring-api-overview/api-overview",
+      "slug": "",
+      "type": "dash-db",
+      "tags": [
+        "api",
+        "credit-scoring"
+      ],
+      "isStarred": false,
+      "folderId": 1,
+      "folderUid": "dg52ilrb3pwjkf",
+      "folderTitle": "Credit Scoring",
+      "folderUrl": "/dashboards/f/dg52ilrb3pwjkf/Credit Scoring",
+      "sortMeta": 0,
+      "isDeleted": false
+    },
+    {
+      "id": 3,
+      "uid": "credit-scoring-application-logs",
+      "orgId": 1,
+      "title": "Application Logs",
+      "uri": "db/application-logs",
+      "url": "/d/credit-scoring-application-logs/application-logs",
+      "slug": "",
+      "type": "dash-db",
+      "tags": [
+        "credit-scoring",
+        "logs"
+      ],
+      "isStarred": false,
+      "folderId": 1,
+      "folderUid": "dg52ilrb3pwjkf",
+      "folderTitle": "Credit Scoring",
+      "folderUrl": "/dashboards/f/dg52ilrb3pwjkf/Credit Scoring",
+      "sortMeta": 0,
+      "isDeleted": false
+    },
+    {
+      "id": 4,
+      "uid": "credit-scoring-infrastructure",
+      "orgId": 1,
+      "title": "Infrastructure",
+      "uri": "db/infrastructure",
+      "url": "/d/credit-scoring-infrastructure/infrastructure",
+      "slug": "",
+      "type": "dash-db",
+      "tags": [
+        "credit-scoring",
+        "infra"
+      ],
+      "isStarred": false,
+      "folderId": 1,
+      "folderUid": "dg52ilrb3pwjkf",
+      "folderTitle": "Credit Scoring",
+      "folderUrl": "/dashboards/f/dg52ilrb3pwjkf/Credit Scoring",
+      "sortMeta": 0,
+      "isDeleted": false
+    },
+    {
+      "id": 5,
+      "uid": "credit-scoring-model-inference",
+      "orgId": 1,
+      "title": "Model Inference",
+      "uri": "db/model-inference",
+      "url": "/d/credit-scoring-model-inference/model-inference",
+      "slug": "",
+      "type": "dash-db",
+      "tags": [
+        "credit-scoring",
+        "model"
+      ],
+      "isStarred": false,
+      "folderId": 1,
+      "folderUid": "dg52ilrb3pwjkf",
+      "folderTitle": "Credit Scoring",
+      "folderUrl": "/dashboards/f/dg52ilrb3pwjkf/Credit Scoring",
+      "sortMeta": 0,
+      "isDeleted": false
+    }
+  ],
+  "Count": 4
+}

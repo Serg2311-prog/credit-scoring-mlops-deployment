@@ -1,0 +1,21 @@
+# Isolated online A/B routing E2E (does not mutate production registry/champion).
+# Challenger uses existing quantized ONNX as an experimental variant (same input dim).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.ab.e2e.yml up -d --no-build --scale frontend=0
+
+services:
+  api:
+    environment:
+      AB_ENABLED: "true"
+      AB_CHALLENGER_SHARE: "0.30"
+      AB_HASH_SALT: "block81-online-ab-e2e"
+      MODEL_VERSION: "mlp-onnx-fp32-v1"
+      CHALLENGER_MODEL_VERSION: "mlp-onnx-int8-exp-v1"
+      CHALLENGER_MODEL_PATH: /app/models/credit_scoring_nn.quant.onnx
+      # Explicitly ensure production probe flag cannot appear
+      ENABLE_E2E_LOG_PROBE: "false"
+    volumes:
+      - ./models/credit_scoring_nn.onnx:/app/models/credit_scoring_nn.onnx:ro
+      - ./models/credit_scoring_nn.quant.onnx:/app/models/credit_scoring_nn.quant.onnx:ro
+      - ./models/preprocessor.joblib:/app/models/preprocessor.joblib:ro
+      - ./src:/app/src:ro

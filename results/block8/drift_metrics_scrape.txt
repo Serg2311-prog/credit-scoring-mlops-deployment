@@ -1,0 +1,18 @@
+# HELP ml_data_drift_detected 1 if data drift detected else 0
+# TYPE ml_data_drift_detected gauge
+ml_data_drift_detected 1.0
+# HELP ml_data_drift_share Share of drifted features from last Evidently run
+# TYPE ml_data_drift_share gauge
+ml_data_drift_share 0.375
+# HELP ml_model_pr_auc PR-AUC from last labeled quality check
+# TYPE ml_model_pr_auc gauge
+ml_model_pr_auc 0.709772075859905
+# HELP ml_model_roc_auc ROC-AUC from last labeled quality check
+# TYPE ml_model_roc_auc gauge
+ml_model_roc_auc 0.7042606516290727
+# HELP ml_monitoring_last_success_unixtime Unix time of last successful export source
+# TYPE ml_monitoring_last_success_unixtime gauge
+ml_monitoring_last_success_unixtime 1795594633.0
+# HELP ml_performance_degradation_signal 1 if degradation signal else 0
+# TYPE ml_performance_degradation_signal gauge
+ml_performance_degradation_signal 1.0

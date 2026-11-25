@@ -1,0 +1,121 @@
+{
+  "share_exporter": {
+    "query": "ml_data_drift_share{job=\"drift-metrics-exporter\"}",
+    "values": [
+      [
+        1795594963.945,
+        "0.375"
+      ]
+    ],
+    "metric": [
+      {
+        "__name__": "ml_data_drift_share",
+        "instance": "drift-metrics-exporter:9108",
+        "job": "drift-metrics-exporter",
+        "service": "drift-metrics-exporter"
+      }
+    ]
+  },
+  "share_api": {
+    "query": "ml_data_drift_share{job=\"credit-scoring-api\"}",
+    "values": [
+      [
+        1795594963.947,
+        "0"
+      ]
+    ],
+    "metric": [
+      {
+        "__name__": "ml_data_drift_share",
+        "instance": "api:8000",
+        "job": "credit-scoring-api",
+        "service": "credit-scoring-api"
+      }
+    ]
+  },
+  "detected_exporter": {
+    "query": "ml_data_drift_detected{job=\"drift-metrics-exporter\"}",
+    "values": [
+      [
+        1795594963.95,
+        "1"
+      ]
+    ],
+    "metric": [
+      {
+        "__name__": "ml_data_drift_detected",
+        "instance": "drift-metrics-exporter:9108",
+        "job": "drift-metrics-exporter",
+        "service": "drift-metrics-exporter"
+      }
+    ]
+  },
+  "roc_exporter": {
+    "query": "ml_model_roc_auc{job=\"drift-metrics-exporter\"}",
+    "values": [
+      [
+        1795594963.952,
+        "0.7042606516290727"
+      ]
+    ],
+    "metric": [
+      {
+        "__name__": "ml_model_roc_auc",
+        "instance": "drift-metrics-exporter:9108",
+        "job": "drift-metrics-exporter",
+        "service": "drift-metrics-exporter"
+      }
+    ]
+  },
+  "pr_exporter": {
+    "query": "ml_model_pr_auc{job=\"drift-metrics-exporter\"}",
+    "values": [
+      [
+        1795594963.954,
+        "0.709772075859905"
+      ]
+    ],
+    "metric": [
+      {
+        "__name__": "ml_model_pr_auc",
+        "instance": "drift-metrics-exporter:9108",
+        "job": "drift-metrics-exporter",
+        "service": "drift-metrics-exporter"
+      }
+    ]
+  },
+  "deg_exporter": {
+    "query": "ml_performance_degradation_signal{job=\"drift-metrics-exporter\"}",
+    "values": [
+      [
+        1795594963.956,
+        "1"
+      ]
+    ],
+    "metric": [
+      {
+        "__name__": "ml_performance_degradation_signal",
+        "instance": "drift-metrics-exporter:9108",
+        "job": "drift-metrics-exporter",
+        "service": "drift-metrics-exporter"
+      }
+    ]
+  },
+  "last_exporter": {
+    "query": "ml_monitoring_last_success_unixtime{job=\"drift-metrics-exporter\"}",
+    "values": [
+      [
+        1795594963.958,
+        "1795594633"
+      ]
+    ],
+    "metric": [
+      {
+        "__name__": "ml_monitoring_last_success_unixtime",
+        "instance": "drift-metrics-exporter:9108",
+        "job": "drift-metrics-exporter",
+        "service": "drift-metrics-exporter"
+      }
+    ]
+  }
+}

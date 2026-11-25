@@ -1,0 +1,36 @@
+{
+  "report_name": "demo_summary",
+  "generated_at_utc": "2026-11-25T08:01:33+00:00",
+  "demo": true,
+  "synthetic_only": true,
+  "no_real_pii": true,
+  "data_drift_none": {
+    "detected": false,
+    "share": 0.0,
+    "report": "./artifacts\\monitoring\\data_drift\\demo_data_drift_none.json"
+  },
+  "data_drift_shift": {
+    "detected": true,
+    "share": 0.375,
+    "report": "./artifacts\\monitoring\\data_drift\\demo_data_drift_shift.json",
+    "html": "artifacts\\monitoring\\data_drift\\demo_data_drift_shift.html"
+  },
+  "concept_signal": {
+    "degradation_signal": true,
+    "confirmed_concept_drift": false,
+    "report": "./artifacts\\monitoring\\concept_drift\\demo_concept_signal.json"
+  },
+  "ab_offline": {
+    "challenger_favored": true,
+    "deltas": {
+      "roc_auc": 0.10344827586206895,
+      "pr_auc": 0.09001455326961394,
+      "precision": 0.14035087719298245,
+      "recall": 0.15517241379310343,
+      "f1": 0.14782608695652177
+    },
+    "report": "./artifacts\\monitoring\\ab_testing\\demo_ab_offline.json"
+  },
+  "model_registry": "./models\\model_registry.json",
+  "rollback_plan": "./artifacts\\monitoring\\ab_testing\\rollback_plan.json"
+}

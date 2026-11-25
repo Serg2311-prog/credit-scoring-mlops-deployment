@@ -1,0 +1,85 @@
+// Grafana Alloy — collect Docker container logs for credit-scoring-api → Loki.
+// No cloud credentials. Docker socket is read-only.
+
+discovery.docker "containers" {
+	host             = "uni<REDACTED_PATH>"
+	refresh_interval = "10s"
+
+	filter {
+		name   = "name"
+		values = ["credit-scoring-api"]
+	}
+}
+
+discovery.relabel "api_logs" {
+	targets = discovery.docker.containers.targets
+
+	rule {
+		source_labels = ["__meta_docker_container_name"]
+		regex         = "/?(.*)"
+		target_label  = "container"
+	}
+
+	rule {
+		target_label = "service"
+		replacement  = "credit-scoring-api"
+	}
+
+	rule {
+		target_label = "job"
+		replacement  = "credit-scoring-api"
+	}
+}
+
+loki.source.docker "api" {
+	host             = "uni<REDACTED_PATH>"
+	targets          = discovery.relabel.api_logs.output
+	labels           = {"platform" = "docker"}
+	forward_to       = [loki.process.api_json.receiver]
+	refresh_interval = "10s"
+}
+
+loki.process "api_json" {
+	forward_to = [loki.write.local.receiver]
+
+	// FastAPI emits one JSON object per line (see src/api/logging_config.py).
+	stage.json {
+		expressions = {
+			level       = "level",
+			log_level   = "log_level",
+			service     = "service",
+			request_id  = "request_id",
+			endpoint    = "endpoint",
+			status_code = "status_code",
+			message     = "message",
+			timestamp   = "timestamp",
+		}
+	}
+
+	// Keep label set low-cardinality (no per-request request_id).
+	stage.labels {
+		values = {
+			level   = "level",
+			service = "service",
+		}
+	}
+
+	stage.timestamp {
+		source           = "timestamp"
+		format           = "RFC3339Nano"
+		fallback_formats = ["RFC3339"]
+	}
+
+	stage.output {
+		source = "message"
+	}
+}
+
+loki.write "local" {
+	endpoint {
+		url = "htt<REDACTED_PATH>"
+	}
+	external_labels = {
+		env = "local",
+	}
+}

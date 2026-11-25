@@ -1,0 +1,48 @@
+docker :  Container credit-scoring-cadvisor Stopping
+строка:2 знак:1
++ docker compose -f docker-compose.yml -f docker-compose.observability. ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( Container cred...visor Stopping :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+ Container credit-scoring-grafana Stopping
+ Container credit-scoring-e2e-log-probe Stopping
+ Container credit-scoring-alloy Stopping
+ Container credit-scoring-drift-metrics Stopping
+ Container credit-scoring-cadvisor Stopped
+ Container credit-scoring-cadvisor Removing
+ Container credit-scoring-cadvisor Removed
+ Container credit-scoring-grafana Stopped
+ Container credit-scoring-grafana Removing
+ Container credit-scoring-grafana Removed
+ Container credit-scoring-prometheus Stopping
+ Container credit-scoring-alloy Stopped
+ Container credit-scoring-alloy Removing
+ Container credit-scoring-alloy Removed
+ Container credit-scoring-loki Stopping
+ Container credit-scoring-prometheus Stopped
+ Container credit-scoring-prometheus Removing
+ Container credit-scoring-prometheus Removed
+ Container credit-scoring-api Stopping
+ Container credit-scoring-e2e-log-probe Stopped
+ Container credit-scoring-e2e-log-probe Removing
+ Container credit-scoring-e2e-log-probe Removed
+ Container credit-scoring-drift-metrics Stopped
+ Container credit-scoring-drift-metrics Removing
+ Container credit-scoring-drift-metrics Removed
+ Container credit-scoring-loki Stopped
+ Container credit-scoring-loki Removing
+ Container credit-scoring-loki Removed
+ Container credit-scoring-alertmanager Stopping
+ Container credit-scoring-api Stopped
+ Container credit-scoring-api Removing
+ Container credit-scoring-api Removed
+ Container credit-scoring-alertmanager Stopped
+ Container credit-scoring-alertmanager Removing
+ Container credit-scoring-alertmanager Removed
+ Container credit-scoring-alert-webhook Stopping
+ Container credit-scoring-alert-webhook Stopped
+ Container credit-scoring-alert-webhook Removing
+ Container credit-scoring-alert-webhook Removed
+ Network credit-scoring-net Removing
+ Network credit-scoring-net Removed

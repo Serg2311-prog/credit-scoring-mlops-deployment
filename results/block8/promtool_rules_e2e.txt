@@ -1,0 +1,2 @@
+Checking /etc/prometheus/alerts.e2e.yml
+  SUCCESS: 5 rules found

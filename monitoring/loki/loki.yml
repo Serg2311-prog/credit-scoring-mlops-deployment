@@ -56,6 +56,10 @@ ruler:
     kvstore:
       store: inmemory
   enable_api: true
+  # Deliver log-based alerts to the same Alertmanager as Prometheus metric rules.
+  alertmanager_url: http://alertmanager:9093
+  enable_alertmanager_v2: true
+  evaluation_interval: 30s
 
 analytics:
   reporting_enabled: false

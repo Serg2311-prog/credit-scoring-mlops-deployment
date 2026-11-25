@@ -155,6 +155,9 @@ class ModelInfoResponse(BaseModel):
     input_features_count: int
     threshold: float
     max_batch_size: int
+    ab_enabled: bool = False
+    challenger_ready: bool = False
+    auto_promote: bool = False
 
 
 class ErrorResponse(BaseModel):

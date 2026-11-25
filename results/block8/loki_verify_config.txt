@@ -1,0 +1,8 @@
+docker : flag provided but not defined: -config
+строка:1 знак:1
++ docker run --rm --entrypoint /usr/bin/loki -v "${PWD}/monitoring/loki ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (flag provided but not defined: -config:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+Run with -help to get list of available parameters

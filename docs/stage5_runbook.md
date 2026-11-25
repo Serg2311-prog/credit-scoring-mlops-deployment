@@ -70,7 +70,50 @@ Invoke-RestMethod http://127.0.0.1:9090/api/v1/targets |
 
 JSON fields: `timestamp`, `level`, `service`, `request_id`, `endpoint`, `status_code` (no request bodies / PII).
 
-## Test alert
+## Metric alert E2E (real Prometheus rule — preferred)
+
+Uses production rules (`for: 1m` on `APIDown`) or Block 8 E2E overlay (`alerts.e2e.yml`, `for: 15s`):
+
+```powershell
+# Optional faster pending window:
+# docker compose -f docker-compose.yml -f docker-compose.observability.yml `
+#   -f docker-compose.observability.e2e.yml up -d --no-build
+
+docker stop credit-scoring-api
+.\.venv\Scripts\python.exe scripts\block8\e2e_observability.py wait-alert --alertname APIDown --timeout 180 --output results\block8\metric_alert_firing.json
+docker logs credit-scoring-alert-webhook --tail 20
+docker start credit-scoring-api
+# Wait until Alertmanager no longer lists active APIDown; webhook status=resolved
+```
+
+| Alert | Meaning | Diagnose | Recover | Resolved when |
+| --- | --- | --- | --- | --- |
+| APIDown | scrape `up==0` | `Invoke-RestMethod http://127.0.0.1:9090/api/v1/targets` | start/recreate `api` | `up==1` long enough |
+| HighHTTP5xxRate | 5xx share >5% | `/metrics`, API logs | fix app/model; reduce bad traffic | rate below threshold |
+| HighP95Latency | p95 >1s | PromQL histogram_quantile | scale/CPU; check batch size | p95 below 1s |
+| ModelNotReady | gauge==0 | `/health/ready`, mounts | fix ONNX/preprocessor | ready=1 |
+| APIMetricsAbsent | job missing | prometheus.yml / network | restore scrape job | job present |
+
+## Log-based alert E2E (Loki Ruler — required)
+
+Rule: `monitoring/loki/rules/fake/rules.yml` → `APIErrorLogsDetected`
+Pipeline: API structured ERROR → Alloy → Loki → ruler → Alertmanager → webhook.
+
+```powershell
+# Block 8.1: production API has NO /internal/e2e/log-error.
+# Start observability + E2E overlay (includes test-only e2e-log-probe on :9109):
+# docker compose -f docker-compose.yml -f docker-compose.observability.yml `
+#   -f docker-compose.observability.e2e.yml up -d --build --scale frontend=0
+
+.\.venv\Scripts\python.exe scripts\block8\e2e_observability.py inject-error-log --probe http://127.0.0.1:9109
+.\.venv\Scripts\python.exe scripts\block8\e2e_observability.py wait-alert --alertname APIErrorLogsDetected --timeout 180 --output results\block8\log_alert_firing.json
+docker logs credit-scoring-alert-webhook --tail 20
+# After ~2m without new ERROR lines → alert resolves; webhook status=resolved
+```
+
+Do **not** treat Prometheus `HighHTTP5xxRate` as a substitute for this log rule.
+
+## Synthetic Alertmanager test (not a rule evaluation)
 
 ```powershell
 .\scripts\observability\fire_test_alert.ps1
@@ -81,7 +124,8 @@ docker logs credit-scoring-alert-webhook --tail 20
 Rule validation (no stack required):
 
 ```powershell
-docker run --rm -v "${PWD}/monitoring/prometheus:/etc/prometheus:ro" prom/prometheus:v3.2.1 promtool check rules /etc/prometheus/alerts.yml
+docker run --rm --entrypoint promtool -v "${PWD}/monitoring/prometheus:/etc/prometheus:ro" `
+  prom/prometheus:v3.2.1 check rules /etc/prometheus/alerts.yml
 ```
 
 ## Automated verification

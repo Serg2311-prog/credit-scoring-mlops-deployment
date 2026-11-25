@@ -203,6 +203,9 @@ def model_info() -> ModelInfoResponse:
         input_features_count=info["input_features_count"],
         threshold=info["threshold"],
         max_batch_size=info["max_batch_size"],
+        ab_enabled=bool(info.get("ab_enabled", False)),
+        challenger_ready=bool(info.get("challenger_ready", False)),
+        auto_promote=bool(info.get("auto_promote", False)),
     )
 
 

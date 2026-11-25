@@ -17,7 +17,7 @@ from src.monitoring.ab_testing import (
 )
 from src.monitoring.concept_drift import run_concept_drift_check
 from src.monitoring.data_drift import run_data_drift
-from src.monitoring.reports import utc_now_iso, write_report
+from src.monitoring.reports import monitoring_dir, utc_now_iso, write_report
 from src.monitoring.thresholds import load_stage6_thresholds
 from src.schema import TARGET_COLUMN, detect_target
 
@@ -196,13 +196,19 @@ def cmd_demo(_args: argparse.Namespace) -> int:
         output_name="demo_ab_offline",
         n_bootstrap=100,
     )
-    registry = write_model_registry()
+    # Experiment registry only — never production models/model_registry.json.
+    demo_registry = monitoring_dir() / "demo_model_registry.json"
+    registry = write_model_registry(
+        {"demo": True, "synthetic_only": True},
+        registry_path=demo_registry,
+    )
     rollback = rollback_to_champion_plan()
     summary = {
         "demo": True,
         "synthetic_only": True,
         "no_real_pii": True,
         "generated_at_utc": utc_now_iso(),
+        "auto_promote": False,
         "data_drift_none": {
             "detected": no_drift.get("data_drift_detected"),
             "share": no_drift.get("drift_share"),
@@ -225,6 +231,7 @@ def cmd_demo(_args: argparse.Namespace) -> int:
             "report": ab.get("report_path"),
         },
         "model_registry": str(registry),
+        "production_registry_untouched": True,
         "rollback_plan": rollback.get("report_path"),
     }
     path = write_report("demo_summary", summary)

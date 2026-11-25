@@ -1,0 +1,112 @@
+{
+  "status": "success",
+  "data": {
+    "activeTargets": [
+      {
+        "discoveredLabels": {
+          "__address__": "cadvisor:8080",
+          "__metrics_path__": "/metrics",
+          "__scheme__": "http",
+          "__scrape_interval__": "15s",
+          "__scrape_timeout__": "10s",
+          "job": "cadvisor",
+          "service": "cadvisor"
+        },
+        "labels": {
+          "instance": "cadvisor:8080",
+          "job": "cadvisor",
+          "service": "cadvisor"
+        },
+        "scrapePool": "cadvisor",
+        "scrapeUrl": "htt<REDACTED_PATH>",
+        "globalUrl": "htt<REDACTED_PATH>",
+        "lastError": "",
+        "lastScrape": "2026-11-25T08:22:08.793391904Z",
+        "lastScrapeDuration": 0.008320855,
+        "health": "up",
+        "scrapeInterval": "15s",
+        "scrapeTimeout": "10s"
+      },
+      {
+        "discoveredLabels": {
+          "__address__": "api:8000",
+          "__metrics_path__": "/metrics",
+          "__scheme__": "http",
+          "__scrape_interval__": "10s",
+          "__scrape_timeout__": "10s",
+          "job": "credit-scoring-api",
+          "service": "credit-scoring-api"
+        },
+        "labels": {
+          "instance": "api:8000",
+          "job": "credit-scoring-api",
+          "service": "credit-scoring-api"
+        },
+        "scrapePool": "credit-scoring-api",
+        "scrapeUrl": "htt<REDACTED_PATH>",
+        "globalUrl": "htt<REDACTED_PATH>",
+        "lastError": "",
+        "lastScrape": "2026-11-25T08:22:14.362904881Z",
+        "lastScrapeDuration": 0.01115548,
+        "health": "up",
+        "scrapeInterval": "10s",
+        "scrapeTimeout": "10s"
+      },
+      {
+        "discoveredLabels": {
+          "__address__": "drift-metrics-exporter:9108",
+          "__metrics_path__": "/metrics",
+          "__scheme__": "http",
+          "__scrape_interval__": "15s",
+          "__scrape_timeout__": "10s",
+          "job": "drift-metrics-exporter",
+          "service": "drift-metrics-exporter"
+        },
+        "labels": {
+          "instance": "drift-metrics-exporter:9108",
+          "job": "drift-metrics-exporter",
+          "service": "drift-metrics-exporter"
+        },
+        "scrapePool": "drift-metrics-exporter",
+        "scrapeUrl": "htt<REDACTED_PATH>",
+        "globalUrl": "htt<REDACTED_PATH>",
+        "lastError": "",
+        "lastScrape": "2026-11-25T08:22:02.195722025Z",
+        "lastScrapeDuration": 0.013114801,
+        "health": "up",
+        "scrapeInterval": "15s",
+        "scrapeTimeout": "10s"
+      },
+      {
+        "discoveredLabels": {
+          "__address__": "localhost:9090",
+          "__metrics_path__": "/metrics",
+          "__scheme__": "http",
+          "__scrape_interval__": "15s",
+          "__scrape_timeout__": "10s",
+          "job": "prometheus"
+        },
+        "labels": {
+          "instance": "localhost:9090",
+          "job": "prometheus"
+        },
+        "scrapePool": "prometheus",
+        "scrapeUrl": "htt<REDACTED_PATH>",
+        "globalUrl": "htt<REDACTED_PATH>",
+        "lastError": "",
+        "lastScrape": "2026-11-25T08:22:13.995506231Z",
+        "lastScrapeDuration": 0.005731309,
+        "health": "up",
+        "scrapeInterval": "15s",
+        "scrapeTimeout": "10s"
+      }
+    ],
+    "droppedTargets": [],
+    "droppedTargetCounts": {
+      "cadvisor": 0,
+      "credit-scoring-api": 0,
+      "drift-metrics-exporter": 0,
+      "prometheus": 0
+    }
+  }
+}

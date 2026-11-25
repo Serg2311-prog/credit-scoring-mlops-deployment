@@ -1,0 +1,24 @@
+# Loki Ruler — log-based alerts (tenant "fake" when auth_enabled=false).
+# Distinct from Prometheus metric rules in monitoring/prometheus/alerts.yml.
+groups:
+  - name: credit-scoring-api-logs
+    interval: 30s
+    rules:
+      - alert: APIErrorLogsDetected
+        # Fires on ERROR-level structured API logs in Loki (LogQL).
+        # Not a Prometheus HTTP 5xx counter — requires log pipeline Alloy→Loki.
+        expr: |
+          sum(
+            count_over_time(
+              {service=~"credit-scoring-api|e2e-log-probe", level="ERROR"}[2m]
+            )
+          ) > 0
+        for: 15s
+        labels:
+          severity: warning
+          alert_source: loki
+        annotations:
+          summary: "ERROR-level logs detected (API or E2E log probe)"
+          description: >-
+            Loki observed ERROR-level log lines from credit-scoring-api or the
+            test-only e2e-log-probe service in the last 2 minutes.
