@@ -318,4 +318,4 @@ python -m flake8 src tests scripts/ci airflow_home/dags
 | [`results/block7/`](results/block7/) | CPU/GPU/API load evidence |
 | [`results/block8/`](results/block8/) | Monitoring / drift / A/B evidence |
 
-Матрица баллов ТЗ (макс. **50**): модель 5 · cloud 7 · K8s 8 · CI/CD 5 · monitoring 8 · drift 7 · automation 5 · docs 5.
+Проект охватывает полный MLOps-цикл: подготовку и оптимизацию моделей, облачную инфраструктуру, контейнеризацию и оркестрацию, CI/CD, мониторинг, обнаружение дрейфа данных, A/B-тестирование и автоматизацию переобучения.
