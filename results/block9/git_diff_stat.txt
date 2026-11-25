@@ -1,0 +1,9 @@
+ README.md                                          | 576 ++++++++-------------
+ docs/architecture/overview.md                      | 236 +++++++--
+ docs/requirements_matrix.md                        | 363 ++++---------
+ .../environments/production/backend.hcl.example    |   2 +
+ .../environments/staging/backend.hcl.example       |   6 +-
+ .../environments/staging/backend.tf.example        |   9 +-
+ 6 files changed, 508 insertions(+), 684 deletions(-)
+warning: in the working copy of 'infra/terraform/environments/production/backend.hcl.example', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'infra/terraform/environments/staging/backend.hcl.example', LF will be replaced by CRLF the next time Git touches it

@@ -19,9 +19,12 @@
 #       then: terraform init -backend-config=backend.hcl
 #       (copy backend.hcl.example → backend.hcl; fill bucket/key only)
 #
-#    B) Inline backend block (below) +:
-#         terraform init -backend-config="access_key=$env:AWS_ACCESS_KEY_ID" `
-#                        -backend-config="secret_key=$env:AWS_SECRET_ACCESS_KEY"
+#    B) Inline backend block (commented template below) + credentials via env only:
+#         $env:AWS_ACCESS_KEY_ID = "..."
+#         $env:AWS_SECRET_ACCESS_KEY = "..."
+#         terraform init -backend-config=backend.hcl
+#       Do NOT pass access_key/secret_key on the CLI (-backend-config="access_key=...").
+#       CLI args leak into shell history and process listings.
 #
 # State keys (must differ staging vs production):
 #   staging:    credit-scoring/staging/terraform.tfstate

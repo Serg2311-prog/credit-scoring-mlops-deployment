@@ -82,3 +82,5 @@ trivy_failure_log.txt
 
 # Local unsanitized evidence originals (PII paths); hashes in sanitation_summary.json
 results/block8/_raw_encoding_backup/
+
+/results/block9/tz_extract.txt

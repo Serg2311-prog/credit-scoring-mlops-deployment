@@ -3,9 +3,9 @@
 # after copying backend.tf.example → backend.tf with an empty/partial backend "s3" {}.
 #
 # Do NOT commit real backend.hcl (gitignore *.hcl except examples if needed).
-# Credentials: prefer env AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY, or pass via
-#   -backend-config="access_key=..." -backend-config="secret_key=..."
-# Never put secret keys in this file in Git.
+# Credentials: set AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in the environment
+# (or use a supported credential helper). Never put secret keys in this file,
+# and never pass access_key/secret_key via -backend-config= CLI arguments.
 #
 # Live remote backend = NOT_EXECUTED in course policy (no buckets created here).
 
