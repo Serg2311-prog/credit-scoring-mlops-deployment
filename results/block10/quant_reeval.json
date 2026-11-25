@@ -1,0 +1,33 @@
+{
+  "holdout_n": 6000,
+  "ort_version": "1.32.0",
+  "fp32": {
+    "roc_auc": 0.774154013072903,
+    "pr_auc": 0.5509275849049489,
+    "precision": 0.4375326711970727,
+    "recall": 0.6307460437076111,
+    "f1": 0.5166666666666667,
+    "accuracy": 0.739,
+    "tn": 3597,
+    "fp": 1076,
+    "fn": 490,
+    "tp": 837
+  },
+  "quant": {
+    "roc_auc": 0.7732256250573489,
+    "pr_auc": 0.550046008133418,
+    "precision": 0.44151738672286617,
+    "recall": 0.6314996232102487,
+    "f1": 0.5196899224806202,
+    "accuracy": 0.7418333333333333,
+    "tn": 3613,
+    "fp": 1060,
+    "fn": 489,
+    "tp": 838
+  },
+  "decision_flips": 75,
+  "flip_rate": 0.0125,
+  "delta_vs_quantization_json": 0.0011961643399985844,
+  "delta_vs_benchmark_cpu_json": -0.0004055751014623299,
+  "canonical_source": "inference-only re-eval Block 10.1 on production quant SHA e4ceed53..."
+}

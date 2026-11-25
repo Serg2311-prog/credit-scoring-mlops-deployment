@@ -8,12 +8,24 @@
   "panels": [
     {
       "type": "stat",
-      "title": "Data drift share",
+      "title": "Artifact status (0 miss / 1 ok / 2 stale / 3 invalid)",
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 8,
+      "targets": [
+        {
+          "expr": "ml_monitoring_artifact_status{job=\"drift-metrics-exporter\"}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Data drift share (only if status=1)",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
       "id": 1,
       "targets": [
         {
-          "expr": "ml_data_drift_share{job=\"drift-metrics-exporter\"}",
+          "expr": "ml_data_drift_share{job=\"drift-metrics-exporter\"} and on() (ml_monitoring_artifact_status{job=\"drift-metrics-exporter\"} == 1)",
           "refId": "A"
         }
       ]
@@ -21,11 +33,11 @@
     {
       "type": "stat",
       "title": "Data drift detected",
-      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
       "id": 2,
       "targets": [
         {
-          "expr": "ml_data_drift_detected{job=\"drift-metrics-exporter\"}",
+          "expr": "ml_data_drift_detected{job=\"drift-metrics-exporter\"} and on() (ml_monitoring_artifact_status{job=\"drift-metrics-exporter\"} == 1)",
           "refId": "A"
         }
       ]
@@ -33,11 +45,11 @@
     {
       "type": "stat",
       "title": "ROC-AUC (last labeled run)",
-      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
       "id": 3,
       "targets": [
         {
-          "expr": "ml_model_roc_auc{job=\"drift-metrics-exporter\"}",
+          "expr": "ml_model_roc_auc{job=\"drift-metrics-exporter\"} and on() (ml_monitoring_artifact_status{job=\"drift-metrics-exporter\"} == 1)",
           "refId": "A"
         }
       ]
@@ -45,11 +57,11 @@
     {
       "type": "stat",
       "title": "Degradation signal",
-      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 4 },
       "id": 4,
       "targets": [
         {
-          "expr": "ml_performance_degradation_signal{job=\"drift-metrics-exporter\"}",
+          "expr": "ml_performance_degradation_signal{job=\"drift-metrics-exporter\"} and on() (ml_monitoring_artifact_status{job=\"drift-metrics-exporter\"} == 1)",
           "refId": "A"
         }
       ]
@@ -57,7 +69,7 @@
     {
       "type": "timeseries",
       "title": "Drift share over time",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "gridPos": { "h": 8, "w": 12, "x": 6, "y": 4 },
       "id": 5,
       "targets": [
         {
@@ -70,7 +82,7 @@
     {
       "type": "timeseries",
       "title": "PR-AUC / ROC-AUC",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 4 },
       "id": 6,
       "targets": [
         {

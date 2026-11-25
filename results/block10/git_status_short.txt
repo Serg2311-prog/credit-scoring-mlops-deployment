@@ -1,0 +1,30 @@
+ M .github/workflows/ci-airflow-dag.yml
+ M .github/workflows/ci-cd.yml
+ M .github/workflows/ci-docker.yml
+ M .github/workflows/ci-infrastructure.yml
+ M .github/workflows/ci-kubernetes.yml
+ M .github/workflows/ci-python.yml
+ M .github/workflows/release-candidate.yml
+ M .gitignore
+ M README.md
+ M docker-compose.ab.e2e.yml
+ M docker-compose.observability.e2e.yml
+ M docker-compose.observability.yml
+ M docs/defense_guide.md
+ M docs/final_project_report.md
+ M docs/model_benchmark.md
+ M docs/stage5_monitoring_completion_report.md
+ M docs/stage6_runbook.md
+ M k8s/overlays/production/kustomization.yaml
+ M monitoring/grafana/dashboards/model_quality_drift.json
+ M monitoring/prometheus/prometheus.yml
+ M scripts/block8/drift_metrics_exporter.py
+ M src/api/metrics.py
+ M src/monitoring/prometheus_export.py
+ M tests/api/test_metrics.py
+ M tests/ci/test_workflows.py
+ M tests/monitoring/test_prometheus_export.py
+?? docs/instructor_model_pack.md
+?? k8s/overlays/production/hpa-api.yaml
+?? results/block10/
+?? scripts/block10/

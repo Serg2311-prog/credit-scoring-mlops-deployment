@@ -10,6 +10,9 @@ concurrency:
   group: ci-infra-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   KUBECONFORM_VERSION: "v0.6.7"
   KUBECONFORM_K8S_VERSION: "1.33.0"

@@ -1,0 +1,10 @@
+{
+    "current":  {
+                    "metrics":  {
+                                    "pr_auc":  0.55,
+                                    "roc_auc":  0.77
+                                }
+                },
+    "generated_at_utc":  "2026-11-25T11:01:14+00:00",
+    "degradation_signal":  false
+}

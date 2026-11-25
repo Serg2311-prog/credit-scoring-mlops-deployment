@@ -1,0 +1,72 @@
+{
+  "block": "10.2",
+  "evaluation_mode": "inference_only_no_retrain",
+  "reproducible_command": "PYTHONPATH=. python scripts/block10/eval_quant_holdout_proof.py",
+  "python_version": "3.13.7",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "onnxruntime_version": "1.32.0",
+  "onnxruntime_providers_used": [
+    "CPUExecutionProvider"
+  ],
+  "model_sha256": {
+    "credit_scoring_nn.onnx": "48051065162f98c0842f0f4bca80ce4105e343924a7b62001114c08adc7521a4",
+    "credit_scoring_nn.quant.onnx": "e4ceed53c08ad0fe9592563f05e11069c4db6aa5c1172c7ff55945df21c65954",
+    "preprocessor.joblib": "f949b92907853f09683ba0d82c9ec8aeb3d51bd6c06d37ffed82a8b867828b64"
+  },
+  "dataset": {
+    "raw_filename": "UCI_Credit_Card.csv",
+    "holdout_path": "data/processed/test.csv",
+    "target_column": "default.payment.next.month",
+    "holdout_n": 6000,
+    "positive_rate": 0.22116666666666668,
+    "split": {
+      "test_size": 0.2,
+      "random_state": 42,
+      "stratified": true,
+      "source": "params.yaml prepare.*"
+    }
+  },
+  "threshold": 0.5,
+  "input_dim": 47,
+  "fp32": {
+    "roc_auc": 0.774154013072903,
+    "pr_auc": 0.5509275849049489,
+    "precision": 0.4375326711970727,
+    "recall": 0.6307460437076111,
+    "f1": 0.5166666666666667,
+    "accuracy": 0.739,
+    "confusion_matrix": {
+      "tn": 3597,
+      "fp": 1076,
+      "fn": 490,
+      "tp": 837
+    }
+  },
+  "quant_int8": {
+    "roc_auc": 0.7732256250573489,
+    "pr_auc": 0.550046008133418,
+    "precision": 0.44151738672286617,
+    "recall": 0.6314996232102487,
+    "f1": 0.5196899224806202,
+    "accuracy": 0.7418333333333333,
+    "confusion_matrix": {
+      "tn": 3613,
+      "fp": 1060,
+      "fn": 489,
+      "tp": 838
+    }
+  },
+  "fp32_vs_int8": {
+    "roc_auc_delta_quant_minus_fp32": -0.0009283880155540603,
+    "decision_flips": 75,
+    "decision_flip_rate": 0.0125,
+    "prob_mae": 0.0069135576486587524,
+    "prob_max_abs": 0.08653774857521057
+  },
+  "historical_snapshots_not_overwritten": {
+    "artifacts/onnx_quantization.json_quant_roc_auc": 0.7720294607173503,
+    "artifacts/benchmark_cpu.json_quant_roc_auc": 0.7736312001588113,
+    "note": "Different historical numbers may relate to ORT/runtime differences; ORT-version causality is a possible cause, not a controlled fact here."
+  },
+  "canonical_quant_roc_auc": 0.7732256250573489
+}

@@ -12,8 +12,6 @@ services:
       MODEL_VERSION: "mlp-onnx-fp32-v1"
       CHALLENGER_MODEL_VERSION: "mlp-onnx-int8-exp-v1"
       CHALLENGER_MODEL_PATH: /app/models/credit_scoring_nn.quant.onnx
-      # Explicitly ensure production probe flag cannot appear
-      ENABLE_E2E_LOG_PROBE: "false"
     volumes:
       - ./models/credit_scoring_nn.onnx:/app/models/credit_scoring_nn.onnx:ro
       - ./models/credit_scoring_nn.quant.onnx:/app/models/credit_scoring_nn.quant.onnx:ro

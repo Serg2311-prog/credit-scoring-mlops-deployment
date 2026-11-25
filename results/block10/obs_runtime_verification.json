@@ -1,0 +1,51 @@
+{
+  "api_has_model_ready": true,
+  "exporter_has_share": true,
+  "unavailable_local": "unavailable # HELP ml_monitoring_artifact_status 0=unavailable 1=valid 2=stale 3=invalid; drift gauges emitted only if 1 | # TYPE ml_m",
+  "prom_targets": [
+    {
+      "job": "cadvisor",
+      "health": "up",
+      "lastError": ""
+    },
+    {
+      "job": "credit-scoring-api",
+      "health": "up",
+      "lastError": ""
+    },
+    {
+      "job": "drift-metrics-exporter",
+      "health": "up",
+      "lastError": ""
+    },
+    {
+      "job": "prometheus",
+      "health": "up",
+      "lastError": ""
+    }
+  ],
+  "artifact_status_series": [
+    {
+      "value": "1",
+      "job": "drift-metrics-exporter"
+    }
+  ],
+  "api_has_drift_share": false,
+  "exporter_status_metric": "0",
+  "drift_share_series": [
+    {
+      "value": "0.25",
+      "job": "drift-metrics-exporter"
+    }
+  ],
+  "api_status": 200,
+  "exporter_status": 200,
+  "exporter_body_excerpt": "# HELP ml_monitoring_artifact_status 0=unavailable 1=valid 2=stale 3=invalid; drift gauges emitted only if 1\n# TYPE ml_monitoring_artifact_status gauge\nml_monitoring_artifact_status 1.0\n# monitoring_detail ok\n# HELP ml_data_drift_detected 1 if data drift detected else 0\n# TYPE ml_data_drift_detected gauge\nml_data_drift_detected 1.0\n# HELP ml_data_drift_share Share of drifted features from last Evidently run\n# TYPE ml_data_drift_share gauge\nml_data_drift_share 0.25\n# HELP ml_model_pr_auc PR-AUC from last labeled quality check\n# TYPE ml_model_pr_auc gauge\nml_model_pr_auc 0.55\n# HELP ml_model_roc_auc ROC-AUC from last labeled quality check\n# TYPE ml_model_roc_auc gauge\nml_model_roc_auc 0.77\n# HELP ml_monitoring_last_success_unixtime Unix time of last successful export source\n# TYPE ml_monitoring_last_success_unixtime gauge\nml_monitoring_last_success_unixtime 1795604474.0\n# HELP ml_performance_degradation_signal 1 if degradation signal else 0",
+  "exporter_status_metric_parsed": "1.0",
+  "notes": [
+    "API metrics omit ml_data_drift_* (api_has_drift_share=false)",
+    "Prometheus scrape drift-metrics-exporter health=up",
+    "Only exporter job exposes ml_data_drift_share=0.25 (isolated test artifacts)",
+    "Local resolve empty root => unavailable without fake zeros"
+  ]
+}

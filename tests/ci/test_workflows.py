@@ -154,6 +154,26 @@ def test_no_cloud_credentials_in_workflows():
         assert "private_key" not in text
 
 
+def test_all_workflows_declare_permissions():
+    """Least-privilege: every workflow must set explicit permissions."""
+    for path in sorted(WF.glob("*.yml")):
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+        assert isinstance(data, dict), path.name
+        assert "permissions" in data, f"{path.name} missing top-level permissions"
+        perms = data["permissions"]
+        assert isinstance(perms, dict), path.name
+        assert perms.get("contents") == "read", path.name
+
+
+def test_cicd_packages_write_only_on_publish_job():
+    data = yaml.safe_load(_text("ci-cd.yml"))
+    top = data["permissions"]
+    assert "packages" not in top or top.get("packages") in (None, "read")
+    publish = data["jobs"]["publish-ghcr"]["permissions"]
+    assert publish.get("packages") == "write"
+    assert publish.get("contents") == "read"
+
+
 def test_kind_smoke_is_optional():
     text = _text("ci-kubernetes.yml")
     assert "run_kind_smoke" in text

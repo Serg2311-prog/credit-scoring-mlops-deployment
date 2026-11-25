@@ -1,0 +1,13 @@
+VENV\Scripts\python.exe : ImportError while loading conftest 'TEMP_WORKTREE
+b43\tests\conftest.py'.
+строка:14 знак:1
++ VENV\Scripts\python.exe -m pytest -m "not k8s and not e2e and not  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ImportError whi...s\conftest.py'.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+tests\conftest.py:5: in <module>
+    from src.data.synthetic import make_synthetic_frame
+src\data\synthetic.py:8: in <module>
+    import numpy as np
+E   ModuleNotFoundError: No module named 'numpy'

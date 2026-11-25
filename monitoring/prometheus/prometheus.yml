@@ -33,3 +33,13 @@ scrape_configs:
       - targets: ["cadvisor:8080"]
         labels:
           service: cadvisor
+
+  # Offline Evidently aggregates — never scrape these from the API process
+  # (API intentionally does not emit ml_data_drift_* to avoid fake zeros).
+  - job_name: drift-metrics-exporter
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["drift-metrics-exporter:9108"]
+        labels:
+          service: drift-metrics-exporter

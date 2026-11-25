@@ -9,6 +9,9 @@ on:
         required: true
         default: "rc-manual"
 
+permissions:
+  contents: read
+
 jobs:
   package:
     name: Package RC metadata

@@ -10,6 +10,9 @@ concurrency:
   group: ci-airflow-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   dag-parse:
     name: Airflow DAG import (Linux)

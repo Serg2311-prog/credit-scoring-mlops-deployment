@@ -235,6 +235,52 @@ services:
     mem_reservation: 64m
     restart: unless-stopped
 
+  # Reuses API image (already built for compose). Read-only mounts.
+  # Missing/stale artifacts → status≠valid, no fictitious drift zeros.
+  drift-metrics-exporter:
+    image: credit-scoring-api:stage2
+    container_name: credit-scoring-drift-metrics
+    working_dir: /app
+    environment:
+      PYTHONPATH: /app
+    command:
+      [
+        "python",
+        "scripts/block8/drift_metrics_exporter.py",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "9108",
+        "--artifacts-root",
+        "/app/artifacts/monitoring",
+      ]
+    volumes:
+      - ./scripts/block8:/app/scripts/block8:ro
+      - ./src:/app/src:ro
+      - ./artifacts/monitoring:/app/artifacts/monitoring:ro
+      - ./configs:/app/configs:ro
+    ports:
+      - "9108:9108"
+    depends_on:
+      api:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9108/health')",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    cpus: 0.25
+    mem_limit: 256m
+    mem_reservation: 64m
+    restart: unless-stopped
+
 volumes:
   prometheus-data:
   alertmanager-data:

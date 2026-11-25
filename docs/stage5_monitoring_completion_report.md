@@ -38,4 +38,4 @@
 1. Docker Desktop cAdvisor: **no** `name` / compose-service labels on series — document, do not invent labels.
 2. Live Kubernetes cloud monitoring: **NOT_EXECUTED** (no paid cluster); local YAML parse only.
 3. No cloud notification channels (local webhook sink only).
-4. API process still registers unset `ml_data_drift_*` gauges as 0 — Grafana **must** query `job="drift-metrics-exporter"`.
+4. ~~API process still registers unset `ml_data_drift_*` gauges as 0~~ — **fixed in Block 10.1**: API no longer emits drift gauges; exporter is on the base observability stack with `ml_monitoring_artifact_status`.

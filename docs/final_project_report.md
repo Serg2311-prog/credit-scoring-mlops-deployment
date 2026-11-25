@@ -43,7 +43,7 @@ RF **не** заменяется и **не** маскируется под NN.
 | Артефакт | Роль | Test ROC-AUC (holdout) |
 | --- | --- | ---: |
 | `credit_scoring_nn.onnx` | production champion FP32 | **0.7742** (parity с PyTorch) |
-| `credit_scoring_nn.quant.onnx` | experimental INT8 | **0.7736** (не auto-champion) |
+| `credit_scoring_nn.quant.onnx` | experimental INT8 | **0.7732** (ORT 1.32.0 re-eval; не auto-champion) |
 
 Dynamic quantization уменьшает размер; вероятности отклоняются от FP32; доля смены решений зафиксирована в benchmark (~2.18%). Quant **не** объявлен лучшим автоматически.
 

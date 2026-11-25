@@ -6,7 +6,7 @@
 
 | | |
 | --- | --- |
-| Baseline commit | `0df191a` |
+| Baseline commit | `bdb8b43` |
 | Cloud `terraform apply` | **не выполнялся** |
 | Production Yandex Cloud | **не развёрнут** |
 | Serving default | ONNX Runtime **CPU FP32** |
@@ -110,8 +110,11 @@ cd credit-scoring-mlops-deployment
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -U pip
-pip install -r requirements-dev.txt
+# Match CI: runtime + API + NN + dev tools (requirements-dev alone is not enough)
+pip install -r requirements.txt -r requirements-dev.txt -r requirements-api.txt -r requirements-nn.txt
 $env:PYTHONPATH = (Get-Location).Path
+# Without local production models/, generate CI synthetic artifacts first:
+#   python scripts/ci/generate_synthetic_artifacts.py --output-dir models --force
 python -m pytest -m "not k8s and not e2e" -q
 ```
 
@@ -121,10 +124,13 @@ python -m pytest -m "not k8s and not e2e" -q
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -U pip
-pip install -r requirements-dev.txt
+pip install -r requirements.txt -r requirements-dev.txt -r requirements-api.txt -r requirements-nn.txt
 export PYTHONPATH="$PWD"
+# python scripts/ci/generate_synthetic_artifacts.py --output-dir models --force
 python -m pytest -m "not k8s and not e2e" -q
 ```
+
+Production ONNX/PT/preprocessor are **gitignored** (not DVC outs). For production-parity inference see [`docs/instructor_model_pack.md`](docs/instructor_model_pack.md).
 
 ---
 

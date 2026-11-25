@@ -6,6 +6,7 @@ namespace: credit-scoring-production
 
 resources:
   - ../../base
+  - hpa-api.yaml
   # Secret: apply secret.example.yaml manually / sealed-secrets — not committed as live Secret.
 
 patches:

@@ -1,0 +1,12 @@
+{
+  "scanned": 456,
+  "aws_or_pem": [],
+  "pwd_suspect": [
+    "scripts/airflow/entrypoint.sh"
+  ],
+  "abs_n": 2,
+  "abs_sample": [
+    "scripts/block8/sanitize_block8_evidence.py",
+    "scripts/run_stage1.ps1"
+  ]
+}

@@ -34,11 +34,11 @@ concurrency:
   group: cicd-orchestrator-staging-${{ github.event.workflow_run.head_sha || github.event.inputs.git_sha || github.sha }}
   cancel-in-progress: true
 
+# Default least privilege; publish job elevates packages: write only.
 permissions:
   contents: read
   actions: read
   checks: read
-  packages: write
 
 jobs:
   resolve:
@@ -177,6 +177,9 @@ jobs:
       && (needs.resolve.outputs.mode == 'publish' || needs.resolve.outputs.mode == 'deploy')
     runs-on: ubuntu-latest
     timeout-minutes: 50
+    permissions:
+      contents: read
+      packages: write
     environment: staging
     outputs:
       api_ref: ${{ steps.push.outputs.api_ref }}

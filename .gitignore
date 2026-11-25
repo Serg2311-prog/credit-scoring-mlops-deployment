@@ -80,7 +80,11 @@ _source_audit/
 # Local scanner noise (do not commit)
 trivy_failure_log.txt
 
-# Local unsanitized evidence originals (PII paths); hashes in sanitation_summary.json
+# Local unsanitized evidence / assignment extracts (never commit)
 results/block8/_raw_encoding_backup/
+results/block9/tz_extract.txt
+results/block10/tz_extract.txt
+results/block10/tz_meta.json
 
-/results/block9/tz_extract.txt
+# Instructor model pack ZIP (private transfer; covered by artifacts/* too)
+artifacts/submission/

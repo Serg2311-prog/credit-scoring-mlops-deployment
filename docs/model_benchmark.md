@@ -105,17 +105,24 @@ RF baseline — **исторические** метрики исходного �
 | Показатель | ONNX FP32 | ONNX Quantized |
 | --- | ---: | ---: |
 | Size, bytes | 62934 | **24223** (~0.385×) |
-| ROC-AUC | **0.7742** | 0.7720 |
-| Precision | 0.4375 | 0.4446 |
-| Recall | **0.6307** | 0.6292 |
-| F1 | 0.5167 | **0.5211** |
-| Accuracy | 0.7390 | **0.7442** |
-| Prob MAE vs FP32 | — | 0.0160 |
-| Prob max\|Δ\| vs FP32 | — | 0.1168 |
-| Decision flips @0.5 | — | **131 / 6000 (2.183%)** |
-| Flips 0→1 / 1→0 | — | 48 / 83 |
+| ROC-AUC | **0.7742** | **0.7732** |
+| Precision | 0.4375 | 0.4415 |
+| Recall | **0.6307** | 0.6315 |
+| F1 | 0.5167 | 0.5197 |
+| Accuracy | 0.7390 | 0.7418 |
+| Decision flips @0.5 | — | **75 / 6000 (1.25%)** |
 
-Quantized модель **меньше по размеру**, но вероятность заметно отклоняется от FP32; ROC-AUC чуть ниже; **2.18% решений меняются**. Она **не объявляется лучшей** автоматически.
+**Canonical quality (Block 10.1):** inference-only re-eval on `data/processed/test.csv` (n=6000), production model SHA `e4ceed53…`, ONNX Runtime **1.32.0**, threshold 0.5 — see `results/block10/quant_reeval.json`.
+
+Historical snapshots (same file size, **do not overwrite**):
+
+| Source | Quant ROC-AUC | Note |
+| --- | ---: | --- |
+| `artifacts/onnx_quantization.json` | 0.7720 | ORT at quantize-time eval |
+| `artifacts/benchmark_cpu.json` §quality | 0.7736 | ORT at CPU benchmark-time eval |
+| Block 10.1 re-eval (canonical) | **0.7732** | Current serving ORT 1.32.0 |
+
+Dynamic INT8 logits are ORT-version sensitive; FP32 stays 0.774154 across runs. Quantized model is **experimental**, not auto-champion.
 
 ---
 
@@ -132,13 +139,16 @@ Quantized модель **меньше по размеру**, но вероятн
 - throughput ≈ `batch_size / mean_latency_s`;
 - memory = RSS процесса (включает загруженный PyTorch) — поэтому абсолютный RSS высокий и почти одинаковый.
 
-### 6.1. Качество на test (из benchmark прогона)
+### 6.1. Качество на test
+
+**Canonical (Block 10.1 re-eval, ORT 1.32.0):**
 
 | Backend | ROC-AUC | Precision | Recall | F1 | Accuracy |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| PyTorch CPU | 0.7742 | 0.4375 | 0.6307 | 0.5167 | 0.7390 |
 | ONNX FP32 CPU | 0.7742 | 0.4375 | 0.6307 | 0.5167 | 0.7390 |
-| ONNX Quant CPU | 0.7736 | 0.4427 | 0.6292 | 0.5198 | 0.7428 |
+| ONNX Quant CPU | **0.7732** | 0.4415 | 0.6315 | 0.5197 | 0.7418 |
+
+Historical `artifacts/benchmark_cpu.json` also embeds latency rows and a contemporaneous quality block (quant ROC-AUC **0.7736** under that run’s ORT). Latency/throughput figures below remain from that benchmark artifact; use Block 10.1 for current quant quality.
 
 ### 6.2. Latency / throughput (model_only)
 

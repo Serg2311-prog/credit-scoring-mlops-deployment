@@ -17,6 +17,9 @@ concurrency:
   group: ci-k8s-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   # Pinned offline validator (no Kubernetes API required).
   KUBECONFORM_VERSION: "v0.6.7"

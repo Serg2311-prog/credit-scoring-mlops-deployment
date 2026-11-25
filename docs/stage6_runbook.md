@@ -77,14 +77,15 @@ Exported on API `/metrics` (same registry as stage 5):
 
 | Metric | Type | Labels |
 | --- | --- | --- |
-| `ml_data_drift_share` | Gauge | — |
-| `ml_data_drift_detected` | Gauge | — |
+| `ml_data_drift_share` | Gauge | **exporter-metrics-exporter only** (not API) |
+| `ml_data_drift_detected` | Gauge | **exporter-metrics-exporter only** |
+| `ml_monitoring_artifact_status` | Gauge | 0 unavailable / 1 valid / 2 stale / 3 invalid |
 | `ml_model_roc_auc` | Gauge | `model_role` |
 | `ml_model_pr_auc` | Gauge | `model_role` |
 | `ml_model_f1` | Gauge | `model_role` |
 | `ml_ab_experiment_samples` | Counter | `ab_group`=`champion\|challenger` |
 
-Update helpers: `src.api.metrics.update_data_drift_metrics`, `update_model_quality_metrics`, `observe_ab_sample`.
+API live helper: `src.api.metrics.observe_ab_sample`. Offline drift/quality: `scripts/block8/drift_metrics_exporter.py` + `src.monitoring.prometheus_export`.
 
 ## API A/B (optional)
 

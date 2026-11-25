@@ -1,0 +1,27 @@
+ .github/workflows/ci-airflow-dag.yml               |   5 +-
+ .github/workflows/ci-cd.yml                        |   5 +-
+ .github/workflows/ci-docker.yml                    |   5 +-
+ .github/workflows/ci-infrastructure.yml            |   5 +-
+ .github/workflows/ci-kubernetes.yml                |   5 +-
+ .github/workflows/ci-python.yml                    |   5 +-
+ .github/workflows/release-candidate.yml            |   5 +-
+ .gitignore                                         |   6 ++
+ README.md                                          |  12 ++-
+ docker-compose.ab.e2e.yml                          |   2 -
+ docker-compose.observability.e2e.yml               |  29 +-----
+ docker-compose.observability.yml                   |  46 ++++++++++
+ docs/defense_guide.md                              |   2 +-
+ docs/final_project_report.md                       |   2 +-
+ docs/model_benchmark.md                            |  38 +++++---
+ docs/stage5_monitoring_completion_report.md        |   2 +-
+ docs/stage6_runbook.md                             |   7 +-
+ k8s/overlays/production/kustomization.yaml         |   1 +
+ .../grafana/dashboards/model_quality_drift.json    |  32 +++++--
+ monitoring/prometheus/prometheus.yml               |  10 ++
+ scripts/block8/drift_metrics_exporter.py           |  29 +++---
+ src/api/metrics.py                                 |  59 +-----------
+ src/monitoring/prometheus_export.py                | 101 ++++++++++++++++++---
+ tests/api/test_metrics.py                          |   6 +-
+ tests/ci/test_workflows.py                         |  20 ++++
+ tests/monitoring/test_prometheus_export.py         |  71 ++++++++++++++-
+ 26 files changed, 354 insertions(+), 156 deletions(-)
