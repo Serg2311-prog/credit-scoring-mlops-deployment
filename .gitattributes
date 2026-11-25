@@ -1,3 +1,8 @@
 # Keep shell scripts LF so GitHub-hosted bash does not choke on CRLF.
 *.sh text eol=lf
 *.bash text eol=lf
+
+# Block 7 GPU evidence: byte-exact SHA256 manifests. Disable EOL conversion.
+# Original Colab CSV artifacts use CRLF; without -text, Linux CI rewrites to LF
+# and SHA256SUMS checks fail.
+results/block7/colab/** -text

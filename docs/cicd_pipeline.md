@@ -36,6 +36,10 @@ Marker: `models/CI_SYNTHETIC_ARTIFACTS.json` (`synthetic: true`, `not_production
 | --- | --- | --- |
 | unit / contract integration | synthetic or real | **RUN** |
 | `@pytest.mark.real_artifacts` | production only | **SKIP** on CI |
+| Block 7 GPU evidence integrity | always | reads `results/block7/colab/**` only (no `models/*.pt`) |
+| Block 7 GPU↔production binding | `@pytest.mark.real_artifacts` | **SKIP** on hosted CI — PT gitignored; ONNX replaced by synthetic |
+
+`results/block7/colab/**` is marked `-text` in `.gitattributes` so SHA256 manifests stay byte-stable across Windows/Linux checkouts.
 | kind smoke | optional | manual `run_kind_smoke=true` |
 
 Do not treat CI-synthetic weights as stage-1 production (`mlp-onnx-fp32-v1`, dim 47).

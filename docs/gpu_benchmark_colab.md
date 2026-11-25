@@ -41,6 +41,12 @@ Runner used: `results/block7/colab/hardened/runner_used/` (SHA in `SHA256SUMS.js
 - No GPU INT8, no GPU API load, no cloud GPU nodes provisioned
 - Colab CPU model string not recorded in environment JSON
 
+## CI note (hosted runners)
+
+- Evidence integrity tests do **not** open `models/credit_scoring_nn.pt` (file is gitignored and absent in Actions).
+- Production ONNX/PT byte binding uses `@pytest.mark.real_artifacts` and skips when `CI_SYNTHETIC_ARTIFACTS.json` is present.
+- Evidence paths use `.gitattributes` `-text` to preserve original Colab CSV bytes (CRLF) for SHA256SUMS.
+
 ## Production implication
 
 Prefer **ONNX FP32 CPU** for this MLP. GPU node group remains optional.
