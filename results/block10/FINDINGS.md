@@ -29,7 +29,7 @@ Also see `FINAL_ACCEPTANCE_REPORT.md`.
 
 ---
 
-## P0 — Critical (submission blockers)
+## P0 — Critical blockers
 
 **None identified.**
 
@@ -53,7 +53,7 @@ Also see `FINAL_ACCEPTANCE_REPORT.md`.
 
 | Field | Value |
 | --- | --- |
-| Description | Tracked under `models/`: only `.gitkeep` + `model_registry.json`. ONNX/PT/preprocessor are local/gitignored and **not** DVC outs. Clean clone cannot run production-parity inference without external artifacts. Specialist ML audit treats “clone → serve production ONNX” as hard fail for that criterion; for academic submission this remains **P1** (synthetic CI path + instructor pack mitigate), not a TZ submission P0. |
+| Description | Tracked under `models/`: only `.gitkeep` + `model_registry.json`. ONNX/PT/preprocessor are local/gitignored and **not** DVC outs. Clean clone cannot run production-parity inference without external artifacts. Specialist ML audit treats “clone → serve production ONNX” as hard fail for that criterion; this remains **P1** (synthetic CI path + instructor pack mitigate), not a critical P0 for the course deliverable. |
 | Location | `models/` tracked listing; `.gitignore`; `dvc.yaml`; clone inventory |
 | Reproduce | `git archive` / clean clone → `Test-Path models/credit_scoring_nn.onnx` → False |
 | Evidence | Clone HEAD files; SHA256 of local production artifacts recorded in `audit_baseline.json`; cross-check ML audit |

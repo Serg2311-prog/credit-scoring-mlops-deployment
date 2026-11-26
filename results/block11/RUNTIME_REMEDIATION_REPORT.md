@@ -3,7 +3,7 @@
 > Later closeout: SG migration completed in experiment; infra destroyed; app `ABORT_CLOUD_APP`. See [`FINAL_CLOUD_EXPERIMENT_REPORT.md`](FINAL_CLOUD_EXPERIMENT_REPORT.md).
 
 **Branch:** `cloud-deployment`
-**Status (at 11.9.1):** `READY_FOR_STATE_MIGRATION`
+**Status (at 11.9.1):** state migration planned (import-first; no blind apply)
 **Cloud mutations this block:** none (code + docs only)
 **terraform apply/destroy/state mv|rm|import (this block, by agent):** **NOT_EXECUTED**
 

@@ -5,7 +5,7 @@
 **Environment:** Windows PowerShell, Docker Desktop, CPU-only, ~8 GB RAM
 **Commit/push / terraform apply:** not performed
 
-## TZ mapping (Этап 5 — max 8)
+## Соответствие требованиям этапа 5
 
 | Requirement | Status |
 | --- | --- |

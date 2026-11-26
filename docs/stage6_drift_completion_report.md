@@ -4,7 +4,7 @@
 **Environment:** local Python `.venv` (Evidently 0.7.x); isolated Docker for online A/B
 **Commit/push:** not performed
 
-## TZ mapping (Этап 6 — max 7)
+## Соответствие требованиям этапа 6
 
 | Requirement | Status |
 | --- | --- |

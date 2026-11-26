@@ -6,7 +6,7 @@
 
 ## 1. Scope
 
-Block 10.2 technical acceptance after remediations. Official grading is by the mentor only. Historical findings: `FINDINGS.md`.
+Block 10.2 technical acceptance after remediations. Historical findings: `FINDINGS.md`.
 
 ## 2. Quantized ROC-AUC proof
 
@@ -89,7 +89,7 @@ Historical `0.7720` / `0.7736` **not overwritten**. ORT-version difference is a 
 3. kind NetworkPolicy enforcement unproven.
 4. HPA runtime unproven (Metrics Server).
 5. Frontend/DVC not re-demoed in clean clone this block.
-6. GPU runner remains flagged `H` in the index listing; content hash matches HEAD (no content edit required for submission consistency).
+6. GPU runner remains flagged `H` in the index listing; content hash matches HEAD (no content edit required for evidence consistency).
 
 ## 9. Changed / new files (remediation + 10.2)
 
@@ -114,4 +114,4 @@ git diff --stat HEAD
 
 ## Verdict
 
-**READY_FOR_SUBMISSION** with documented limitations.
+Technical acceptance complete with documented limitations.

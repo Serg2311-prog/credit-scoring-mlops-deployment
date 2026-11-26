@@ -5,7 +5,7 @@
 **Distroless remediation:** **not continued**.
 **Security gates:** **not weakened** (no CVE ignores / Trivy skip).
 
-Agent status: documentation + destroy **plan only** → **STOP GATE DESTROY**.
+Agent status: documentation + destroy **plan only** — operator must approve before destroy.
 
 ---
 
@@ -90,7 +90,7 @@ Order:
 
 1. Verify branch, workspace, state list (26 / 12 rules).
 2. Confirm no app K8s leftovers.
-3. **STOP GATE DESTROY** → approved `terraform plan -destroy` / `apply`.
+3. Operator approval → `terraform plan -destroy` / `apply`.
 4. Verify no MK8s / VMs / disks / IPs / `cs-exp-*` VPC|subnet|SG|SA; **keep default VPC/subnets**.
 5. Wipe tfstate bucket **versions + delete markers**, then delete bucket + tfstate SA/keys.
 6. `docker logout ghcr.io`, revoke temp PAT, clear shell AWS/GHCR env.
@@ -98,8 +98,8 @@ Order:
 
 ---
 
-## 4. STOP GATE DESTROY
+## 4. Operator destroy approval
 
-Await operator phrase such as **`APPROVE_TERRAFORM_DESTROY`** before any destroy/delete.
+Await explicit operator approval before any destroy/delete.
 
 Until then: no `terraform destroy`/`apply`, no bucket/SA deletion, no commit/push by agent.

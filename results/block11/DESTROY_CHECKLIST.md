@@ -1,7 +1,7 @@
 # DESTROY_CHECKLIST — Block 11.13 (Controlled Cloud Cleanup)
 
 **Branch:** `cloud-deployment` only
-**Status:** **STOP GATE DESTROY** — agent prepares commands; **operator executes** destroy/deletes.
+**Status:** destroy planned — agent prepares commands; **operator executes** destroy/deletes.
 **App deploy:** **ABORT_CLOUD_APP** (no cloud app publish/apply).
 
 **Agent MUST NOT run:** `terraform destroy` / `apply`, cloud deletes, bucket wipe, SA deletes, `git commit` / `push`.
@@ -83,7 +83,7 @@ Do **not** reinstall/remove Metrics Server solely for cleanup unless it was inst
 
 ---
 
-## 3. STOP GATE DESTROY — operator approval
+## 3. Operator approval before destroy
 
 **Do not proceed until explicit operator approval**, e.g. `APPROVE_TERRAFORM_DESTROY`.
 

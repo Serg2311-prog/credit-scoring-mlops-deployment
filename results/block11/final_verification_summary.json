@@ -5,7 +5,7 @@
   "head": "b713f2fcc7fd4638d4464ad9395fce483a86bdad",
   "main_head": "b713f2fcc7fd4638d4464ad9395fce483a86bdad",
   "main_unchanged": true,
-  "closure_status": "READY_FOR_FINAL_MERGE",
+  "closure_status": "MERGE_PREPARATION_COMPLETE",
   "dockerfile_api": {
     "restored_from_main": true,
     "diff_vs_main": "empty",
@@ -66,5 +66,11 @@
     "commit": false,
     "push": false,
     "merge": false
+  },
+  "cost_confirmed_2026_11_26": {
+    "consumption_rub": 56.34,
+    "grant_covered_rub": 56.34,
+    "amount_due_rub": 0.0,
+    "future_accruals_guaranteed_absent": false
   }
 }

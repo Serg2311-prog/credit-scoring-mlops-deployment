@@ -9,7 +9,7 @@
 | Real `backend.hcl` / `terraform.tfvars` tracked? | NO (gitignored; present locally) |
 | Access/secret keys / PAT / IAM tokens in tracked files? | NO (placeholders only in docs) |
 | kubeconfig / Docker creds tracked? | NO |
-| Protected models / submission ZIP tracked? | NO (policy unchanged) |
+| Protected models / instructor model pack ZIP tracked? | NO (policy unchanged) |
 | Historical Block 7/8 evidence mutated? | NO — git trees match Block 10 baseline |
 | Trivy ignore rules added / gates weakened? | NO |
 

@@ -2,22 +2,6 @@
   "audit_id": "block10.2-final-acceptance",
   "baseline_sha": "bdb8b43cf3a20fb58eaa8da7997862d5ac748b5a",
   "remediation_uncommitted": true,
-  "score_timeline": {
-    "block10_baseline_bdb8b43": {"most_likely": 48, "status": "READY_WITH_MINOR_LIMITATIONS"},
-    "block10_1_proposed": {"most_likely": 50, "status": "READY_FOR_SUBMISSION_PENDING_VERIFY"},
-    "block10_2_verified": {"most_likely": 49, "confirmed_min": 48, "max_defensible": 50, "status": "READY_FOR_SUBMISSION"}
-  },
-  "scores_block10_2": {
-    "model": 5,
-    "cloud": 7,
-    "docker_k8s": 7,
-    "cicd": 5,
-    "monitoring": 8,
-    "drift": 7,
-    "automation": 5,
-    "docs": 5,
-    "total": 49
-  },
   "canonical_quant_roc_auc": 0.7732256250573489,
   "quant_proof": "results/block10/quant_roc_auc_proof_block102.json",
   "instructor_model_pack": {
@@ -30,17 +14,46 @@
   "protected_artifacts_unchanged": true,
   "block7_block8_git_trees_unchanged": true,
   "quality_gates": {
-    "pytest_developer_tree": {"status": "EXECUTED_PASS", "detail": "236 passed, 2 skipped"},
-    "pytest_clean_clone_synthetic": {"status": "EXECUTED_PASS", "detail": "232 passed, 6 skipped; GPU runner HEAD hash equals working tree (9936080f…)"},
-    "black": {"status": "EXECUTED_PASS"},
-    "flake8": {"status": "EXECUTED_PASS"},
-    "compose_config": {"status": "EXECUTED_PASS"},
-    "kustomize_production_hpa": {"status": "EXECUTED_PASS"},
-    "obs_runtime_base_stack": {"status": "EXECUTED_PASS", "evidence": "results/block10/obs_runtime_verification.json"},
-    "hpa_runtime": {"status": "NOT_EXECUTED", "static": "results/block10/hpa_verification.json"},
-    "clean_clone_frontend_dvc": {"status": "NOT_EXECUTED"},
-    "terraform_apply": {"status": "NOT_EXECUTED"},
-    "secrets_scan": {"status": "EXECUTED_PASS"},
-    "git_diff_check": {"status": "EXECUTED_PASS"}
-  }
+    "pytest_developer_tree": {
+      "status": "EXECUTED_PASS",
+      "detail": "236 passed, 2 skipped"
+    },
+    "pytest_clean_clone_synthetic": {
+      "status": "EXECUTED_PASS",
+      "detail": "232 passed, 6 skipped; GPU runner HEAD hash equals working tree (9936080f…)"
+    },
+    "black": {
+      "status": "EXECUTED_PASS"
+    },
+    "flake8": {
+      "status": "EXECUTED_PASS"
+    },
+    "compose_config": {
+      "status": "EXECUTED_PASS"
+    },
+    "kustomize_production_hpa": {
+      "status": "EXECUTED_PASS"
+    },
+    "obs_runtime_base_stack": {
+      "status": "EXECUTED_PASS",
+      "evidence": "results/block10/obs_runtime_verification.json"
+    },
+    "hpa_runtime": {
+      "status": "NOT_EXECUTED",
+      "static": "results/block10/hpa_verification.json"
+    },
+    "clean_clone_frontend_dvc": {
+      "status": "NOT_EXECUTED"
+    },
+    "terraform_apply": {
+      "status": "NOT_EXECUTED"
+    },
+    "secrets_scan": {
+      "status": "EXECUTED_PASS"
+    },
+    "git_diff_check": {
+      "status": "EXECUTED_PASS"
+    }
+  },
+  "acceptance_status": "TECHNICAL_ACCEPTANCE_WITH_LIMITATIONS"
 }

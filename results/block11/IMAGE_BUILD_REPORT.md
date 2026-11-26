@@ -90,7 +90,7 @@ ghcr.io/serg2311-prog/credit-scoring-frontend:cloud-exp-20261126-154419-b713f2f
 | `tests/ci/test_workflows.py` | **14 passed** |
 | Packages scopes | Still missing → publish blocked |
 
-## STOP GATE 1 decision
+## Publish decision (historical)
 
 Publish still **blocked** until:
 

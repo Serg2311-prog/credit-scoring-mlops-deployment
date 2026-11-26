@@ -69,4 +69,4 @@ Instructor/demo machines may keep local `.env` / cloud tokens **outside Git** â€
 
 ## Verdict
 
-**No P0 security blockers for academic submission.** Remaining items are local-demo hygiene (P3) and path sanitization (P2).
+**No P0 security blockers identified.** Remaining items are local-demo hygiene (P3) and path sanitization (P2).

@@ -15,7 +15,7 @@ Serving: FastAPI + ONNX FP32. Observability: Prometheus/Grafana/Loki. Drift/A/B 
 
 ## 2. Где искать критерии
 
-| Этап ТЗ (макс.) | Куда смотреть |
+| Этап ТЗ | Куда смотреть |
 | --- | --- |
 | Модель (5) | `docs/model_benchmark.md`, `results/block7/` |
 | Cloud (7) | `infra/terraform/`, `docs/terraform_infrastructure.md`, `results/block11/` |
