@@ -1,0 +1,14 @@
+# =============================================================================
+# Remote state — EXAMPLE ONLY (NOT_EXECUTED)
+# =============================================================================
+# Full operator procedure (YC CLI bucket + versioning + Bucket Policy + keys):
+#   results/block11/REMOTE_STATE_BOOTSTRAP.md
+#
+# Do NOT create bucket/keys here. Never commit secrets.
+# State key: credit-scoring/cloud-experiment/terraform.tfstate
+# use_lockfile: NOT enabled (Yandex compatibility NOT_VERIFIED).
+# CI: terraform init -backend=false
+#
+# terraform {
+#   backend "s3" {}
+# }

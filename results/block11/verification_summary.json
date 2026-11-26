@@ -1,0 +1,9 @@
+{
+  "block": "11.14",
+  "title": "Final closure supersedes 11.13 STOP_GATE_DESTROY",
+  "branch": "cloud-deployment",
+  "status": "READY_WITH_DOCUMENTED_LIMITATIONS",
+  "abort_cloud_app": true,
+  "destroy_verified": true,
+  "see": "final_verification_summary.json"
+}

@@ -3,7 +3,9 @@
 # alpine:3.22 ships musl >=1.2.5-r4 (fixes CVE-2026-107891); 3.20 is EOL.
 FROM alpine:3.22
 
+# Force OpenSSL security updates (Trivy CVE-2026-124709 requires >= 3.5.9-r2).
 RUN apk upgrade --no-cache \
+    && apk add --no-cache --upgrade 'libssl3>=3.5.9-r2' 'libcrypto3>=3.5.9-r2' \
     && adduser -D -u 10001 -H appuser \
     && mkdir -p /artifacts \
     && chown -R 10001:10001 /artifacts

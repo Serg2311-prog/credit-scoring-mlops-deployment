@@ -27,3 +27,24 @@ output "nodes_security_group_id" {
   description = "Security group ID for Kubernetes nodes."
   value       = yandex_vpc_security_group.k8s_nodes.id
 }
+
+output "security_group_rule_ids" {
+  description = "All managed SG rule IDs (create-before cluster; destroy-after cluster)."
+  value = compact(concat(
+    [
+      yandex_vpc_security_group_rule.master_self.id,
+      yandex_vpc_security_group_rule.master_lb_healthchecks.id,
+      yandex_vpc_security_group_rule.master_from_nodes.id,
+      yandex_vpc_security_group_rule.master_egress.id,
+      yandex_vpc_security_group_rule.nodes_self.id,
+      yandex_vpc_security_group_rule.nodes_from_master.id,
+      yandex_vpc_security_group_rule.nodes_lb_healthchecks.id,
+      yandex_vpc_security_group_rule.nodes_icmp_private.id,
+      yandex_vpc_security_group_rule.nodes_pod_service_cidrs.id,
+      yandex_vpc_security_group_rule.nodes_egress.id,
+    ],
+    yandex_vpc_security_group_rule.master_api_443[*].id,
+    yandex_vpc_security_group_rule.master_api_6443[*].id,
+    yandex_vpc_security_group_rule.nodes_nodeport[*].id,
+  ))
+}

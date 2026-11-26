@@ -11,7 +11,7 @@
 
 ## 1. Аннотация
 
-Реализован воспроизводимый MLOps-контур кредитного скоринга: PyTorch MLP → ONNX FP32 serving → Docker/kind → Terraform IaC (без apply) → GitHub Actions → Prometheus/Grafana/Loki → Evidently drift + A/B → Airflow retraining без auto-promote. Качество MLP на holdout **не превосходит** исторический RF baseline; это зафиксировано явно.
+Реализован воспроизводимый MLOps-контур кредитного скоринга: PyTorch MLP → ONNX FP32 serving → Docker/kind → Terraform IaC (Block 11: `cloud-experiment` apply → destroy) → GitHub Actions → Prometheus/Grafana/Loki → Evidently drift + A/B → Airflow retraining без auto-promote. Cloud ML-приложение **не** развёртывалось (`ABORT_CLOUD_APP`). Качество MLP на holdout **не превосходит** исторический RF baseline; это зафиксировано явно. Актуализация облака: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
 
 ## 2. Постановка задачи
 
@@ -68,14 +68,16 @@ Dynamic quantization уменьшает размер; вероятности о�
 - Compose smoke verified.
 - kind + Kustomize + Ingress verified locally.
 - NetworkPolicy manifests present; **enforcement на kindnet не подтверждён runtime**.
-- Cloud K8s deploy **NOT_EXECUTED**.
+- **Cloud K8s app deploy (CLOUD_APP) — ABORT_CLOUD_APP** (локальные images/smoke/parity; push/deploy не выполнялись).
+- **Cloud infra (Block 11, CLOUD_INFRA):** Managed Kubernetes v1.34.1 + Ready CPU worker — runtime verified, затем **destroy verified** — см. `results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`.
 
 ## 10. Terraform
 
 - Модули Yandex Cloud: network, iam, kubernetes, registry, storage, monitoring.
-- staging/production roots, separate state keys в examples.
+- Roots: staging / production / **cloud-experiment**.
 - `fmt`/`validate` (`-backend=false`) — VERIFIED_LOCAL / CI.
-- **`terraform apply` не выполнялся**; live remote state **не** проверялся.
+- **Block 11 CLOUD_INFRA:** live Remote State + `terraform apply` + SG migration (12 standalone rules) + dependency guard; затем operator `terraform destroy` + YC CLI empty-folder checks.
+- Staging/production apply **не** выполнялись.
 - GPU node group schema есть, default **off**.
 
 ## 11. CI/CD
@@ -137,18 +139,21 @@ Dynamic quantization уменьшает размер; вероятности о�
 
 ## 19. Ограничения
 
-1. Terraform apply / paid cloud resources — не выполнялись.
-2. Live remote state — не проверялся.
-3. Cloud staging/production deploy — не выполнялся.
-4. GPU node group в облаке — не запускалась.
-5. NetworkPolicy enforcement (kind) — не runtime-подтверждён.
-6. GPU INT8 и GPU HTTP load — не выполнялись.
-7. Online A/B challenger = quantized ONNX (эксперимент).
-8. cAdvisor Docker Desktop — ограничение labels.
-9. Airflow — локальный Docker E2E, не managed cloud.
-10. Seldon / shadow / Istio / Redis geo — OPTIONAL, не реализованы.
-11. Synthetic/controlled experiments ≠ production client traffic / real concept drift proof.
+1. Cloud ML-приложение / GHCR push / cloud inference / cloud HPA / cloud NP enforcement / cloud monitoring stack / cloud rolling update / cloud rollback — **не** подтверждены (`ABORT_CLOUD_APP`).
+2. Staging/production Terraform apply — не выполнялись.
+3. GPU node group в облаке — не запускалась.
+4. NetworkPolicy enforcement (kind) — не runtime-подтверждён; Calico в кластере ≠ enforcement конкретных NP.
+5. Периодические TLS handshake timeout к Kubernetes API — наблюдались; причина не установлена.
+6. Experimental API image: Trivy 53 HIGH (Debian OS, FixedVersion empty) — remediation не завершена в рамках эксперимента; gates не ослаблялись.
+7. GPU INT8 и GPU HTTP load — не выполнялись.
+8. Online A/B challenger = quantized ONNX (эксперимент).
+9. cAdvisor Docker Desktop — ограничение labels.
+10. Airflow — локальный Docker E2E, не managed cloud.
+11. Seldon / shadow / Istio / Redis geo — OPTIONAL, не реализованы.
+12. Synthetic/controlled experiments ≠ production client traffic / real concept drift proof.
+
+> Исторические формулировки «apply не выполнялся» в Block 1–10 evidence относятся к состоянию **до** Block 11 и не переписываются задним числом. Актуальный статус: [`results/block11/`](../results/block11/).
 
 ## 20. Заключение
 
-Проект закрывает обязательные этапы ТЗ с локально и/или CI-подтверждёнными доказательствами и честно документированными gaps по облаку и optional пунктам. Документация Block 9 связывает критерии, код и evidence для проверки ментором без повторного запуска дорогих экспериментов.
+Проект закрывает обязательные этапы ТЗ с локально/CI-подтверждёнными доказательствами и Block 11 cloud-infra runtime (apply → verify → destroy). Cloud application path честно закрыт как `ABORT_CLOUD_APP`. Итоговый scorecard: [`results/block11/FINAL_PROJECT_SCORECARD.md`](../results/block11/FINAL_PROJECT_SCORECARD.md).

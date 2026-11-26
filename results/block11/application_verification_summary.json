@@ -1,0 +1,76 @@
+{
+  "block": "11.13",
+  "stage": "ABORT_CLOUD_APP_STOP_GATE_DESTROY",
+  "git_branch": "cloud-deployment",
+  "ghcr_owner": "serg2311-prog",
+  "repo_private": true,
+  "publish_executed": false,
+  "abort_cloud_app": true,
+  "publish_blockers": [
+    "trivy_api_high_remaining_no_fixed_version",
+    "ghcr_docker_login_denied_despite_pat_write_packages_and_http_200_token_endpoints",
+    "experiment_time_limit"
+  ],
+  "ghcr_login_notes": {
+    "operator_pat_has_write_packages": true,
+    "github_api_http": 200,
+    "ghcr_token_endpoint_http": 200,
+    "docker_login": "denied",
+    "root_cause_asserted": false
+  },
+  "distroless_remediation": "NOT_CONTINUED",
+  "security_gates_weakened": false,
+
+  "protected_sha256": {
+    "all_six_match_block10_baseline": true
+  },
+  "trivy": {
+    "params": "severity=CRITICAL,HIGH exit-code=1 no ignores",
+    "before": {
+      "api": {"high_critical": 102, "critical": 2, "high": 100, "gate": "FAIL"},
+      "models": {"high_critical": 2, "critical": 0, "high": 2, "gate": "FAIL"},
+      "frontend": {"high_critical": 0, "gate": "PASS"}
+    },
+    "after": {
+      "api": {"high_critical": 53, "critical": 0, "high": 53, "gate": "FAIL", "fixed_version_available": 0},
+      "models": {"high_critical": 0, "gate": "PASS"},
+      "frontend": {"high_critical": 0, "gate": "PASS", "rebuilt": false}
+    },
+    "remediation": {
+      "models": "apk upgrade openssl packages to >=3.5.9-r2",
+      "api": "base python:3.12.16-slim-trixie + apt-get upgrade; stopped — remaining HIGH have empty FixedVersion on Debian 13"
+    }
+  },
+  "images": {
+    "api": {
+      "tag": "cloud-exp-20261126-155442-b713f2f-secfix",
+      "digest": "sha256:66be28cf8f8962022653416524e6f2f5de65eb8dc96b32bc20f3950ddabcad71",
+      "remote": "ghcr.io/serg2311-prog/credit-scoring-api:cloud-exp-20261126-155442-b713f2f-secfix"
+    },
+    "models": {
+      "tag": "cloud-exp-20261126-155442-b713f2f-secfix",
+      "digest": "sha256:c9555e1ed5621cdf4df13080ae92075cb2d481be6d9c613591c2c2f9cbc4d085",
+      "remote": "ghcr.io/serg2311-prog/credit-scoring-models:cloud-exp-20261126-155442-b713f2f-secfix"
+    },
+    "frontend": {
+      "tag": "cloud-exp-20261126-154419-b713f2f",
+      "digest": "sha256:2be133bb2514e8160fe37087c8067a399a0753d89c9c28ae6db69f24fca07306",
+      "remote": "ghcr.io/serg2311-prog/credit-scoring-frontend:cloud-exp-20261126-154419-b713f2f"
+    }
+  },
+  "smoke": {
+    "health_ready": true,
+    "model_info_version": "mlp-onnx-fp32-v1",
+    "predict_status": 200,
+    "predict_probability_default": 0.830205
+  },
+  "onnx_parity": {
+    "method": "ORT logits + sigmoid in API image vs /predict",
+    "api_predict_prob": 0.830205,
+    "local_prob": 0.830205,
+    "abs_delta": 0.0,
+    "status": "PASS"
+  },
+  "git_diff_check_dockerfiles": "PASS",
+  "tests_ci_workflows": "14 passed"
+}

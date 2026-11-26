@@ -9,13 +9,13 @@ output "k8s_nodes_sa_id" {
 }
 
 output "ml_reader_sa_id" {
-  description = "Service account ID for read-only ML artifact access."
-  value       = yandex_iam_service_account.ml_reader.id
+  description = "Service account ID for read-only ML artifact access; null when disabled."
+  value       = try(yandex_iam_service_account.ml_reader[0].id, null)
 }
 
 output "registry_pusher_sa_id" {
-  description = "Service account ID for pushing images to Container Registry."
-  value       = yandex_iam_service_account.registry_pusher.id
+  description = "Service account ID for pushing images to Container Registry; null when disabled."
+  value       = try(yandex_iam_service_account.registry_pusher[0].id, null)
 }
 
 output "k8s_cluster_sa_member" {
@@ -34,10 +34,11 @@ output "role_bindings_ready" {
 output "iam_boundary_notes" {
   description = "Human-readable privilege boundaries (for docs)."
   value = {
-    k8s_cluster     = "k8s.clusters.agent + vpc.publicAdmin + registry puller + logging.writer (+ optional LB admin)"
-    k8s_nodes       = "registry puller + logging.writer"
-    ml_reader       = "storage.viewer only"
-    registry_pusher = "container-registry.images.pusher only"
-    not_granted     = "editor, admin, storage.admin, cloud-wide roles"
+    k8s_cluster_required = "k8s.clusters.agent + vpc.publicAdmin"
+    k8s_cluster_optional = "registry puller / logging.writer / LB admin (flags)"
+    k8s_nodes            = "optional registry puller + logging.writer"
+    ml_reader            = var.enable_ml_reader_sa ? "storage.viewer only" : "disabled"
+    registry_pusher      = var.enable_registry_pusher_sa ? "container-registry.images.pusher only" : "disabled"
+    not_granted          = "editor, admin, storage.admin, cloud-wide roles"
   }
 }

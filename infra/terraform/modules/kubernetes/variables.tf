@@ -42,6 +42,15 @@ variable "iam_dependency_ids" {
   default     = []
 }
 
+variable "security_group_dependency_ids" {
+  description = <<-EOT
+    Security group rule IDs that must exist before cluster/node-group create and
+    be destroyed only after cluster/node-group destroy (ordering via depends_on).
+  EOT
+  type        = list(string)
+  default     = []
+}
+
 variable "labels" {
   type    = map(string)
   default = {}
@@ -83,6 +92,62 @@ variable "log_group_id" {
 variable "enable_master_logging" {
   type    = bool
   default = true
+}
+
+variable "master_min_resource_preset_id" {
+  description = <<-EOT
+    Optional Managed Kubernetes master scale_policy.auto_scale.min_resource_preset_id
+    (e.g. s-c2-m8). This is the MINIMUM master resource profile, not a maximum cap —
+    the platform may scale the master above this floor when needed.
+    null = omit scale_policy (platform default; preserves staging/production behavior).
+  EOT
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.master_min_resource_preset_id == null || length(trimspace(var.master_min_resource_preset_id)) > 0
+    error_message = "master_min_resource_preset_id must be null or a non-empty preset id (e.g. s-c2-m8)."
+  }
+}
+
+variable "master_auto_upgrade" {
+  description = "Master maintenance_policy.auto_upgrade. Disable for short cloud experiments."
+  type        = bool
+  default     = true
+}
+
+variable "node_auto_upgrade" {
+  description = "CPU node group auto_upgrade. Disable for short cloud experiments."
+  type        = bool
+  default     = true
+}
+
+variable "node_auto_repair" {
+  description = "CPU node group auto_repair."
+  type        = bool
+  default     = true
+}
+
+variable "cpu_deploy_max_expansion" {
+  description = "Node group deploy_policy.max_expansion. Use 0 when Compute quotas leave no room for a surge node."
+  type        = number
+  default     = null
+
+  validation {
+    condition     = var.cpu_deploy_max_expansion == null || (var.cpu_deploy_max_expansion >= 0 && var.cpu_deploy_max_expansion <= 10)
+    error_message = "cpu_deploy_max_expansion must be null or 0..10."
+  }
+}
+
+variable "cpu_deploy_max_unavailable" {
+  description = "Node group deploy_policy.max_unavailable. Pair with max_expansion=0 under tight quotas."
+  type        = number
+  default     = null
+
+  validation {
+    condition     = var.cpu_deploy_max_unavailable == null || (var.cpu_deploy_max_unavailable >= 0 && var.cpu_deploy_max_unavailable <= 10)
+    error_message = "cpu_deploy_max_unavailable must be null or 0..10."
+  }
 }
 
 variable "node_group_name" {

@@ -3,6 +3,8 @@
 **Дата оценки:** 2026-11-22
 **Фактические расходы этапа 3Б:** **0 ₽** (ресурсы не создавались, `apply` не выполнялся).
 
+> **Block 11 update (do not rewrite Stage 3B numbers):** cloud-experiment later ran within a grant window. Displayed grant consumption **50 RUB** / remaining **3950 RUB** of **4000 RUB** initial — **preliminary UI figures only**, not final billing. See [`../results/block11/FINAL_COST_REPORT.md`](../results/block11/FINAL_COST_REPORT.md).
+
 ## Источники тарифов
 
 | Источник | URL | Дата обращения |

@@ -2,7 +2,7 @@
 
 ## Краткое описание
 
-Учебный MLOps-проект кредитного скоринга: MLP → ONNX FP32 API → Docker/kind → Terraform (без apply) → GitHub Actions → Prometheus/Loki → Evidently drift + A/B → Airflow retraining без auto-promote. Holdout MLP ROC-AUC **0.7742** ниже RF baseline **0.7771** — зафиксировано честно.
+Учебный MLOps-проект кредитного скоринга: MLP → ONNX FP32 API → Docker/kind → Terraform (`cloud-experiment` apply→destroy, Block 11) → GitHub Actions → Prometheus/Loki → Evidently drift + A/B → Airflow retraining без auto-promote. Cloud app — `ABORT_CLOUD_APP`. Holdout MLP ROC-AUC **0.7742** ниже RF baseline **0.7771** — зафиксировано честно.
 
 ---
 
@@ -17,7 +17,7 @@
 | 4:30–6:00 | Monitoring: Grafana + пример alert evidence Block 8 |
 | 6:00–7:30 | Drift demo CLI / concept experiment caveat + online A/B JSON |
 | 7:30–8:30 | Airflow: trigger → candidate, `auto_promote=false` |
-| 8:30–9:30 | Terraform validate + «apply не делали» |
+| 8:30–9:30 | Terraform: Block 11 apply→destroy + validate staging/prod |
 | 9:30–10:00 | Ограничения + вопросы |
 
 **Последовательность стенда (8 GB):** тесты → API **или** Compose → (опционально) observability **после** `down` inference-only при нехватке RAM. Не поднимать Airflow параллельно.
@@ -28,7 +28,7 @@
 
 1. **ONNX FP32 CPU** как production serving: parity с PyTorch, стабильные вероятности, меньше риск INT8 drift решений.
 2. **Quantization** — отдельный experimental артефакт и online A/B challenger, не silent replace.
-3. **IaC без apply** — полный модульный Terraform + validate/CI, без платных ресурсов.
+3. **IaC** — модульный Terraform; Block 11 `cloud-experiment` apply→destroy; staging/prod без apply.
 4. **Observability** — metrics + logs alerts с firing/resolved evidence.
 5. **Retraining** — decision layer + candidate artifacts; registry immutable без явного promote.
 
@@ -129,4 +129,7 @@
 
 ## Ограничения (говорить прямо)
 
-Нет cloud apply/deploy; нет live remote state; нет GPU cloud nodes; нет GPU INT8/HTTP; NP kind не enforced; A/B synthetic; concept experiment ≠ prod proof; optional Seldon/Istio/Redis отсутствуют; Airflow только local Docker E2E.
+**Block 11 CLOUD_INFRA:** Remote State + apply + MK8s v1.34.1 + Ready worker + Calico + Metrics Server — verified; **destroy verified**; SG migration (12 rules) done.
+**CLOUD_APP:** `ABORT_CLOUD_APP` (GHCR login denied + residual API Trivy HIGH + timebox).
+**Still open / not claimed:** cloud inference/HPA/NP enforcement/monitoring/rollback; production apply; GPU cloud nodes; GPU INT8/HTTP; kind NP enforcement; optional Seldon/Istio/Redis; Airflow only local Docker E2E.
+Финальные отчёты: `results/block11/FINAL_*.md`.

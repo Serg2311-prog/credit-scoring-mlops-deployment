@@ -1,9 +1,11 @@
 # Docker Deployment — Inference API
 
+**Block 11.15 delivery:** `docker/Dockerfile.api` restored to **exact `main` content** (`python:3.12-slim-bookworm`). The experimental trixie remediation is **not** part of the final delivery; historical scan results remain in [`results/block11/IMAGE_BUILD_REPORT.md`](../results/block11/IMAGE_BUILD_REPORT.md) (53 HIGH / 0 CRITICAL without FixedVersion on the experiment image). Merge-prep Trivy gate (`CRITICAL,HIGH` + `ignore-unfixed`, matching `ci-docker.yml`): API/models/frontend **PASS**. Models image keeps Alpine openssl bump (`Dockerfile.models`). See [`results/block11/MERGE_READINESS_REPORT.md`](../results/block11/MERGE_READINESS_REPORT.md).
+
 ## Image
 
 - File: `docker/Dockerfile.api`
-- Base: `python:3.12-slim-bookworm` (CPU-only, no CUDA/PyTorch)
+- Base (delivery): `python:3.12-slim-bookworm` (CPU-only, no CUDA/PyTorch) — identical to `main`
 - Multi-stage build with venv
 - Non-root user `appuser` (uid 10001)
 - Runtime deps: `requirements-api.txt`
