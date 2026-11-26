@@ -240,7 +240,7 @@ python -m flake8 src tests scripts/ci airflow_home/dags
 - Online A/B и concept-drift — synthetic/controlled experiments, не proof production traffic.
 - Airflow E2E — локальный Docker, не managed cloud.
 - Полная локальная очистка credentials (shell / kubeconfig / docker login) не подтверждена.
-- Отсутствие последующих облачных начислений не гарантируется.
+- Все ресурсы облачного эксперимента удалены. По состоянию на 26.11.2026 расходы полностью покрыты грантом. Сумма к оплате — 0,00 ₽.
 
 ---
 
