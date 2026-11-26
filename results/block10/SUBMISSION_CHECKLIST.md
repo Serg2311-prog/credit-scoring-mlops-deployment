@@ -1,5 +1,7 @@
 # SUBMISSION CHECKLIST — Block 10.2
 
+> **Block 11.14:** cloud experiment completed (apply→destroy; app ABORT). Use [`../block11/MERGE_READINESS_REPORT.md`](../block11/MERGE_READINESS_REPORT.md) and [`../block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../block11/FINAL_CLOUD_EXPERIMENT_REPORT.md) for current cloud/merge status. This Block 10 checklist is retained as historical.
+
 ## Status: READY_FOR_SUBMISSION
 
 ### Before commit (author)

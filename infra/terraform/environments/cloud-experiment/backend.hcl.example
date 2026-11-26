@@ -1,0 +1,15 @@
+# Copy to backend.hcl (gitignored). Credentials via AWS_* env vars only.
+endpoints = {
+  s3 = "https://storage.yandexcloud.net"
+}
+bucket = "cs-tfstate-exp-UNIQUE"
+key    = "credit-scoring/cloud-experiment/terraform.tfstate"
+region = "ru-central1"
+
+skip_region_validation      = true
+skip_credentials_validation = true
+skip_requesting_account_id  = true
+skip_s3_checksum            = true
+skip_metadata_api_check     = true
+
+# use_lockfile = true   # NOT enabled — Yandex compatibility NOT_VERIFIED

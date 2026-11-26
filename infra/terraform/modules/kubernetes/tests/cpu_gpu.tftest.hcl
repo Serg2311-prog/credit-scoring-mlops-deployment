@@ -70,6 +70,27 @@ run "gpu_disabled_by_default" {
     condition     = yandex_kubernetes_node_group.cpu.instance_template[0].resources[0].gpus == 0
     error_message = "CPU workers must have gpus=0"
   }
+
+  assert {
+    condition     = length(yandex_kubernetes_cluster.this.master[0].scale_policy) == 0
+    error_message = "scale_policy must be omitted when master_min_resource_preset_id is null"
+  }
+}
+
+run "master_min_preset_scale_policy" {
+  command = plan
+
+  variables {
+    master_min_resource_preset_id = "s-c2-m8"
+  }
+
+  assert {
+    condition = (
+      length(yandex_kubernetes_cluster.this.master[0].scale_policy) == 1 &&
+      yandex_kubernetes_cluster.this.master[0].scale_policy[0].auto_scale[0].min_resource_preset_id == "s-c2-m8"
+    )
+    error_message = "master scale_policy.auto_scale.min_resource_preset_id must be s-c2-m8 when set"
+  }
 }
 
 run "cpu_autoscaling_plan" {

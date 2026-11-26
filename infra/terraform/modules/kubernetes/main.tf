@@ -16,8 +16,18 @@ resource "yandex_kubernetes_cluster" "this" {
     public_ip          = var.public_ip
     security_group_ids = var.master_security_group_ids
 
+    # min_resource_preset_id is a floor (minimum profile), not a hard maximum.
+    dynamic "scale_policy" {
+      for_each = var.master_min_resource_preset_id != null ? [1] : []
+      content {
+        auto_scale {
+          min_resource_preset_id = var.master_min_resource_preset_id
+        }
+      }
+    }
+
     maintenance_policy {
-      auto_upgrade = true
+      auto_upgrade = var.master_auto_upgrade
 
       maintenance_window {
         day        = "sunday"
@@ -47,12 +57,16 @@ resource "yandex_kubernetes_cluster" "this" {
 
   labels = var.labels
 
-  # Ensure IAM bindings exist before cluster create / are destroyed after cluster.
-  depends_on = [terraform_data.iam_ready]
+  # IAM + SG rules before create; reverse on destroy (cluster before rule teardown).
+  depends_on = [terraform_data.iam_ready, terraform_data.sg_rules_ready]
 }
 
 resource "terraform_data" "iam_ready" {
   input = var.iam_dependency_ids
+}
+
+resource "terraform_data" "sg_rules_ready" {
+  input = var.security_group_dependency_ids
 }
 
 resource "yandex_kubernetes_node_group" "cpu" {
@@ -118,9 +132,17 @@ resource "yandex_kubernetes_node_group" "cpu" {
     }
   }
 
+  dynamic "deploy_policy" {
+    for_each = var.cpu_deploy_max_expansion != null || var.cpu_deploy_max_unavailable != null ? [1] : []
+    content {
+      max_expansion   = coalesce(var.cpu_deploy_max_expansion, 0)
+      max_unavailable = coalesce(var.cpu_deploy_max_unavailable, 1)
+    }
+  }
+
   maintenance_policy {
-    auto_upgrade = true
-    auto_repair  = true
+    auto_upgrade = var.node_auto_upgrade
+    auto_repair  = var.node_auto_repair
 
     maintenance_window {
       day        = "sunday"
@@ -128,6 +150,9 @@ resource "yandex_kubernetes_node_group" "cpu" {
       duration   = "3h"
     }
   }
+
+  # Ensure SG rules (esp. Nodes↔Master) exist before workers register.
+  depends_on = [terraform_data.sg_rules_ready]
 }
 
 # GPU workers — DISABLED BY DEFAULT (enable_gpu_node_group=false).

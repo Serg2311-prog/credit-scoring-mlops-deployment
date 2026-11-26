@@ -1,0 +1,34 @@
+# Copy to terraform.tfvars (gitignored) — never commit real IDs/secrets/CIDRs that identify you.
+cloud_id  = "b1gxxxxxxxxxxxxxxxxxxxxxx"
+folder_id = "b1gxxxxxxxxxxxxxxxxxxxxxx"
+zone      = "ru-central1-a"
+
+name_prefix = "cs-exp"
+
+# REQUIRED: your admin public IP/32 (or office CIDR). NEVER 0.0.0.0/0.
+k8s_api_allowed_cidrs = ["203.0.113.10/32"]
+
+kubernetes_version = "1.34"
+# Master floor preset s-c2-m8 is set in main.tf (minimum profile, not a max cap).
+
+# Locked to confirmed quotas — do not raise without quota increase.
+node_count        = 1
+node_cores        = 4
+node_memory_gb    = 16
+node_disk_size_gb = 64
+node_preemptible  = false
+public_master_ip  = true
+
+cpu_enable_autoscaling = false
+enable_gpu_node_group  = false
+
+# Minimal paid surface for 4h experiment (GHCR for images).
+# IAM: ml-reader + registry-pusher SAs disabled in main.tf; YCR/logging roles follow flags below.
+enable_registry            = false
+enable_storage             = false
+enable_monitoring          = false
+enable_load_balancer_admin = false
+
+# If enable_storage=true later:
+# artifacts_bucket_name = "cs-exp-ml-artifacts-UNIQUE-SUFFIX"
+# log_retention_days    = 1

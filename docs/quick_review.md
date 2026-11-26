@@ -11,14 +11,14 @@ Baseline: commit `0df191a`.
 ## 1. Архитектура за 2 минуты
 
 См. диаграммы: [`architecture/overview.md`](architecture/overview.md).
-Serving: FastAPI + ONNX FP32. Observability: Prometheus/Grafana/Loki. Drift/A/B offline+online. Retraining: Airflow, `auto_promote=false`. Cloud: Terraform код без apply.
+Serving: FastAPI + ONNX FP32. Observability: Prometheus/Grafana/Loki. Drift/A/B offline+online. Retraining: Airflow, `auto_promote=false`. Cloud: Block 11 `cloud-experiment` apply→destroy; app `ABORT_CLOUD_APP` — [`../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
 
 ## 2. Где искать критерии
 
 | Этап ТЗ (макс.) | Куда смотреть |
 | --- | --- |
 | Модель (5) | `docs/model_benchmark.md`, `results/block7/` |
-| Cloud (7) | `infra/terraform/`, `docs/terraform_infrastructure.md` |
+| Cloud (7) | `infra/terraform/`, `docs/terraform_infrastructure.md`, `results/block11/` |
 | Docker/K8s (8) | `docker/`, `k8s/`, `docs/docker_deployment.md` |
 | CI/CD (5) | `.github/workflows/`, `docs/cicd_pipeline.md` |
 | Monitoring (8) | `monitoring/`, `results/block8/`, `docs/stage5_*` |

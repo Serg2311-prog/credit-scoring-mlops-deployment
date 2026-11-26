@@ -4,7 +4,11 @@
 **Тема:** промышленное развёртывание кредитной скоринговой системы с полным MLOps-циклом
 **Baseline commit (Block 9):** `0df191a`
 
-Документ описывает **фактически реализованные** компоненты. Облачная инфраструктура Yandex Cloud подготовлена как IaC (**`terraform apply` не выполнялся**).
+Документ описывает **фактически реализованные** компоненты.
+
+Уровни проверки: **STATIC / LOCAL / CLOUD_INFRA / CLOUD_APP / OPS**.
+**CLOUD_INFRA (Block 11):** Yandex Managed Kubernetes experiment — Remote State + Apply + Ready worker + Calico + Metrics Server **runtime verified**, затем **destroy verified**.
+**CLOUD_APP:** `ABORT_CLOUD_APP` (локальные images/smoke/parity; cloud deploy не выполнялся). Детали: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
 
 ---
 
@@ -41,9 +45,9 @@ flowchart TB
     AF[Airflow DAG retraining]
   end
 
-  subgraph iac [Cloud IaC - code only]
+  subgraph iac [Cloud IaC - Block 11 infra verified then destroyed]
     TF[Terraform Yandex Cloud modules]
-    K8Scloud[Managed K8s manifests planned]
+    K8Scloud[MK8s experiment apply then destroy]
   end
 
   subgraph localk8s [Local K8s - kind verified]
@@ -63,7 +67,7 @@ flowchart TB
   KIND --> API
 ```
 
-**Легенда:** сплошные стрелки — локально проверенный runtime; пунктир — предусмотренный cloud path без apply.
+**Легенда:** сплошные стрелки — локально проверенный runtime; пунктир — cloud path (infra Block 11 verified+destroyed; app ABORT).
 
 ---
 
@@ -106,7 +110,7 @@ flowchart TB
   MANUAL --> CDP[cd-production promote digests]
 ```
 
-Hosted cloud kube deploy и `terraform apply` в CI **не выполняются**.
+Hosted cloud **app** deploy и `terraform apply` в CI **не выполняются**. Experiment infra apply выполнен оператором вне CI (Block 11).
 
 ---
 
@@ -170,7 +174,8 @@ flowchart TB
     PS[Object Storage]
   end
   OPS[Operator laptop] -->|terraform validate / plan| staging
-  OPS -.->|apply NOT_EXECUTED| staging
+  OPS -->|cloud-experiment apply DONE| expCloud[Yandex MK8s experiment]
+  OPS -.->|CLOUD_APP pending| expCloud
   GPU[GPU node group] -.->|enable_gpu_node_group=false default| SK
 ```
 

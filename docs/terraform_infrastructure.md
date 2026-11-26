@@ -1,21 +1,22 @@
 # Terraform Infrastructure — Yandex Cloud (Этап 2 / historically Stage 3B)
 
-**Статус:** код и документация подготовлены (Block 6).
+**Статус (Block 11.14):** `cloud-experiment` **применён, runtime-проверен и уничтожен** (Remote State + Apply + MK8s → Destroy + YC empty checks).
+Staging/production roots по-прежнему без apply.
+Исторический Stage 3B отчёт (до cloud apply): [`docs/stage2_infrastructure_completion_report.md`](stage2_infrastructure_completion_report.md).
+Финальный отчёт: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
 
-**Факт:** облачные ресурсы **не создавались**. `terraform apply` / `destroy` **не выполнялись**.
-
-Отчёт: [`docs/stage2_infrastructure_completion_report.md`](stage2_infrastructure_completion_report.md).
+**Network module:** все SG rules только через `yandex_vpc_security_group_rule` (без inline); 12 rules мигрированы; dependency guard перед destroy. Plan перед guard: 1 add / 0 change / 0 destroy.
 
 ## Архитектура модулей
 
 ```text
-environments/{staging|production}
+environments/{staging|production|cloud-experiment}
     → module.network
     → module.iam
-    → module.monitoring
-    → module.registry
-    → module.storage
-    → module.kubernetes  (depends on network + iam + monitoring log group)
+    → module.monitoring   (optional in cloud-experiment)
+    → module.registry     (optional in cloud-experiment)
+    → module.storage      (optional in cloud-experiment)
+    → module.kubernetes  (depends on network + iam [+ monitoring log group])
            ├ cpu node group (default)
            └ gpu node group (enable_gpu_node_group=false by default)
 ```

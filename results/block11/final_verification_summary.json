@@ -1,0 +1,70 @@
+{
+  "block": "11.15",
+  "title": "Final Merge Preparation",
+  "branch": "cloud-deployment",
+  "head": "b713f2fcc7fd4638d4464ad9395fce483a86bdad",
+  "main_head": "b713f2fcc7fd4638d4464ad9395fce483a86bdad",
+  "main_unchanged": true,
+  "closure_status": "READY_FOR_FINAL_MERGE",
+  "dockerfile_api": {
+    "restored_from_main": true,
+    "diff_vs_main": "empty",
+    "delivery_base": "python:3.12-slim-bookworm",
+    "trixie_experiment_in_delivery": false,
+    "historical_evidence": "results/block11/IMAGE_BUILD_REPORT.md"
+  },
+  "dockerfile_models": {
+    "openssl_remediation_included": true,
+    "libssl3": "3.5.9-r2",
+    "libcrypto3": "3.5.9-r2",
+    "protected_artifacts_sha256": "MATCH"
+  },
+  "trivy_merge_prep": {
+    "tool": "aquasec/trivy:0.58.1",
+    "gate": "CRITICAL,HIGH ignore-unfixed exit-code 1",
+    "matches_ci_docker_yml": true,
+    "api": "PASS_0",
+    "models": "PASS_0",
+    "frontend": "PASS_0",
+    "tag": "merge-prep-1115"
+  },
+  "cloud_infra": {
+    "apply": "OPERATOR_EXECUTED",
+    "destroy": "OPERATOR_VERIFIED",
+    "app": "ABORT_CLOUD_APP"
+  },
+  "cost_preliminary_ui": {
+    "displayed_consumption_rub": 50,
+    "final_billing_verified": false
+  },
+  "regression": {
+    "pytest": "PASS_236_2skipped",
+    "flake8": "PASS",
+    "black": "PASS",
+    "terraform_fmt": "PASS",
+    "terraform_validate_staging": "PASS",
+    "terraform_validate_production": "PASS",
+    "terraform_validate_cloud_experiment": "PASS",
+    "terraform_mock": "PASS",
+    "sg_plan_gate": "PASS",
+    "kustomize_all_overlays": "PASS",
+    "compose_config": "PASS",
+    "workflows_yaml": "PASS",
+    "git_diff_check": "PASS",
+    "markdown_links": "PASS",
+    "protected_sha256_x6": "MATCH",
+    "block7_block8_immutable": "PASS"
+  },
+  "security_audit": {
+    "secrets_in_intended_files": 0,
+    "state_tfvars_backend_hcl_excluded": true,
+    "tfplan_excluded": true,
+    "dockerfile_api_not_staged_as_experiment": true
+  },
+  "git_agent_actions": {
+    "add": false,
+    "commit": false,
+    "push": false,
+    "merge": false
+  }
+}

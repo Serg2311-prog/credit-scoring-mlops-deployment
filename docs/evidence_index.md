@@ -22,9 +22,9 @@
 
 | Критерий | Тест | Отчёт | Evidence | Команда | CI |
 | --- | --- | --- | --- | --- | --- |
-| Modules/envs | `tests/terraform/` | [`docs/terraform_infrastructure.md`](terraform_infrastructure.md) | stage2/3b reports | `terraform validate` (`-backend=false`) | `ci-infrastructure` |
-| Remote state examples | — | terraform docs | `infra/terraform/**/backend*.example` | docs only | — |
-| No apply | policy | all infra reports | — | **не** `apply` | — |
+| Modules/envs | `tests/terraform/` | [`docs/terraform_infrastructure.md`](terraform_infrastructure.md) | stage2/3b + block11 | `terraform validate` (`-backend=false`) | `ci-infrastructure` |
+| Remote state | — | terraform docs + Block 11 | live then destroyed | operator evidence | — |
+| Cloud experiment | — | [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md) | apply→destroy | operator YC CLI | — |
 
 ---
 

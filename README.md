@@ -7,8 +7,10 @@
 | | |
 | --- | --- |
 | Baseline commit | `bdb8b43` |
-| Cloud `terraform apply` | **не выполнялся** |
-| Production Yandex Cloud | **не развёрнут** |
+| Cloud experiment (`cloud-experiment`) | **выполнен и уничтожен** (MK8s v1.34.1, 1×CPU 4/16/64) — см. [`results/block11/`](results/block11/) |
+| Remote State | **был** в Object Storage (live); бакет и ключи **удалены** после destroy |
+| Cloud ML-приложение / GHCR publish | **ABORT_CLOUD_APP** (образы локально; push/deploy не выполнялись) |
+| Production Yandex Cloud | **не развёрнут** (отдельное env; не трогался) |
 | Serving default | ONNX Runtime **CPU FP32** |
 | Auto-promote challenger | **`false`** |
 
@@ -28,8 +30,9 @@
 - Dynamic INT8 quantization как **экспериментальный** артефакт (не auto-champion).
 - Локально проверены: Docker Compose, kind/Kustomize, Prometheus/Grafana/Loki, drift, online A/B, Airflow Docker E2E.
 - CI: GitHub Actions quality/security gates (см. [`docs/cicd_pipeline.md`](docs/cicd_pipeline.md)).
+- Облако (Block 11): Terraform Apply + Remote State + Managed Kubernetes + Ready worker + Calico + Metrics Server — **runtime-проверены**, затем **destroy verified**. Cloud app — **ABORT_CLOUD_APP**. Итог: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
 
-Подробный сводный отчёт: [`docs/final_project_report.md`](docs/final_project_report.md).
+Подробный сводный отчёт: [`docs/final_project_report.md`](docs/final_project_report.md). Статус облака: [`results/block11/CLOUD_RUNTIME_VERIFICATION.md`](results/block11/CLOUD_RUNTIME_VERIFICATION.md).
 
 ---
 
@@ -44,7 +47,7 @@ Client / Frontend → FastAPI (ONNX FP32) → /metrics + JSON logs
                          ↓
          Evidently drift + A/B + Airflow retraining (candidate only)
                          ↓
-         Terraform (Yandex Cloud IaC, apply NOT_EXECUTED)
+         Terraform (Yandex Cloud: experiment applied → destroyed; app ABORT)
 ```
 
 Диаграммы Mermaid: [`docs/architecture/overview.md`](docs/architecture/overview.md).
@@ -249,7 +252,7 @@ terraform -chdir=infra/terraform/environments/staging validate
 
 Remote state examples: `backend.hcl.example` + credentials **только через env** (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`).
 **Не** передавать `access_key`/`secret_key` через `-backend-config=` CLI.
-**`terraform apply` не выполнять** без явного отдельного решения (платные ресурсы).
+Дополнительный apply/destroy — **только** с явным одобрением (кластер уже потребляет грант). Experiment env: `infra/terraform/environments/cloud-experiment`.
 
 ## CI/CD
 
@@ -293,15 +296,20 @@ python -m flake8 src tests scripts/ci airflow_home/dags
 
 ## Ограничения (честно)
 
-- `terraform apply` / live remote state / cloud staging-production deploy — **NOT_EXECUTED**
-- GPU node group в облаке — **не запускалась** (`enable_gpu_node_group=false`)
-- NetworkPolicy enforcement на kind — **не runtime-подтверждён**
+- **CLOUD_INFRA (experiment):** Remote State + Apply + MK8s v1.34.1 + Ready worker + Calico + Metrics Server — **runtime verified**, затем **destroy verified** ([`results/block11/`](results/block11/))
+- **CLOUD_APP:** GHCR push / cloud inference / HPA / NP enforcement / cloud monitoring / rolling update / rollback — **ABORT_CLOUD_APP** (не утверждаются)
+- **Production** Terraform env — **не развёрнут**
+- SG rules: 12 standalone resources + dependency guard; dual-managed wipe remediated
+- Периодические `kubectl` TLS handshake timeout — наблюдались; причина **не установлена**
+- Experimental API image (trixie, **not in delivery**): Trivy 53 HIGH / 0 CRITICAL historically — see `results/block11/`; delivery `Dockerfile.api` = `main` bookworm; merge-prep Trivy gate PASS
+- GPU node group в облаке — **не запускалась**
+- NetworkPolicy enforcement на kind — **не runtime-подтверждён**; наличие Calico ≠ enforcement конкретных NP
 - cAdvisor на Docker Desktop: нет label `name` у контейнеров
-- Online A/B challenger = existing quantized ONNX (эксперимент), не отдельный retrain
-- Controlled concept-drift experiment ≠ доказанный production concept drift
-- Airflow E2E — локальный Docker, не managed Airflow в облаке
+- Online A/B challenger = existing quantized ONNX (эксперимент)
+- Controlled concept-drift experiment ≠ production concept drift proof
+- Airflow E2E — локальный Docker, не managed cloud
 
-Полный список: [`docs/final_project_report.md`](docs/final_project_report.md) §19.
+Финальный аудит: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md). Scorecard: [`results/block11/FINAL_PROJECT_SCORECARD.md`](results/block11/FINAL_PROJECT_SCORECARD.md).
 
 ---
 
@@ -317,5 +325,6 @@ python -m flake8 src tests scripts/ci airflow_home/dags
 | [`docs/architecture/overview.md`](docs/architecture/overview.md) | Архитектура + Mermaid |
 | [`results/block7/`](results/block7/) | CPU/GPU/API load evidence |
 | [`results/block8/`](results/block8/) | Monitoring / drift / A/B evidence |
+| [`results/block11/`](results/block11/) | Cloud experiment + final closure reports |
 
 Проект охватывает полный MLOps-цикл: подготовку и оптимизацию моделей, облачную инфраструктуру, контейнеризацию и оркестрацию, CI/CD, мониторинг, обнаружение дрейфа данных, A/B-тестирование и автоматизацию переобучения.

@@ -1,8 +1,10 @@
 # Матрица соответствия оригинальному ТЗ
 
-**Актуализация:** 2026-11-25 (Block 9), baseline commit `0df191a`.
-**Источник требований:** `../ИТОГОВЫЙ ПРОЕКТ.docx` (макс. **50** баллов).
+**Актуализация:** 2026-11-26 (Block 11.14 final closure). Исторический baseline docs: Block 9 `0df191a`.
+**Источник требований:** `../ИТОГОВЫЙ ПРОЕКТ.docx` / extract `results/block10/tz_extract.txt` (макс. **50** баллов).
 **Официальную оценку выставляет только ментор** — ниже внутренняя карта реализации/доказательств, не самооценка.
+**Облачный статус:** [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
+**Scorecard:** [`results/block11/FINAL_PROJECT_SCORECARD.md`](../results/block11/FINAL_PROJECT_SCORECARD.md).
 
 ### Легенда статусов
 
@@ -11,7 +13,8 @@
 | `VERIFIED_LOCAL` | Локальный runtime/тест + evidence |
 | `VERIFIED_CI` | Успешный GitHub Actions run |
 | `VERIFIED_GPU` | GPU evidence (Colab T4 hardened) |
-| `IMPLEMENTED_NOT_EXECUTED` | Код/манифесты есть, целевой runtime не гонялся (часто cloud) |
+| `VERIFIED_CLOUD_INFRA` | Реальный Yandex Cloud infra (TF apply + cluster/node) |
+| `IMPLEMENTED_NOT_EXECUTED` | Код/манифесты есть, целевой runtime не гонялся |
 | `PARTIALLY_VERIFIED` | Часть критерия подтверждена, есть честный gap |
 | `NOT_IMPLEMENTED` | Нет в репозитории |
 | `OPTIONAL` | В ТЗ помечено «опционально»; баллы не теряются |
@@ -25,8 +28,8 @@
 | Этап ТЗ | Макс. | Обязательность | Внутренний статус доказательств |
 | --- | ---: | --- | --- |
 | Подготовка модели | 5 | обязательный | VERIFIED_LOCAL + VERIFIED_GPU (T4) |
-| Cloud Infrastructure | 7 | обязательный (код); apply не требуется политикой курса | IMPLEMENTED_NOT_EXECUTED (apply) / VERIFIED_LOCAL (validate) |
-| Контейнеризация и K8s | 8 | обязательный | VERIFIED_LOCAL (Compose/kind); NP enforcement PARTIALLY_VERIFIED |
+| Cloud Infrastructure | 7 | обязательный | **VERIFIED_CLOUD_INFRA** (apply→destroy Block 11) + VERIFIED_LOCAL (validate); production apply NOT_EXECUTED |
+| Контейнеризация и K8s | 8 | обязательный | VERIFIED_LOCAL (Compose/kind); cloud app ABORT; NP/HPA cloud runtime NOT_EXECUTED |
 | CI/CD | 5 | обязательный | VERIFIED_CI (+ local CD demos) |
 | Мониторинг | 8 | обязательный | VERIFIED_LOCAL (Block 8/8.1) |
 | Мониторинг дрифта | 7 | обязательный | VERIFIED_LOCAL (Block 8/8.1) |
@@ -54,11 +57,11 @@
 
 | ID | Критерий | Макс. | Обяз. | Компонент | Путь | Проверка | Evidence | Статус | Ограничения |
 | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- |
-| 2.1 | Terraform Yandex | — | да | modules/envs | `infra/terraform/` | `fmt`/`validate` | `docs/terraform_infrastructure.md` | VERIFIED_LOCAL | **apply NOT_EXECUTED** |
-| 2.2 | VPC/K8s/Storage/Monitoring modules | — | да | modules | `infra/terraform/modules/*` | validate | stage2/3b reports | VERIFIED_LOCAL | — |
-| 2.3 | Remote state | — | да | examples | `backend*.example` | docs review | examples only | IMPLEMENTED_NOT_EXECUTED | live remote **не** проверялся |
-| 2.4 | CPU/GPU node groups | — | да | k8s module | `enable_gpu_node_group=false` | schema/tests | TF docs | PARTIALLY_VERIFIED | GPU group в облаке **не** запускалась |
-| 2.5 | Security groups / NP | — | да | TF + K8s NP | modules + `k8s/base/networkpolicy.yaml` | static + kind attempt | stage3 reports | PARTIALLY_VERIFIED | kindnet enforcement **не** runtime |
+| 2.1 | Terraform Yandex | — | да | modules/envs | `infra/terraform/` | `fmt`/`validate` + cloud apply→destroy | `results/block11/` | VERIFIED_CLOUD_INFRA | experiment applied then destroyed; staging/prod apply NOT_EXECUTED |
+| 2.2 | VPC/K8s/Storage/Monitoring modules | — | да | modules | `infra/terraform/modules/*` | validate + live MK8s | stage2 + block11 | VERIFIED_CLOUD_INFRA | experiment minimal modules; YCR/storage optional off |
+| 2.3 | Remote state | — | да | Object Storage | `backend*.example` + live | live then bucket deleted | `results/block11/` | VERIFIED_CLOUD_INFRA | locking NOT_VERIFIED; bucket destroyed after experiment |
+| 2.4 | CPU/GPU node groups | — | да | k8s module | CPU live; GPU off | cloud worker Ready then destroy | block11 | PARTIALLY_VERIFIED | GPU group в облаке **не** запускалась |
+| 2.5 | Security groups / NP | — | да | TF + K8s NP | modules + Calico | SG migration 12 rules; Calico live | block11 | PARTIALLY_VERIFIED | Calico CLOUD_INFRA; NP app enforcement CLOUD_APP ABORT |
 
 ---
 
@@ -69,7 +72,7 @@
 | 3.1 | Multi-stage Docker | — | да | API/FE/models/dvc | `docker/Dockerfile.*` | compose build | `docs/docker_deployment.md` | VERIFIED_LOCAL | — |
 | 3.2 | Compose API+frontend | — | да | compose | `docker-compose.yml` | smoke | stage3 report | VERIFIED_LOCAL | — |
 | 3.3 | DVC in Docker | — | да | dvcdata image | `docker/Dockerfile.dvcdata` | build/repro | `dvc.yaml` | VERIFIED_LOCAL | не в runtime API |
-| 3.4 | K8s Deployment/Service/Ingress | — | да | Kustomize | `k8s/` | kind E2E | `docs/kubernetes_local_deployment.md` | VERIFIED_LOCAL | cloud deploy NOT_EXECUTED |
+| 3.4 | K8s Deployment/Service/Ingress | — | да | Kustomize | `k8s/` | kind E2E | `docs/kubernetes_local_deployment.md` | VERIFIED_LOCAL | cloud **app** deploy ABORT_CLOUD_APP |
 | 3.5 | ConfigMaps/Secrets | — | да | manifests | `k8s/base/` | apply local | stage3 | VERIFIED_LOCAL | examples only for secrets |
 | 3.6 | Rolling update | — | да | strategy | overlays | manifests | k8s overlays | VERIFIED_LOCAL | — |
 
@@ -142,9 +145,9 @@
 
 | Тема | Статус |
 | --- | --- |
-| `terraform apply` / paid cloud resources | IMPLEMENTED_NOT_EXECUTED |
-| Live remote Terraform state | IMPLEMENTED_NOT_EXECUTED |
-| Hosted cloud staging/production deploy | IMPLEMENTED_NOT_EXECUTED |
+| `cloud-experiment` terraform apply + live remote state + MK8s worker | **VERIFIED_CLOUD_INFRA** then **DESTROY_VERIFIED** (Block 11) |
+| Cloud ML app deploy (GHCR / inference / HPA / NP+/−) | **ABORT_CLOUD_APP** (local images only) |
+| staging/production terraform apply | IMPLEMENTED_NOT_EXECUTED |
 | GPU node group runtime | IMPLEMENTED_NOT_EXECUTED |
 | Istio Blue-Green / Canary | OPTIONAL / NOT_IMPLEMENTED |
 | Seldon / shadow | OPTIONAL / NOT_IMPLEMENTED |

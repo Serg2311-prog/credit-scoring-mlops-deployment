@@ -47,19 +47,36 @@ secrets/
 **/.terraform/
 *.tfstate
 *.tfstate.*
+*.tfstate.backup
+crash.log
+crash.*.log
+errored.tfstate
 *.tfvars
 !*.tfvars.example
 backend.hcl
 !backend.hcl.example
 **/backend.hcl
 !**/backend.hcl.example
-crash.log
-crash.*.log
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
 # Keep .terraform.lock.hcl in Git after init for reproducible provider versions.
+
+# Plans, backups, local credentials (never commit)
+**/tfplan
+**/tfplan.*
+*.tfplan
+*.backup
+**/credentials
+**/credentials.*
+**/yc-sa-key.json
+**/*-sa-key.json
+**/access-key.json
+**/.env.terraform
+**/.migration-backup/
+**/sg-rule-map.local.json
+scripts/block11/*.local.*
 
 # IDE / OS
 .idea/
@@ -88,3 +105,7 @@ results/block10/tz_meta.json
 
 # Instructor model pack ZIP (private transfer; covered by artifacts/* too)
 artifacts/submission/
+
+/infra/terraform/environments/cloud-experiment/backend.tf
+
+**/tfplan-*
