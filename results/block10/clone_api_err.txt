@@ -1,1 +1,0 @@
-VENV\Scripts\python.exe: No module named uvicorn

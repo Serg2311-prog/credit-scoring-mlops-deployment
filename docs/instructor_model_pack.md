@@ -14,19 +14,37 @@ Production weights are **gitignored** and are **not** DVC pipeline outs. CI uses
 
 Approximate packed size (zip of binaries above): **~0.5–2 MB** depending on compression.
 
+## Build the pack (author machine)
+
+CLI: no arguments. Run from the **repository root** with the five production files already present under `models/` (paths must match the table). The script does not accept an output path override.
+
+```powershell
+python scripts/block10/build_instructor_model_pack.py
+```
+
+What it writes (all gitignored under `artifacts/submission/`):
+
+| Output | Role |
+| --- | --- |
+| `artifacts/submission/instructor_model_pack.zip` | Archive with POSIX entries `models/...`, plus `SHA256SUMS.txt` and a short `README.md` **inside** the ZIP |
+| `artifacts/submission/instructor_model_pack_meta.json` | Sidecar with `zip_sha256`, size, and per-file sums (printed to stdout as JSON) |
+
+Zip entry layout matches repo-relative paths (`models/credit_scoring_nn.onnx`, …). Do **not** commit the ZIP or meta JSON.
+
 ## Safe transfer
 
-1. Author builds a local zip **outside Git**.
-2. Verify SHA256 of each file against the table.
+1. Author runs `scripts/block10/build_instructor_model_pack.py` from repo root.
+2. Verify file hashes against the table and/or `SHA256SUMS.txt` inside the ZIP; optionally check `zip_sha256` in the meta JSON.
 3. Share via private LMS / encrypted channel / in-person USB — **not** a public gist.
-4. Recipient unpacks into `models/` of a clean clone of the same commit.
+4. Recipient unpacks the ZIP **at the repository root** of a clean clone (so files land in `models/…`). Do not unpack into a nested folder that would create `models/models/…`.
 5. Do **not** replace files with CI synthetic artifacts when validating production parity.
 
 ## Without the pack
 
 ```bash
 pip install -r requirements.txt -r requirements-dev.txt -r requirements-api.txt -r requirements-nn.txt
-python scripts/ci/generate_synthetic_artifacts.py --output-dir models --force
+# Only if production ONNX is absent; omit --force to avoid overwriting non-synthetic models.
+python scripts/ci/generate_synthetic_artifacts.py --output-dir models
 pytest -m "not k8s and not e2e" -q
 ```
 

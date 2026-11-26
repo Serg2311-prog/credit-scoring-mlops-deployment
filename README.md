@@ -4,13 +4,18 @@
 
 Учебный итоговый проект по дисциплине «Автоматизация процессов доставки и развертывания моделей машинного обучения».
 
+[![CI Python](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/workflows/ci-python.yml/badge.svg?branch=main)](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/workflows/ci-python.yml)
+[![CI Docker](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/workflows/ci-docker.yml/badge.svg?branch=main)](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/workflows/ci-docker.yml)
+[![CI Infrastructure](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/workflows/ci-infrastructure.yml/badge.svg?branch=main)](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/workflows/ci-infrastructure.yml)
+[![CI Kubernetes](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/workflows/ci-kubernetes.yml/badge.svg?branch=main)](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/workflows/ci-kubernetes.yml)
+[![CI Airflow DAG](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/workflows/ci-airflow-dag.yml/badge.svg?branch=main)](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions/workflows/ci-airflow-dag.yml)
+
 | | |
 | --- | --- |
-| Baseline commit | `bdb8b43` |
-| Cloud experiment (`cloud-experiment`) | **выполнен и уничтожен** (MK8s v1.34.1, 1×CPU 4/16/64) — см. [`results/block11/`](results/block11/) |
-| Remote State | **был** в Object Storage (live); бакет и ключи **удалены** после destroy |
-| Cloud ML-приложение / GHCR publish | **ABORT_CLOUD_APP** (образы локально; push/deploy не выполнялись) |
-| Production Yandex Cloud | **не развёрнут** (отдельное env; не трогался) |
+| Репозиторий | [github.com/Serg2311-prog/credit-scoring-mlops-deployment](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment) |
+| Последний проверенный CI baseline | [`978bf8e`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/978bf8e) |
+| Локальные тесты | `pytest -m "not k8s and not e2e"` — **236 passed, 2 skipped** |
+| Cloud experiment | инфраструктура **создана и уничтожена** (MK8s v1.34.1); приложение в облаке **не** развёртывалось |
 | Serving default | ONNX Runtime **CPU FP32** |
 | Auto-promote challenger | **`false`** |
 
@@ -20,37 +25,35 @@
 
 ## Постановка задачи
 
-Кредитный скоринг (UCI / Taiwan credit card default) нужно перевести из учебного notebook-контура в воспроизводимый MLOps-контур: обучение → ONNX → API → контейнеры/K8s → IaC → CI/CD → observability → drift/A/B → Airflow retraining — **без фиктивных метрик и без неподтверждённого cloud production**.
+Кредитный скоринг (UCI / Taiwan credit card default) переведён из notebook-контура в воспроизводимый MLOps-контур: обучение → ONNX → API → контейнеры/K8s → IaC → CI/CD → observability → drift/A/B → Airflow retraining — **без фиктивных метрик и без неподтверждённого cloud production deploy**.
 
 ## Цель и результаты
 
-- Совместимая **PyTorch MLP** на той же схеме признаков, что и исторический RF baseline.
+- PyTorch MLP на той же схеме признаков, что и исторический RF baseline.
 - Production-кандидат инференса: **ONNX FP32** (parity с PyTorch; test ROC-AUC **0.7742**).
 - RF baseline test ROC-AUC **0.7771** (не подменяется).
-- Dynamic INT8 quantization как **экспериментальный** артефакт (не auto-champion).
-- Локально проверены: Docker Compose, kind/Kustomize, Prometheus/Grafana/Loki, drift, online A/B, Airflow Docker E2E.
-- CI: GitHub Actions quality/security gates (см. [`docs/cicd_pipeline.md`](docs/cicd_pipeline.md)).
-- Облако (Block 11): Terraform Apply + Remote State + Managed Kubernetes + Ready worker + Calico + Metrics Server — **runtime-проверены**, затем **destroy verified**. Cloud app — **ABORT_CLOUD_APP**. Итог: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
+- Dynamic INT8 quantization — **экспериментальный** артефакт (не auto-champion).
+- Локально: Docker Compose, kind/Kustomize, Prometheus/Grafana/Loki, drift, online A/B, Airflow Docker E2E.
+- CI на `main` (commit `978bf8e`): quality gates, Docker/Trivy, Terraform validate, Kubernetes **manifest validation** (kubeconform/kustomize); **optional kind smoke** — только `workflow_dispatch` с `run_kind_smoke=true`, по умолчанию **skipped**. Airflow DAG import.
+- Облачная инфраструктура (Yandex Managed Kubernetes): Apply + Remote State — runtime-проверены, затем destroy verified. Развёртывание ML-приложения в облаке — **не выполнялось** (`ABORT_CLOUD_APP`).
 
-Подробный сводный отчёт: [`docs/final_project_report.md`](docs/final_project_report.md). Статус облака: [`results/block11/CLOUD_RUNTIME_VERIFICATION.md`](results/block11/CLOUD_RUNTIME_VERIFICATION.md).
+Сводный отчёт: [`docs/final_project_report.md`](docs/final_project_report.md). Облако: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md). Оценка: [`results/block11/FINAL_PROJECT_SCORECARD.md`](results/block11/FINAL_PROJECT_SCORECARD.md).
 
 ---
 
 ## Архитектура
 
-Кратко:
-
-```text
-Client / Frontend → FastAPI (ONNX FP32) → /metrics + JSON logs
-                         ↓
-              Prometheus / Grafana / Loki / Alertmanager
-                         ↓
-         Evidently drift + A/B + Airflow retraining (candidate only)
-                         ↓
-         Terraform (Yandex Cloud: experiment applied → destroyed; app ABORT)
+```mermaid
+flowchart LR
+  Client[ClientFrontend] --> API[FastAPI_ONNX_FP32]
+  API --> Metrics[PrometheusMetrics]
+  Metrics --> Obs[Grafana_Loki]
+  API --> Offline[Evidently_AB]
+  Offline --> AF[Airflow_candidate]
+  TF[Terraform_Yandex] -.-> CloudExp[MK8s_apply_destroy]
 ```
 
-Диаграммы Mermaid: [`docs/architecture/overview.md`](docs/architecture/overview.md).
+Подробные диаграммы: [`docs/architecture/overview.md`](docs/architecture/overview.md).
 
 ## Технологический стек
 
@@ -61,45 +64,35 @@ Client / Frontend → FastAPI (ONNX FP32) → /metrics + JSON logs
 | Data | DVC, Pandera |
 | Containers | Docker multi-stage, Compose |
 | K8s | kind, Kustomize, Ingress, NetworkPolicy |
-| IaC | Terraform (Yandex Cloud modules) |
+| IaC | Terraform (Yandex Cloud) |
 | CI/CD | GitHub Actions, Trivy, kubeconform |
 | Observability | Prometheus, Grafana, Loki, Alloy, Alertmanager |
 | Retraining | Apache Airflow 2.9.x DAG |
 
-## Датасет
+## Датасет и артефакты моделей
 
-- **UCI Credit Card Default** (Taiwan): бинарный default payment.
-- Сырые признаки + feature engineering → preprocessor → модель.
-- В Git **нет** реальных PII клиентов; CI использует synthetic ONNX/joblib.
-- DVC pipeline: `dvc.yaml` / `dvc.lock` (local remote `.dvc_remote/`, gitignored).
+- **UCI Credit Card Default** (Taiwan); в Git нет реальных PII клиентов.
+- DVC: `dvc.yaml` / `dvc.lock` (local remote `.dvc_remote/`, gitignored).
+- **Production** ONNX/PT/preprocessor — **gitignored**; SHA256 — [`docs/instructor_model_pack.md`](docs/instructor_model_pack.md).
+- **Synthetic** (CI / чистый клон без production-файлов): `scripts/ci/generate_synthetic_artifacts.py` — **не** совпадают с production SHA256. Не использовать `--force`, если в `models/` уже лежат production-артефакты.
 
 ## Структура репозитория
 
 ```text
-src/                 # API, NN, monitoring, retraining
-models/              # production ONNX/PT/preprocessor/registry (immutable без retrain)
-frontend/            # nginx UI
-docker/              # Dockerfiles
-k8s/                 # Kustomize base + overlays
-infra/terraform/     # Yandex Cloud modules + envs
-monitoring/          # Prometheus/Grafana/Loki/Alloy/Alertmanager
-airflow_home/dags/   # retraining DAG
-configs/             # thresholds, retraining, monitoring
-docs/                # отчёты, runbooks, архитектура
-results/block7|8|9/  # evidence
-tests/               # pytest
-.github/workflows/   # CI/CD
+src/  models/  frontend/  docker/  k8s/  infra/terraform/
+monitoring/  airflow_home/dags/  configs/  docs/  results/
+scripts/  tests/  .github/workflows/
 ```
 
 ## Системные требования
 
 | Режим | Минимум |
 | --- | --- |
-| Unit tests / monitoring CLI | Python 3.11+, ~4 GB RAM |
+| Unit tests | Python 3.11+, ~4 GB RAM |
 | API + frontend Compose | Docker Desktop, ~4–6 GB свободно |
-| Observability stack | +~2 GB; **не** поднимать вместе с Airflow на 8 GB |
-| kind | Docker + kubectl; NetworkPolicy enforcement на kindnet **не подтверждён** |
-| GPU benchmark | Colab T4 evidence уже в `results/block7/` (локально GPU может отсутствовать) |
+| Observability | +~2 GB; не параллелить с Airflow на 8 GB |
+| Local kind E2E | Docker + kubectl; NetworkPolicy enforcement на kindnet **не подтверждён** |
+| GPU benchmark | evidence в `results/block7/colab/hardened/` |
 
 ---
 
@@ -108,172 +101,93 @@ tests/               # pytest
 ### Windows PowerShell
 
 ```powershell
-git clone <repo-url>
+git clone https://github.com/Serg2311-prog/credit-scoring-mlops-deployment.git
 cd credit-scoring-mlops-deployment
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -U pip
-# Match CI: runtime + API + NN + dev tools (requirements-dev alone is not enough)
 pip install -r requirements.txt -r requirements-dev.txt -r requirements-api.txt -r requirements-nn.txt
 $env:PYTHONPATH = (Get-Location).Path
-# Without local production models/, generate CI synthetic artifacts first:
-#   python scripts/ci/generate_synthetic_artifacts.py --output-dir models --force
+
+# Synthetic artifacts — только для чистого клона без production ONNX/joblib.
+# Скрипт без --force не перезапишет существующие non-synthetic models/*.
+if (-not (Test-Path models\credit_scoring_nn.onnx)) {
+  python scripts/ci/generate_synthetic_artifacts.py --output-dir models
+}
+
 python -m pytest -m "not k8s and not e2e" -q
 ```
 
 ### Linux / Bash
 
 ```bash
+git clone https://github.com/Serg2311-prog/credit-scoring-mlops-deployment.git
+cd credit-scoring-mlops-deployment
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -U pip
 pip install -r requirements.txt -r requirements-dev.txt -r requirements-api.txt -r requirements-nn.txt
 export PYTHONPATH="$PWD"
-# python scripts/ci/generate_synthetic_artifacts.py --output-dir models --force
+
+# Synthetic artifacts — only when production ONNX is absent.
+# Do not pass --force if production models/ files are present.
+if [ ! -f models/credit_scoring_nn.onnx ]; then
+  python scripts/ci/generate_synthetic_artifacts.py --output-dir models
+fi
+
 python -m pytest -m "not k8s and not e2e" -q
 ```
 
-Production ONNX/PT/preprocessor are **gitignored** (not DVC outs). For production-parity inference see [`docs/instructor_model_pack.md`](docs/instructor_model_pack.md).
+---
+
+## Для преподавателя
+
+1. [`docs/quick_review.md`](docs/quick_review.md) и [`docs/requirements_matrix.md`](docs/requirements_matrix.md).
+2. CI badges на `main` / commit `978bf8e`.
+3. `pytest -m "not k8s and not e2e" -q`.
+4. Production-parity: [`docs/instructor_model_pack.md`](docs/instructor_model_pack.md).
+5. Облако: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md) — infra apply→destroy; app не развёртывалось.
+6. Scorecard: [`results/block11/FINAL_PROJECT_SCORECARD.md`](results/block11/FINAL_PROJECT_SCORECARD.md).
+7. Monitoring / drift / A/B: [`results/block8/`](results/block8/); benchmarks: [`results/block7/`](results/block7/).
 
 ---
 
-## API
+## API и Compose
 
 ```powershell
 $env:PYTHONPATH = (Get-Location).Path
 uvicorn src.api.main:app --host 127.0.0.1 --port 8000
-# http://127.0.0.1:8000/health/ready
-# http://127.0.0.1:8000/docs
-# POST /predict  — см. docs/api_contract.md
 ```
 
 Контракт: [`docs/api_contract.md`](docs/api_contract.md).
 
-## Frontend
-
 ```powershell
-docker compose up -d --build
-# UI: http://127.0.0.1:8081  (проксирует /api → api:8000)
+docker compose up -d --build   # UI :8081
 docker compose down
 ```
 
-## Docker Compose
+## Локальные контуры (инструкции)
 
-```powershell
-# Inference only
-docker compose up -d --build --scale frontend=0
-
-# Observability (после/вместо тяжёлых стеков — последовательно на 8 GB)
-docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d --build --scale frontend=0
-.\scripts\observability\check.ps1
-docker compose -f docker-compose.yml -f docker-compose.observability.yml down
-```
-
-| Сервис | URL |
+| Контур | Документация |
 | --- | --- |
-| API | http://127.0.0.1:8000 |
-| Frontend | http://127.0.0.1:8081 |
-| Grafana | http://127.0.0.1:3000 |
-| Prometheus | http://127.0.0.1:9090 |
-| Alertmanager | http://127.0.0.1:9093 |
+| Kubernetes (kind) | [`docs/kubernetes_local_deployment.md`](docs/kubernetes_local_deployment.md), [`k8s/README.md`](k8s/README.md) |
+| DVC | [`dvc.yaml`](dvc.yaml), [`docs/docker_deployment.md`](docs/docker_deployment.md) |
+| Monitoring | [`docs/stage5_runbook.md`](docs/stage5_runbook.md), [`docs/architecture/observability.md`](docs/architecture/observability.md) |
+| Drift / A/B | [`docs/stage6_runbook.md`](docs/stage6_runbook.md), [`docs/stage6_drift_completion_report.md`](docs/stage6_drift_completion_report.md) |
+| Airflow | [`docs/stage7_runbook.md`](docs/stage7_runbook.md), [`docs/stage7_airflow_e2e_report.md`](docs/stage7_airflow_e2e_report.md) |
+| Terraform | [`docs/terraform_infrastructure.md`](docs/terraform_infrastructure.md) |
+| CI/CD | [`docs/cicd_pipeline.md`](docs/cicd_pipeline.md) |
 
-## Kubernetes (local kind)
+Локальный kind E2E (отдельно от CI): `.\scripts\k8s_create.ps1`, `.\scripts\k8s_ingress_e2e.ps1`.
 
-```powershell
-.\scripts\k8s_create.ps1          # при необходимости
-.\scripts\k8s_ingress_e2e.ps1
-# NetworkPolicy manifests: verified; kindnet enforcement = не runtime-подтверждён
-```
-
-Подробности: [`docs/kubernetes_local_deployment.md`](docs/kubernetes_local_deployment.md), [`k8s/README.md`](k8s/README.md).
-
-## DVC
-
-```powershell
-$env:PYTHONPATH = (Get-Location).Path
-python -m dvc repro
-python -m dvc push
-docker build -f docker/Dockerfile.dvcdata -t credit-scoring-dvc-data:local .
-```
-
-Smoke-train в DVC **не** перезаписывает production `models/*`.
-
-## Monitoring & alerting
-
-```powershell
-docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d --build --scale frontend=0
-.\.venv\Scripts\python.exe scripts\observability\verify_stack.py
-# Runbook: docs/stage5_runbook.md
-# Block 8 evidence: results/block8/
-docker compose -f docker-compose.yml -f docker-compose.observability.yml down
-```
-
-## Drift detection
-
-```powershell
-$env:PYTHONPATH = (Get-Location).Path
-python -m src.monitoring.cli demo
-# пишет demo artifacts в artifacts/monitoring/; production registry не меняет
-pytest tests/monitoring -q
-```
-
-Отчёты: [`docs/stage6_drift_completion_report.md`](docs/stage6_drift_completion_report.md), [`docs/stage6_runbook.md`](docs/stage6_runbook.md).
-
-## Online A/B
-
-По умолчанию `AB_ENABLED=false`. Изолированная проверка (champion FP32 + experimental quant challenger):
-
-```powershell
-docker compose -f docker-compose.yml -f docker-compose.ab.e2e.yml up -d --no-build --scale frontend=0
-.\.venv\Scripts\python.exe scripts\block8\e2e_online_ab.py --n-ids 1000 --n-http 150
-docker compose -f docker-compose.yml -f docker-compose.ab.e2e.yml down
-```
-
-Evidence: [`results/block8/online_ab_evidence.json`](results/block8/online_ab_evidence.json).
-Это **synthetic HTTP**, не трафик реальных клиентов. `auto_promote=false`.
-
-## Airflow retraining
-
-```powershell
-# Полный локальный E2E (тяжёлый — не параллелить с observability)
-# см. docs/stage7_runbook.md и docs/stage7_airflow_e2e_report.md
-docker compose -f docker-compose.airflow.yml -f docker-compose.airflow.e2e.yml ...
-```
-
-Решение о retrain: triggers по drift/quality; кандидат в isolated run dir; **без** auto-promote в production registry.
-
-## Terraform
-
-```powershell
-terraform -chdir=infra/terraform fmt -recursive -check
-terraform -chdir=infra/terraform/environments/staging init -backend=false
-terraform -chdir=infra/terraform/environments/staging validate
-```
-
-Remote state examples: `backend.hcl.example` + credentials **только через env** (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`).
-**Не** передавать `access_key`/`secret_key` через `-backend-config=` CLI.
-Дополнительный apply/destroy — **только** с явным одобрением (кластер уже потребляет грант). Experiment env: `infra/terraform/environments/cloud-experiment`.
-
-## CI/CD
-
-Workflows: `.github/workflows/` (`ci-python`, `ci-docker`+Trivy, `ci-infrastructure`, `ci-kubernetes`, `ci-airflow-dag`, orchestrator `ci-cd.yml`, CD dry-run).
-
-Локально:
+## CI/CD и тестирование
 
 ```powershell
 .\scripts\ci\check.ps1
-```
-
-## Тестирование
-
-```powershell
-$env:PYTHONPATH = (Get-Location).Path
 python -m pytest -m "not k8s and not e2e" -q
 python -m black --check src tests scripts/ci airflow_home/dags
 python -m flake8 src tests scripts/ci airflow_home/dags
 ```
-
-На baseline `0df191a`: **231 passed, 2 skipped** (локально, Block 8.1).
 
 ## CPU / GPU benchmark
 
@@ -288,28 +202,19 @@ python -m flake8 src tests scripts/ci airflow_home/dags
 
 ## Безопасность
 
-- Trivy gate в CI Docker.
+- Trivy gate в CI Docker: CRITICAL/HIGH, **`ignore-unfixed: true`** (как в `ci-docker.yml`).
 - Secrets не в Git; `.env.example` без реальных ключей.
-- Terraform backends — env credentials only.
-- E2E log probe вынесен из production API.
-- `results/block8/_raw_encoding_backup/` gitignored.
+- Terraform backends — credentials **только через env** (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`), не через CLI `-backend-config=access_key/secret_key`.
 
-## Ограничения (честно)
+## Ограничения проекта
 
-- **CLOUD_INFRA (experiment):** Remote State + Apply + MK8s v1.34.1 + Ready worker + Calico + Metrics Server — **runtime verified**, затем **destroy verified** ([`results/block11/`](results/block11/))
-- **CLOUD_APP:** GHCR push / cloud inference / HPA / NP enforcement / cloud monitoring / rolling update / rollback — **ABORT_CLOUD_APP** (не утверждаются)
-- **Production** Terraform env — **не развёрнут**
-- SG rules: 12 standalone resources + dependency guard; dual-managed wipe remediated
-- Периодические `kubectl` TLS handshake timeout — наблюдались; причина **не установлена**
-- Experimental API image (trixie, **not in delivery**): Trivy 53 HIGH / 0 CRITICAL historically — see `results/block11/`; delivery `Dockerfile.api` = `main` bookworm; merge-prep Trivy gate PASS
-- GPU node group в облаке — **не запускалась**
-- NetworkPolicy enforcement на kind — **не runtime-подтверждён**; наличие Calico ≠ enforcement конкретных NP
-- cAdvisor на Docker Desktop: нет label `name` у контейнеров
-- Online A/B challenger = existing quantized ONNX (эксперимент)
-- Controlled concept-drift experiment ≠ production concept drift proof
-- Airflow E2E — локальный Docker, не managed cloud
-
-Финальный аудит: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md). Scorecard: [`results/block11/FINAL_PROJECT_SCORECARD.md`](results/block11/FINAL_PROJECT_SCORECARD.md).
+- Облачная инфраструктура эксперимента создана и уничтожена; **ML-приложение в облаке не развёртывалось**.
+- Отображённое потребление гранта (~50 RUB) — предварительный UI, не финальный биллинг.
+- Удаление последнего SA / отзыв PAT / полная очистка локальных credentials — не утверждаются без отдельного подтверждения оператора.
+- Production Terraform env не развёрнут; GPU node group в облаке не запускалась.
+- NetworkPolicy на kind — manifests есть; runtime enforcement не подтверждён.
+- Online A/B и concept-drift — synthetic/controlled experiments ≠ production traffic proof.
+- Airflow E2E — локальный Docker, не managed cloud.
 
 ---
 
@@ -318,13 +223,13 @@ python -m flake8 src tests scripts/ci airflow_home/dags
 | Документ | Назначение |
 | --- | --- |
 | [`docs/final_project_report.md`](docs/final_project_report.md) | Сводный отчёт |
-| [`docs/requirements_matrix.md`](docs/requirements_matrix.md) | Матрица соответствия ТЗ |
-| [`docs/evidence_index.md`](docs/evidence_index.md) | Навигация по доказательствам |
-| [`docs/quick_review.md`](docs/quick_review.md) | Инструкция для преподавателя |
+| [`docs/requirements_matrix.md`](docs/requirements_matrix.md) | Матрица ТЗ |
+| [`docs/evidence_index.md`](docs/evidence_index.md) | Индекс доказательств |
+| [`docs/quick_review.md`](docs/quick_review.md) | Обзор для преподавателя |
 | [`docs/defense_guide.md`](docs/defense_guide.md) | Подготовка к защите |
-| [`docs/architecture/overview.md`](docs/architecture/overview.md) | Архитектура + Mermaid |
-| [`results/block7/`](results/block7/) | CPU/GPU/API load evidence |
-| [`results/block8/`](results/block8/) | Monitoring / drift / A/B evidence |
-| [`results/block11/`](results/block11/) | Cloud experiment + final closure reports |
-
-Проект охватывает полный MLOps-цикл: подготовку и оптимизацию моделей, облачную инфраструктуру, контейнеризацию и оркестрацию, CI/CD, мониторинг, обнаружение дрейфа данных, A/B-тестирование и автоматизацию переобучения.
+| [`docs/architecture/overview.md`](docs/architecture/overview.md) | Архитектура |
+| [`docs/instructor_model_pack.md`](docs/instructor_model_pack.md) | Production model pack |
+| [`results/block11/FINAL_PROJECT_SCORECARD.md`](results/block11/FINAL_PROJECT_SCORECARD.md) | Итоговая оценка |
+| [`results/block7/`](results/block7/) | CPU/GPU/API load |
+| [`results/block8/`](results/block8/) | Monitoring / drift / A/B |
+| [`results/block11/`](results/block11/) | Cloud experiment closure |
