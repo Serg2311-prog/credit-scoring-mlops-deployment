@@ -2,7 +2,7 @@
 
 ## Краткое описание
 
-Учебный MLOps-проект кредитного скоринга: MLP → ONNX FP32 API → Docker/kind → Terraform (`cloud-experiment` apply→destroy, Block 11) → GitHub Actions → Prometheus/Loki → Evidently drift + A/B → Airflow retraining без auto-promote. Cloud app — `ABORT_CLOUD_APP`. Holdout MLP ROC-AUC **0.7742** ниже RF baseline **0.7771** — зафиксировано честно.
+Учебный MLOps-проект кредитного скоринга: MLP → ONNX FP32 API → Docker/kind → Terraform (`cloud-experiment` apply→destroy, Block 11) → GitHub Actions → Prometheus/Loki → Evidently drift + A/B → Airflow retraining без auto-promote. ML-приложение в облаке не развёртывалось (только инфраструктурный эксперимент). Holdout MLP ROC-AUC **0.7742** ниже RF baseline **0.7771** — зафиксировано честно.
 
 ---
 
@@ -130,6 +130,6 @@
 ## Ограничения (говорить прямо)
 
 **Block 11 CLOUD_INFRA:** Remote State + apply + MK8s v1.34.1 + Ready worker + Calico + Metrics Server — verified; **destroy verified**; SG migration (12 rules) done.
-**CLOUD_APP:** `ABORT_CLOUD_APP` (GHCR login denied + residual API Trivy HIGH + timebox).
+**Cloud ML app:** не развёртывалось (GHCR login denied + residual API Trivy HIGH + timebox).
 **Still open / not claimed:** cloud inference/HPA/NP enforcement/monitoring/rollback; production apply; GPU cloud nodes; GPU INT8/HTTP; kind NP enforcement; optional Seldon/Istio/Redis; Airflow only local Docker E2E.
 Финальные отчёты: `results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`, `FINAL_COST_REPORT.md`, `FINAL_SECURITY_REVIEW.md`, `FINAL_CLEANUP_REPORT.md`, `FINAL_REGRESSION_REPORT.md`.

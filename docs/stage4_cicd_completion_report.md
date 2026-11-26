@@ -1,7 +1,7 @@
 # Stage 4 / Block 5 + 5.1 — CI/CD Staging & Production Completion Report
 
 **Date:** 2026-11-24
-**Working tree:** Block 5 accepted + Block 5.1 acceptance fixes (no commit/push)
+**Working tree:** Block 5 accepted + Block 5.1 acceptance fixes
 **Cloud terraform apply / YC Managed K8s:** **NOT_EXECUTED** (policy)
 
 ## Status legend
@@ -82,7 +82,7 @@ Block 5.1 did not change the kind apply path; full kind E2E **not re-run**.
 | Item | Status |
 | --- | --- |
 | Prior CI 5/5 | VERIFIED_CI (historical) |
-| New `ci-cd` / `cd-production` on Actions | NOT_EXECUTED (no commit/push) |
+| New `ci-cd` / `cd-production` on Actions | NOT_EXECUTED |
 | GHCR push / cloud kube | NOT_EXECUTED |
 | terraform apply | NOT_EXECUTED |
 

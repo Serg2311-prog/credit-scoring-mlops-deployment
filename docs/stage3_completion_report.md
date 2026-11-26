@@ -93,8 +93,3 @@ Compose Prometheus scrapes Docker network `api:8000` and is **outside** these K8
 2. Host Ingress `:8080` needs kind cluster recreate with updated `k8s/kind/cluster.yaml`.
 3. Hotfix CI Docker (independent Trivy + security gate) not yet run on GitHub → **VERIFIED_CI pending** push/Actions.
 4. Documentation sync for stages 4–7 deferred to later blocks.
-
-## Score forecast (Stage 3 / 8, original ТЗ)
-
-**7.5–8.0 / 8** after this close-out (frontend, Ingress E2E, DVC pipeline+Docker verified).
-Deduction risk only if mentor requires live NetworkPolicy enforcement or kind host-port Ingress without recreate.

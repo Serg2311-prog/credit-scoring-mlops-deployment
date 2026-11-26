@@ -2,7 +2,7 @@
 
 Production weights are **gitignored** and are **not** DVC pipeline outs. CI uses synthetic ONNX/joblib via `scripts/ci/generate_synthetic_artifacts.py`.
 
-## Contents (do not commit without policy review)
+## Contents (binaries stay gitignored)
 
 | Relative path | Role | SHA256 (author baseline `bdb8b43` audit) |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ What it writes (all gitignored under `artifacts/submission/`):
 | `artifacts/submission/instructor_model_pack.zip` | Archive with POSIX entries `models/...`, plus `SHA256SUMS.txt` and a short `README.md` **inside** the ZIP |
 | `artifacts/submission/instructor_model_pack_meta.json` | Sidecar with `zip_sha256`, size, and per-file sums (printed to stdout as JSON) |
 
-Zip entry layout matches repo-relative paths (`models/credit_scoring_nn.onnx`, …). Do **not** commit the ZIP or meta JSON.
+Zip entry layout matches repo-relative paths (`models/credit_scoring_nn.onnx`, …). ZIP and meta JSON remain **gitignored**.
 
 ## Safe transfer
 

@@ -132,17 +132,5 @@ See `git_status_block81.txt`, `git_diff_stat_block81.txt`.
 3. API still exposes unset `ml_data_drift_*` as 0 — use exporter job filter
 4. Online A/B uses quantized ONNX as experimental challenger (compatible contract; not a separately trained challenger)
 5. Airflow check is **decision layer only** (no Docker Airflow retrain in 8.1)
-6. Commit/push deferred pending confirmation
-
-## 15. Score justification
-
-| Block | Max | Justified | Rationale |
-| --- | --- | --- | --- |
-| Monitoring (Этап 5) | **8** | **8** | Metrics, Grafana, Loki, metric+log alerts with firing/resolved, runbook; infra metrics partial on Desktop but honestly limited |
-| Drift (Этап 6) | **7** | **7** | Evidently drift, degradation signal, controlled concept experiment, offline+online A/B, immutable production registry, exporter→Grafana, Airflow decision wiring |
 
 Optional Seldon/shadow: **NOT_EXECUTED** (out of required scope).
-
----
-
-**STOP:** awaiting confirmation. No commit/push. No Block 9.

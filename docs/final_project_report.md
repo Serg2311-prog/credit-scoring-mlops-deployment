@@ -11,7 +11,7 @@
 
 ## 1. Аннотация
 
-Реализован воспроизводимый MLOps-контур кредитного скоринга: PyTorch MLP → ONNX FP32 serving → Docker/kind → Terraform IaC (Block 11: `cloud-experiment` apply → destroy) → GitHub Actions → Prometheus/Grafana/Loki → Evidently drift + A/B → Airflow retraining без auto-promote. Cloud ML-приложение **не** развёртывалось (`ABORT_CLOUD_APP`). Качество MLP на holdout **не превосходит** исторический RF baseline; это зафиксировано явно. Актуализация облака: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
+Реализован воспроизводимый MLOps-контур кредитного скоринга: PyTorch MLP → ONNX FP32 serving → Docker/kind → Terraform IaC (Block 11: `cloud-experiment` apply → destroy) → GitHub Actions → Prometheus/Grafana/Loki → Evidently drift + A/B → Airflow retraining без auto-promote. Cloud ML-приложение **не** развёртывалось. Качество MLP на holdout **не превосходит** исторический RF baseline; это зафиксировано явно. Актуализация облака: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
 
 ## 2. Постановка задачи
 
@@ -68,7 +68,7 @@ Dynamic quantization уменьшает размер; вероятности о�
 - Compose smoke verified.
 - kind + Kustomize + Ingress verified locally.
 - NetworkPolicy manifests present; **enforcement на kindnet не подтверждён runtime**.
-- **Cloud K8s app deploy (CLOUD_APP) — ABORT_CLOUD_APP** (локальные images/smoke/parity; push/deploy не выполнялись).
+- **Cloud K8s app deploy — не выполнялось** (локальные images/smoke/parity; push/deploy не выполнялись).
 - **Cloud infra (Block 11, CLOUD_INFRA):** Managed Kubernetes v1.34.1 + Ready CPU worker — runtime verified, затем **destroy verified** — см. `results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`.
 
 ## 10. Terraform
@@ -139,7 +139,7 @@ Dynamic quantization уменьшает размер; вероятности о�
 
 ## 19. Ограничения
 
-1. Cloud ML-приложение / GHCR push / cloud inference / cloud HPA / cloud NP enforcement / cloud monitoring stack / cloud rolling update / cloud rollback — **не** подтверждены (`ABORT_CLOUD_APP`).
+1. Cloud ML-приложение / GHCR push / cloud inference / cloud HPA / cloud NP enforcement / cloud monitoring stack / cloud rolling update / cloud rollback — **не** подтверждены (развёртывание приложения в облаке не выполнялось).
 2. Staging/production Terraform apply — не выполнялись.
 3. GPU node group в облаке — не запускалась.
 4. NetworkPolicy enforcement (kind) — не runtime-подтверждён; Calico в кластере ≠ enforcement конкретных NP.
@@ -156,4 +156,4 @@ Dynamic quantization уменьшает размер; вероятности о�
 
 ## 20. Заключение
 
-Проект закрывает обязательные этапы ТЗ с локально/CI-подтверждёнными доказательствами и Block 11 cloud-infra runtime (apply → verify → destroy). Cloud application path закрыт как `ABORT_CLOUD_APP`. Биллинг эксперимента подтверждён оператором 2026-11-26: 56,34 ₽ / грант 56,34 ₽ / к оплате 0,00 ₽ (см. `results/block11/FINAL_COST_REPORT.md`).
+Проект закрывает обязательные этапы ТЗ с локально/CI-подтверждёнными доказательствами и Block 11 cloud-infra runtime (apply → verify → destroy). Развёртывание ML-приложения в облаке не выполнялось. Биллинг эксперимента подтверждён оператором 2026-11-26: 56,34 ₽ / грант 56,34 ₽ / к оплате 0,00 ₽ (см. `results/block11/FINAL_COST_REPORT.md`).

@@ -4,7 +4,7 @@
 
 **Branch:** `cloud-deployment` @ `b713f2fcc7fd4638d4464ad9395fce483a86bdad` (+ uncommitted 11.7.1 hardening)
 **Provider pin:** `yandex-cloud/yandex` `0.250.0` (`~> 0.250`) — **not upgraded**.
-**Apply/destroy / remote-state create (at audit time):** **NOT_EXECUTED** by agent.
+**Apply/destroy / remote-state create (at audit time):** **NOT_EXECUTED**.
 
 ## 11.7.1 hardening delta
 

@@ -251,4 +251,4 @@ Also see `FINAL_ACCEPTANCE_REPORT.md`.
 - Block7/Block8 git trees unchanged (`9a7dab26…` / `fdb12d7a…`).
 - Five CI workflows SUCCESS on `bdb8b43`.
 - PyTorch↔ONNX FP32 parity PASS (max \|Δp\| ≈ 7e-8).
-- Optional components absent → **no score penalty** per TZ footnote.
+- Optional components absent → documented as out of required scope (TZ footnote).

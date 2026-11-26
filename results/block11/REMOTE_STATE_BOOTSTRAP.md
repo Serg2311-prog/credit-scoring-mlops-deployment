@@ -1,6 +1,6 @@
 # Remote State Bootstrap — Yandex Object Storage (Block 11.7.1)
 
-**Status at document creation (11.7.1):** instruction pack for the operator — agent marked **NOT_EXECUTED** (no bucket/SA/keys/policy created *by the agent at that step*).
+**Status at document creation (11.7.1):** instruction pack for the operator — bootstrap **NOT_EXECUTED** at that step (no bucket/SA/keys/policy created yet).
 **Later factual outcome:** operator completed remote-state bootstrap and used live Object Storage state for `cloud-experiment`; infrastructure was later destroyed and the state bucket removed. See [`FINAL_CLOUD_EXPERIMENT_REPORT.md`](FINAL_CLOUD_EXPERIMENT_REPORT.md), [`FINAL_CLEANUP_REPORT.md`](FINAL_CLEANUP_REPORT.md), [`CLOUD_RUNTIME_VERIFICATION.md`](CLOUD_RUNTIME_VERIFICATION.md).
 **Environment key (historical):** `credit-scoring/cloud-experiment/terraform.tfstate`
 **Do not** grant the tfstate SA folder/cloud-wide roles (`storage.admin`, `editor`, `admin`).

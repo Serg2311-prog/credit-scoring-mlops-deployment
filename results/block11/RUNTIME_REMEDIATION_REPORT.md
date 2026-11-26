@@ -1,11 +1,11 @@
 # RUNTIME_REMEDIATION_REPORT — Block 11.9.1
 
-> Later closeout: SG migration completed in experiment; infra destroyed; app `ABORT_CLOUD_APP`. See [`FINAL_CLOUD_EXPERIMENT_REPORT.md`](FINAL_CLOUD_EXPERIMENT_REPORT.md).
+> Later closeout: SG migration completed in experiment; infra destroyed; cloud ML app not deployed. See [`FINAL_CLOUD_EXPERIMENT_REPORT.md`](FINAL_CLOUD_EXPERIMENT_REPORT.md).
 
 **Branch:** `cloud-deployment`
 **Status (at 11.9.1):** state migration planned (import-first; no blind apply)
 **Cloud mutations this block:** none (code + docs only)
-**terraform apply/destroy/state mv|rm|import (this block, by agent):** **NOT_EXECUTED**
+**terraform apply/destroy/state mv|rm|import (this block):** **NOT_EXECUTED**
 
 ## Confirmed runtime (operator + read-only checks)
 
@@ -82,7 +82,7 @@ Intermittent `net/http: TLS handshake timeout` observed on `kubectl` against the
 | SG descriptions | Restored to original strings (no unnecessary update) |
 | K8s depends_on SG rules | `security_group_dependency_ids` → create/destroy order |
 | Idempotent script | Maps 12 live rules by description; skip/repair/import; plan gate |
-| Agent executed migration? | **No** |
+| Migration executed in this remediation block? | **No** (operator script + approval required) |
 
 ## Next
 

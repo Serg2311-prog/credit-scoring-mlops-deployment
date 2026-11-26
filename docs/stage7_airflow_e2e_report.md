@@ -141,10 +141,6 @@ Dual local verification (`scripts/ci/dual_verify_block42.py`): two consecutive `
 4. **VERIFIED_CI** for compose E2E not claimed (GHA has DAG parse only).
 5. Do not co-run observability + Airflow + kind on 8 GB RAM.
 
-## Score (Stage 7 / 5 ТЗ)
-
-**~5 / 5** for local Docker scope: cron + E2E off, scheduler-created DagRun, new_data detect/train/skip, same-holdout champion gate with `auto_promote=false`, skip/fail evidence, production hashes stable.
-
 ## Historical Stage 7 validation snapshot (2026-11-22)
 
 Early Stage 7 validation focused on compose/command defects and demo-input reproducibility before the Docker E2E closeout documented above.

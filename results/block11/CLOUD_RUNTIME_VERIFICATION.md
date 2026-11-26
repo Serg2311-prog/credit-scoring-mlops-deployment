@@ -25,7 +25,7 @@ Do not mark PASS for levels not executed.
 | Real ONNX inference in cloud | CLOUD_APP | NOT_EXECUTED | |
 | terraform destroy / YC empty checks | OPS | PASS | Operator destroy + CLI absence checks (Block 11.13/11.14) |
 | Final billing statement | OPS | NOT_VERIFIED | UI grant burn preliminary only — see FINAL_COST_REPORT.md |
-| Cloud ML app deploy | CLOUD_APP | ABORT | ABORT_CLOUD_APP — see FINAL_CLOUD_EXPERIMENT_REPORT.md |
+| Cloud ML app deploy | CLOUD_APP | NOT_EXECUTED | Cloud ML app not deployed — see FINAL_CLOUD_EXPERIMENT_REPORT.md |
 
 ## CIDR alignment
 

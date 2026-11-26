@@ -76,7 +76,7 @@ flowchart LR
 - **UCI Credit Card Default** (Taiwan); в Git нет реальных PII клиентов.
 - DVC: `dvc.yaml` / `dvc.lock` (local remote `.dvc_remote/`, gitignored).
 - **Production** ONNX/PT/preprocessor — **gitignored**; не коммитятся в репозиторий.
-- Архив **`instructor_model_pack.zip`** подготовлен для преподавателя и передаётся **отдельно** (не в Git).
+- Архив **`instructor_model_pack.zip`** с production-весами передаётся **отдельно** (не в Git).
   - Размер: **140061** байт
   - SHA256: `faa23e3c60bd1653adea3dd25cfe6071f4db4b86839b3ca60731e9fa217aee55`
   - Распаковка в **корень** репозитория; подробности — [`docs/instructor_model_pack.md`](docs/instructor_model_pack.md).
@@ -146,7 +146,7 @@ python -m pytest -m "not k8s and not e2e" -q
 
 ---
 
-## Для преподавателя
+## Быстрая проверка
 
 1. [`docs/quick_review.md`](docs/quick_review.md) и [`docs/requirements_matrix.md`](docs/requirements_matrix.md).
 2. Release [**v1.0.0**](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/releases/tag/v1.0.0); CI badges на `main` / commit [`5527a55`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/5527a55) — пять основных workflows **success**.
@@ -251,7 +251,7 @@ python -m flake8 src tests scripts/ci airflow_home/dags
 | [`docs/final_project_report.md`](docs/final_project_report.md) | Сводный отчёт |
 | [`docs/requirements_matrix.md`](docs/requirements_matrix.md) | Матрица ТЗ |
 | [`docs/evidence_index.md`](docs/evidence_index.md) | Индекс доказательств |
-| [`docs/quick_review.md`](docs/quick_review.md) | Обзор для преподавателя |
+| [`docs/quick_review.md`](docs/quick_review.md) | Краткое руководство по запуску и проверке |
 | [`docs/defense_guide.md`](docs/defense_guide.md) | Подготовка к защите |
 | [`docs/architecture/overview.md`](docs/architecture/overview.md) | Архитектура |
 | [`docs/instructor_model_pack.md`](docs/instructor_model_pack.md) | Production model pack |

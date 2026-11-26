@@ -8,7 +8,7 @@
 
 Уровни проверки: **STATIC / LOCAL / CLOUD_INFRA / CLOUD_APP / OPS**.
 **CLOUD_INFRA (Block 11):** Yandex Managed Kubernetes experiment — Remote State + Apply + Ready worker + Calico + Metrics Server **runtime verified**, затем **destroy verified**.
-**CLOUD_APP:** `ABORT_CLOUD_APP` (локальные images/smoke/parity; cloud deploy не выполнялся). Детали: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
+**Cloud ML app:** развёртывание в облаке не выполнялось (локальные images/smoke/parity). Детали: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
 
 ---
 

@@ -31,7 +31,7 @@
   "cloud_infra": {
     "apply": "OPERATOR_EXECUTED",
     "destroy": "OPERATOR_VERIFIED",
-    "app": "ABORT_CLOUD_APP"
+    "app": "NOT_DEPLOYED"
   },
   "cost_preliminary_ui": {
     "displayed_consumption_rub": 50,

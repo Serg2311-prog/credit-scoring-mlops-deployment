@@ -1,10 +1,10 @@
 # DESTROY_CHECKLIST — Block 11.13 (Controlled Cloud Cleanup)
 
 **Branch:** `cloud-deployment` only
-**Status:** destroy planned — agent prepares commands; **operator executes** destroy/deletes.
-**App deploy:** **ABORT_CLOUD_APP** (no cloud app publish/apply).
+**Status:** destroy planned — **operator executes** destroy/deletes.
+**App deploy:** **not performed** (no cloud app publish/apply).
 
-**Agent MUST NOT run:** `terraform destroy` / `apply`, cloud deletes, bucket wipe, SA deletes, `git commit` / `push`.
+**Safety:** do not run `terraform destroy` / `apply`, cloud deletes, bucket wipe, or SA deletes without explicit operator approval.
 
 ---
 
@@ -31,7 +31,7 @@ Details: `BLOCK11_ABORT_AND_CLEANUP.md`, `IMAGE_BUILD_REPORT.md`, `application_v
 cd <repo>\infra\terraform\environments\cloud-experiment
 git branch --show-current   # must be cloud-deployment
 
-# AWS_* for Object Storage backend (session only; do not commit)
+# AWS_* for Object Storage backend (session only; never store keys in the repo)
 terraform workspace show    # expect default
 terraform state list
 terraform state list | Measure-Object | Select-Object -ExpandProperty Count
@@ -61,7 +61,7 @@ terraform state show -no-color module.kubernetes.yandex_kubernetes_node_group.cp
 
 ## 2. Application / K8s leftovers (if any)
 
-App overlay was **not** applied by agent. Still verify:
+App overlay was **not** applied. Still verify:
 
 ```powershell
 kubectl config current-context   # yc-cs-exp-k8s

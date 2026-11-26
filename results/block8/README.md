@@ -1,6 +1,6 @@
 # Block 8 / 8.1 — Monitoring / Alerting / Drift evidence
 
-Local Docker Desktop verification (Windows, CPU-only, ~8 GB RAM). No cloud resources. No commit/push.
+Local Docker Desktop verification (Windows, CPU-only, ~8 GB RAM). No cloud resources.
 
 ## Reproduce — observability + log alert (Block 8.1)
 

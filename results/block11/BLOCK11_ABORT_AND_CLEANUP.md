@@ -1,11 +1,11 @@
-# BLOCK 11 — ABORT_CLOUD_APP → 11.13 Controlled Cleanup
+# BLOCK 11 — Cloud app not deployed → 11.13 Controlled Cleanup
 
 **Branch:** `cloud-deployment`
-**Decision:** **ABORT_CLOUD_APP** (residual API Trivy HIGH, GHCR Docker Login denied despite packages token checks, time limit).
+**Decision:** cloud ML application **not deployed** (residual API Trivy HIGH, GHCR Docker Login denied despite packages token checks, time limit).
 **Distroless remediation:** **not continued**.
 **Security gates:** **not weakened** (no CVE ignores / Trivy skip).
 
-Agent status: documentation + destroy **plan only** — operator must approve before destroy.
+Status: documentation + destroy **plan only** — operator must approve before destroy.
 
 ---
 
@@ -46,7 +46,7 @@ Agent status: documentation + destroy **plan only** — operator must approve be
 | GitHub API / GHCR token endpoint | **HTTP 200** (operator statement) |
 | `docker login ghcr.io` | **denied** |
 | Root cause of login denial | **Not established** — do not claim SSO, ACL, or token shape without further proof |
-| Agent token minting | **Not** performed |
+| Extra token minting for publish | **Not** performed |
 
 Publish blockers at abort: residual API OS HIGH (empty FixedVersion), Docker Login denied, experiment timebox.
 
@@ -102,4 +102,4 @@ Order:
 
 Await explicit operator approval before any destroy/delete.
 
-Until then: no `terraform destroy`/`apply`, no bucket/SA deletion, no commit/push by agent.
+Until then: no `terraform destroy`/`apply`, no bucket/SA deletion.

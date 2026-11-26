@@ -1,6 +1,6 @@
-# Быстрый обзор для преподавателя
+# Краткое руководство по запуску и проверке
 
-Цель документа: за 20–40 минут найти реализацию критериев ТЗ, прогнать облегчённые проверки на **CPU / ~8 GB RAM** и открыть evidence без платных облачных ресурсов.
+Документ для локальной проверки репозитория на **CPU / ~8 GB RAM**: установка зависимостей, тесты, API/Compose, observability, drift demo и Terraform validate — без создания платных облачных ресурсов.
 
 **Не поднимайте одновременно** observability + Airflow + kind на 8 GB.
 
@@ -8,30 +8,63 @@ Baseline релиза: commit `5527a55` / tag `v1.0.0`.
 
 ---
 
-## 1. Архитектура за 2 минуты
+## 1. Архитектура (кратко)
 
-См. диаграммы: [`architecture/overview.md`](architecture/overview.md).
-Serving: FastAPI + ONNX FP32. Observability: Prometheus/Grafana/Loki. Drift/A/B offline+online. Retraining: Airflow, `auto_promote=false`. Cloud: Block 11 `cloud-experiment` apply→destroy; app `ABORT_CLOUD_APP` — [`../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
+Диаграммы: [`architecture/overview.md`](architecture/overview.md).
 
-## 2. Где искать критерии
+- Serving: FastAPI + ONNX FP32
+- Observability: Prometheus / Grafana / Loki
+- Drift и A/B: offline + online (локально)
+- Retraining: Airflow, `auto_promote=false`
+- Облако: эксперимент Yandex Managed Kubernetes — инфраструктура создана, проверена и уничтожена; ML-приложение в облаке **не** развёртывалось — [`../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md)
 
-| Этап ТЗ | Куда смотреть |
+## 2. Где искать материалы по этапам
+
+| Этап | Куда смотреть |
 | --- | --- |
-| Модель (5) | `docs/model_benchmark.md`, `results/block7/` |
-| Cloud (7) | `infra/terraform/`, `docs/terraform_infrastructure.md`, `results/block11/` |
-| Docker/K8s (8) | `docker/`, `k8s/`, `docs/docker_deployment.md` |
-| CI/CD (5) | `.github/workflows/`, `docs/cicd_pipeline.md` |
-| Monitoring (8) | `monitoring/`, `results/block8/`, `docs/stage5_*` |
-| Drift (7) | `src/monitoring/`, `results/block8/`, `docs/stage6_*` |
-| Airflow (5) | `airflow_home/dags/`, `docs/stage7_*` |
-| Docs (5) | `README.md`, этот файл, `final_project_report.md` |
+| Модель | `docs/model_benchmark.md`, `results/block7/` |
+| Cloud / Terraform | `infra/terraform/`, `docs/terraform_infrastructure.md`, `results/block11/` |
+| Docker / Kubernetes | `docker/`, `k8s/`, `docs/docker_deployment.md` |
+| CI/CD | `.github/workflows/`, `docs/cicd_pipeline.md` |
+| Monitoring | `monitoring/`, `results/block8/`, `docs/stage5_*` |
+| Drift / A/B | `src/monitoring/`, `results/block8/`, `docs/stage6_*` |
+| Airflow | `airflow_home/dags/`, `docs/stage7_*` |
+| Документация | `README.md`, этот файл, `final_project_report.md` |
 
-Полная матрица: [`requirements_matrix.md`](requirements_matrix.md).
-Индекс evidence: [`evidence_index.md`](evidence_index.md).
+Полная матрица требований: [`requirements_matrix.md`](requirements_matrix.md).  
+Индекс доказательств: [`evidence_index.md`](evidence_index.md).
 
 ---
 
-## 3. Облегчённый сценарий (CPU, 8 GB)
+## 3. Подготовка окружения
+
+Из **корня репозитория** (Windows PowerShell):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -U pip
+pip install -r requirements.txt -r requirements-dev.txt -r requirements-api.txt -r requirements-nn.txt
+$env:PYTHONPATH = (Get-Location).Path
+```
+
+### Артефакты моделей
+
+- **Production-parity:** распаковать `instructor_model_pack.zip` в **корень** репозитория (файлы должны оказаться в `models/…`). Подробности и SHA256: [`instructor_model_pack.md`](instructor_model_pack.md).
+- **Без production-архива** (чистый клон / CI-путь):
+
+```powershell
+# Только если production ONNX отсутствует. Без --force, чтобы не затереть production-файлы.
+if (-not (Test-Path models\credit_scoring_nn.onnx)) {
+  python scripts/ci/generate_synthetic_artifacts.py --output-dir models
+}
+```
+
+Synthetic-артефакты **не** совпадают с production SHA256.
+
+---
+
+## 4. Локальный сценарий (CPU, ~8 GB)
 
 ### A. Тесты без Docker (~2–5 мин)
 
@@ -43,9 +76,16 @@ python -m black --check src tests scripts/ci airflow_home/dags
 python -m flake8 src tests scripts/ci airflow_home/dags
 ```
 
-Ожидание: **236 passed, 2 skipped**.
+Ожидаемые результаты `pytest -m "not k8s and not e2e"`:
+
+| Артефакты в `models/` | Ожидание |
+| --- | --- |
+| Production (instructor pack / verified SHA256) | **236 passed, 2 skipped** |
+| Synthetic (`generate_synthetic_artifacts.py`) | **232 passed, 6 skipped** (часть production-parity тестов пропускается) |
 
 ### B. API локально (~1 мин)
+
+Требуются артефакты в `models/` (production pack или synthetic).
 
 ```powershell
 uvicorn src.api.main:app --host 127.0.0.1 --port 8000
@@ -63,7 +103,7 @@ docker compose up -d --build
 docker compose down
 ```
 
-### D. Observability (отдельно, после down Compose при нехватке RAM)
+### D. Observability (отдельно, после `docker compose down` при нехватке RAM)
 
 ```powershell
 docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d --build --scale frontend=0
@@ -76,7 +116,7 @@ docker compose -f docker-compose.yml -f docker-compose.observability.yml down
 
 ```powershell
 python -m src.monitoring.cli demo
-# artifacts/monitoring/; production registry не меняется
+# артефакты: artifacts/monitoring/; production registry не меняется
 ```
 
 ### F. Terraform без облака
@@ -86,9 +126,9 @@ terraform -chdir=infra/terraform/environments/staging init -backend=false
 terraform -chdir=infra/terraform/environments/staging validate
 ```
 
-**Не выполнять** `terraform apply`.
+**Не выполнять** `terraform apply` в этом сценарии.
 
-### G. Остановка всего
+### G. Остановка сервисов
 
 ```powershell
 docker compose down
@@ -99,7 +139,7 @@ docker compose -f docker-compose.yml -f docker-compose.ab.e2e.yml down
 
 ---
 
-## 4. Что открыть без запуска
+## 5. Что открыть без запуска
 
 | Тема | Файл |
 | --- | --- |
@@ -112,8 +152,8 @@ docker compose -f docker-compose.yml -f docker-compose.ab.e2e.yml down
 
 ---
 
-## 5. Безопасность при проверке
+## 6. Безопасность
 
 - Не коммитить `.env` / `*.tfvars` / `backend.hcl` с ключами.
-- Credentials Terraform — только env, не CLI `access_key`/`secret_key`.
-- Не требовать создание платных ресурсов Yandex Cloud для приёмки документации.
+- Credentials Terraform — только через переменные окружения, не через CLI `access_key` / `secret_key`.
+- Для локальной проверки документации **не** создавать платные ресурсы Yandex Cloud.

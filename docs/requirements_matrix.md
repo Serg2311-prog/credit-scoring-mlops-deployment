@@ -70,7 +70,7 @@
 | 3.1 | Multi-stage Docker | да | API/FE/models/dvc | `docker/Dockerfile.*` | compose build | `docs/docker_deployment.md` | VERIFIED_LOCAL | — |
 | 3.2 | Compose API+frontend | да | compose | `docker-compose.yml` | smoke | stage3 report | VERIFIED_LOCAL | — |
 | 3.3 | DVC in Docker | да | dvcdata image | `docker/Dockerfile.dvcdata` | build/repro | `dvc.yaml` | VERIFIED_LOCAL | не в runtime API |
-| 3.4 | K8s Deployment/Service/Ingress | да | Kustomize | `k8s/` | kind E2E | `docs/kubernetes_local_deployment.md` | VERIFIED_LOCAL | cloud **app** deploy ABORT_CLOUD_APP |
+| 3.4 | K8s Deployment/Service/Ingress | да | Kustomize | `k8s/` | kind E2E | `docs/kubernetes_local_deployment.md` | VERIFIED_LOCAL | cloud **app** deploy не выполнялось |
 | 3.5 | ConfigMaps/Secrets | да | manifests | `k8s/base/` | apply local | stage3 | VERIFIED_LOCAL | examples only for secrets |
 | 3.6 | Rolling update | да | strategy | overlays | manifests | k8s overlays | VERIFIED_LOCAL | — |
 
@@ -144,7 +144,7 @@
 | Тема | Статус |
 | --- | --- |
 | `cloud-experiment` terraform apply + live remote state + MK8s worker | **VERIFIED_CLOUD_INFRA** then destroy verified (Block 11) |
-| Cloud ML app deploy (GHCR / inference / HPA / NP+/−) | **ABORT_CLOUD_APP** (local images only) |
+| Cloud ML app deploy (GHCR / inference / HPA / NP+/−) | **не выполнялось** (local images only) |
 | staging/production terraform apply | IMPLEMENTED_NOT_EXECUTED |
 | GPU node group runtime | IMPLEMENTED_NOT_EXECUTED |
 | Istio Blue-Green / Canary | OPTIONAL / NOT_IMPLEMENTED |

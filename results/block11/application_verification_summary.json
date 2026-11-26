@@ -1,6 +1,6 @@
 {
   "block": "11.13",
-  "stage": "ABORT_CLOUD_APP_STOP_GATE_DESTROY",
+  "stage": "CLOUD_APP_NOT_DEPLOYED_THEN_DESTROY",
   "git_branch": "cloud-deployment",
   "ghcr_owner": "serg2311-prog",
   "repo_private": true,

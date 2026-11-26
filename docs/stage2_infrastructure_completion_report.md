@@ -20,7 +20,7 @@
 | NOT_EXECUTED | Policy / no credentials |
 | BLOCKED | Attempted but unsafe / impossible here |
 
-## 1. TZ requirements (Stage 2, 7 pts)
+## 1. TZ requirements (Stage 2)
 
 | Requirement | Mandatory | After Block 6 | Verification |
 | --- | --- | --- | --- |

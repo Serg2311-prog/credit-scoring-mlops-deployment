@@ -2,7 +2,7 @@
 
 **Baseline (audit):** `bdb8b43cf3a20fb58eaa8da7997862d5ac748b5a`
 **Tree under review:** baseline + Block 10.1/10.2 remediations (**uncommitted**)
-**No commit/push. No retrain. No terraform apply.**
+**No retrain. No terraform apply.**
 
 ## 1. Scope
 
@@ -99,7 +99,7 @@ Historical `0.7720` / `0.7736` **not overwritten**. ORT-version difference is a 
 
 **Deleted:** none of protected evidence; removed dead API drift gauges / e2e exporter duplicate / dead env.
 
-**Do not commit:** `artifacts/submission/instructor_model_pack.zip`, TZ extract, credentials, absolute-path backups.
+**Keep out of Git:** `artifacts/submission/instructor_model_pack.zip`, TZ extract, credentials, absolute-path backups.
 
 ## 10. Git snapshot (at acceptance write-up)
 

@@ -23,12 +23,11 @@
 | GitHub PAT revocation | NOT_ASSERTED |
 | Local shell credential wipe (`YC_TOKEN`, AWS keys, kubeconfig, docker login) | NOT_ASSERTED |
 
-## Agent actions
+## Documentation closeout actions
 
-- No `terraform apply` / `destroy` by agent in Block 11.14
+- No `terraform apply` / `destroy` executed in Block 11.14 documentation closeout (operator-only cloud ops)
 - No new cloud resources created
 - No image publish
-- No git commit / push / merge
 
 ## Residual local sensitive files (gitignored — EXCLUDE_FROM_GIT)
 

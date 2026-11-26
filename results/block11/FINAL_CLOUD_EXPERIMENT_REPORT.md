@@ -1,7 +1,7 @@
 # FINAL_CLOUD_EXPERIMENT_REPORT — Block 11
 
 **Date:** 2026-11-26
-**Closure:** cloud infrastructure executed → verified → destroyed; cloud application **not** deployed (`ABORT_CLOUD_APP`).
+**Closure:** cloud infrastructure executed → verified → destroyed; cloud application **not** deployed.
 
 ## 1. Verdict
 
@@ -15,7 +15,7 @@ Cloud infrastructure experiment in Yandex Cloud was **executed, runtime-verified
 | Statically validated | fmt/validate/kustomize/unit |
 | Locally runtime verified | Compose/kind/local smoke |
 | Cloud infrastructure runtime verified | Real YC resources observed |
-| Cloud application not deployed | ABORT_CLOUD_APP |
+| Cloud application not deployed | Confirmed (no GHCR publish / no cloud app apply) |
 | Destroy verified | Operator YC CLI empty checks |
 | Not verified | Explicitly unproven |
 
@@ -47,7 +47,7 @@ Cloud infrastructure experiment in Yandex Cloud was **executed, runtime-verified
 
 | Fact | Status |
 |------|--------|
-| Cloud app deployed | **No** — ABORT_CLOUD_APP |
+| Cloud app deployed | **No** |
 | Abort reasons | Residual API Trivy HIGH on experimental trixie image; `docker login ghcr.io` denied (root cause not established); experiment timebox |
 | Local API / models / frontend images built | Locally runtime verified |
 | Real protected ONNX + preprocessor (not synthetic CI) | Locally runtime verified |

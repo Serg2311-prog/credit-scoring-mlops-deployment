@@ -1,8 +1,8 @@
 # Block 7 / Stage 1 — Model Optimization & Benchmarking Completion Report
 
 **Date:** 2026-11-24
-**Scope:** TZ Stage 1 (5 pts) — NN, ONNX, quantization, CPU/GPU benchmarking, API load, production sizing
-**Constraint:** production ONNX / preprocessor / `model_registry.json` / `dvc.lock` **unchanged**; no retrain; no commit/push; no Block 8
+**Scope:** Stage 1 — NN, ONNX, quantization, CPU/GPU benchmarking, API load, production sizing
+**Constraint:** production ONNX / preprocessor / `model_registry.json` / `dvc.lock` **unchanged**; no retrain
 
 Status legend: `IMPLEMENTED` · `VERIFIED_STATIC` · `VERIFIED_LOCAL` · `VERIFIED_HOSTED` · `VERIFIED_GPU` · `NOT_EXECUTED` · `BLOCKED_NO_GPU`
 
@@ -147,10 +147,6 @@ Utilities: `scripts/block7_eval.py`, `scripts/api_load_test.py`, `tests/nn/*`.
 5. Concurrent levels 16 skipped deliberately under low free RAM.
 
 ---
-
-## 10. Preliminary score (Stage 1 / 5 pts)
-
-Estimated **5 / 5**: Stage-1 model prep/optimization complete — NN, ONNX, quant, CPU/API benches, and hardened Colab GPU `VERIFIED_GPU`; production artifacts unchanged. Final grade is instructor’s.
 
 ## Historical Stage 1 audit snapshot (2026-11-22)
 

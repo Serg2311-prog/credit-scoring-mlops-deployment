@@ -92,7 +92,7 @@
 | README | [`README.md`](../README.md) |
 | Final report | [`docs/final_project_report.md`](final_project_report.md) |
 | Requirements matrix | [`docs/requirements_matrix.md`](requirements_matrix.md) |
-| Quick review | [`docs/quick_review.md`](quick_review.md) |
+| Краткое руководство по запуску и проверке | [`docs/quick_review.md`](quick_review.md) |
 | Defense guide | [`docs/defense_guide.md`](defense_guide.md) |
 | Architecture | [`docs/architecture/overview.md`](architecture/overview.md) |
 
