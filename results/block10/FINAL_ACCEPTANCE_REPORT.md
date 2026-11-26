@@ -4,15 +4,9 @@
 **Tree under review:** baseline + Block 10.1/10.2 remediations (**uncommitted**)
 **No commit/push. No retrain. No terraform apply.**
 
-## 1. Score timeline (resolved contradiction)
+## 1. Scope
 
-| Phase | Score | Status |
-| --- | ---: | --- |
-| Block 10 @ `bdb8b43` | **48/50** | READY_WITH_MINOR_LIMITATIONS |
-| Block 10.1 after fixes (proposed) | 50/50 | pending runtime verify |
-| **Block 10.2 verified** | **49/50** most likely (min 48, max 50) | **READY_FOR_SUBMISSION** |
-
-See `FINAL_SCORECARD.md`. Historical findings retained in `FINDINGS.md` with statuses.
+Block 10.2 technical acceptance after remediations. Official grading is by the mentor only. Historical findings: `FINDINGS.md`.
 
 ## 2. Quantized ROC-AUC proof
 
@@ -121,4 +115,3 @@ git diff --stat HEAD
 ## Verdict
 
 **READY_FOR_SUBMISSION** with documented limitations.
-**Most likely grade: 49/50.** Not automatically 50/50.

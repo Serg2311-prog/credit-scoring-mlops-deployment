@@ -25,7 +25,7 @@ Historical finding bodies below are **unchanged** from Block 10. Statuses update
 | F-P3-04 | FIXED_AND_VERIFIED |
 | F-P3-05 | ACCEPTED_LIMITATION |
 
-Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
+Also see `FINAL_ACCEPTANCE_REPORT.md`.
 
 ---
 
@@ -45,7 +45,6 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | Location | `README.md` L113–L115, L124–L126; `requirements-dev.txt` L1–L5 |
 | Reproduce | Clean checkout `bdb8b43` → `pip install -r requirements-dev.txt` → `pytest -m "not k8s and not e2e"` → `ModuleNotFoundError: numpy` |
 | Evidence | Clean clone `%TEMP%\cs-mlops-audit-bdb8b43`; CI Python workflow installs full set |
-| Score impact | Docs −1 (most likely 4/5) |
 | Fix | Document `pip install -r requirements.txt -r requirements-dev.txt -r requirements-api.txt -r requirements-nn.txt` (match CI) |
 | Effort | 15–30 min |
 | Before submit? | **Recommended** (not strictly blocking if teacher uses CI as oracle) |
@@ -57,8 +56,7 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | Description | Tracked under `models/`: only `.gitkeep` + `model_registry.json`. ONNX/PT/preprocessor are local/gitignored and **not** DVC outs. Clean clone cannot run production-parity inference without external artifacts. Specialist ML audit treats “clone → serve production ONNX” as hard fail for that criterion; for academic submission this remains **P1** (synthetic CI path + instructor pack mitigate), not a TZ submission P0. |
 | Location | `models/` tracked listing; `.gitignore`; `dvc.yaml`; clone inventory |
 | Reproduce | `git archive` / clean clone → `Test-Path models/credit_scoring_nn.onnx` → False |
-| Evidence | Clone HEAD files; SHA256 of local production artifacts recorded in `audit_baseline.json`; cross-check [ML audit](856377ca-2358-4913-aa9c-b882c6f0db6c) |
-| Score impact | Reproducibility limitation; Docs/Model serving path (not automatic −points if synthetic CI path + honesty accepted) |
+| Evidence | Clone HEAD files; SHA256 of local production artifacts recorded in `audit_baseline.json`; cross-check ML audit |
 | Fix | Release asset / encrypted instructor package / documented DVC remote with read-only token; keep SHA256SUMS in repo |
 | Effort | 2–4 h |
 | Before submit? | **Provide instructor package separately**; do not silently copy into Git without policy review |
@@ -70,8 +68,7 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | Description | Experimental INT8 quality is documented as both **0.7720** and **0.7736** with different confusion matrices (TN/FP 3630/1043 vs 3622/1051). Not rounding noise. FP32 ~0.7742 and flip rate ~2.18% are stable; champion selection unaffected. |
 | Location | `docs/model_benchmark.md` §5 vs §6.1; `artifacts/onnx_quantization.json` / quality JSON vs `artifacts/benchmark_cpu.json`; `docs/final_project_report.md` L46; `docs/defense_guide.md` |
 | Reproduce | Diff quoted quant ROC-AUC and confusion cells across those files |
-| Evidence | [ML audit](856377ca-2358-4913-aa9c-b882c6f0db6c) |
-| Score impact | Reinforces Docs −1; Model criterion stays 5 (conversion/parity/champion path sound) |
+| Evidence | ML audit |
 | Fix | Pick one canonical quant eval artifact; regenerate conflicting tables from it |
 | Effort | 1–2 h |
 | Before submit? | **Recommended** before defense Q&A on metrics |
@@ -83,8 +80,7 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | Description | `ci-python`, `ci-docker`, `ci-kubernetes`, `ci-infrastructure`, `ci-airflow-dag`, `release-candidate` inherit repo default GITHUB_TOKEN scope. CD/orchestrator workflows do set least-privilege `permissions:`. |
 | Location | `.github/workflows/ci-*.yml` (no top-level `permissions:`); contrast `cd-staging.yml` / `ci-cd.yml` |
 | Reproduce | Open workflow YAML; search `^permissions:` |
-| Evidence | [Infra/CI audit](0e6df3f3-0580-4454-b60e-e22a9e92a611) |
-| Score impact | Security hygiene P1; CI/CD score kept at 5 (automation/strategies/error handling still met; CD fail-closed present) |
+| Evidence | Infra/CI audit |
 | Fix | Add `permissions: contents: read` (and minimal extras) to each CI workflow |
 | Effort | 30–60 min |
 | Before submit? | Recommended |
@@ -99,7 +95,6 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | README table shows Baseline `0df191a`; actual HEAD/origin is `bdb8b43`. |
 | Location | `README.md` L9 |
-| Score impact | Docs consistency (folded into −1 with F-P1-01) |
 | Fix | Update to `bdb8b43` |
 | Effort | 5 min |
 | Before submit? | Recommended |
@@ -110,7 +105,6 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | Scaling via fixed replicas + rollingUpdate; no HPA. Cluster autoscaling marked OPTIONAL/NOT_IMPLEMENTED in requirements matrix. |
 | Location | `k8s/overlays/production/patch-resources.yaml` (`replicas: 2`); matrix row 7.4 |
-| Score impact | Docker/K8s most likely 7/8 |
 | Fix | Optional HPA manifest for API Deployment |
 | Effort | 1–2 h |
 | Before submit? | Optional |
@@ -121,7 +115,6 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | Manifests present; kindnet enforcement explicitly undocumented as unproven. |
 | Location | `k8s/` NetworkPolicy resources; `README.md` L176 |
-| Score impact | Included in K8s −1 band |
 | Fix | Calico/Cilium demo or cloud CNI evidence |
 | Effort | 2–6 h |
 | Before submit? | No (honest disclosure sufficient) |
@@ -132,7 +125,6 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | Pattern matches for personal path substrings in 2 tracked files (sanitizer / stage script). Not credentials. |
 | Location | `scripts/block8/sanitize_block8_evidence.py`; `scripts/run_stage1.ps1` |
-| Score impact | P2 hygiene |
 | Fix | Keep path patterns generic; ensure no live personal absolute paths in defaults |
 | Effort | 30–60 min |
 | Before submit? | Optional |
@@ -143,7 +135,6 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | Honest: no Yandex Cloud production. Static validation EXECUTED_PASS. Remote state/locking example-only (`backend.tf.example`). |
 | Location | README L10–L11; `infra/terraform/` |
-| Score impact | Cloud confirmed-min 6 if grader requires live apply; most likely still 7 |
 | Fix | Optional sandboxed apply with destroyed resources + evidence |
 | Effort | High |
 | Before submit? | Not required by optional marking / honesty |
@@ -154,8 +145,7 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | API process exposes `ml_data_drift_*` gauges that stay at 0 unless scraped from `drift-metrics-exporter`. Unfiltered PromQL can look like “no drift”. Grafana model-quality dashboard filters `job="drift-metrics-exporter"`. Exporter itself fail-closes with 503 (does not invent zeros). |
 | Location | `src/api/metrics.py`; `monitoring/grafana/dashboards/model_quality_drift.json`; `results/block8/prometheus_ml_metrics_by_job.json` |
-| Evidence | [Monitoring audit](5cd777d1-a2e3-4e52-8ece-66e838477de3) |
-| Score impact | Monitoring stays 8 (alerting/logging/metrics complete; operational footgun) |
+| Evidence | Monitoring audit |
 | Fix | Do not register unset gauges on API, or document required job filter in runbook more prominently |
 | Effort | 1–2 h |
 | Before submit? | Optional (disclose on defense) |
@@ -166,8 +156,7 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | Base `docker-compose.observability.yml` / `prometheus.yml` do not scrape exporter; continuous drift panels need `docker-compose.observability.e2e.yml`. |
 | Location | `docker-compose.observability.e2e.yml`; `monitoring/prometheus/prometheus.e2e.yml` vs `prometheus.yml` |
-| Evidence | [Monitoring audit](5cd777d1-a2e3-4e52-8ece-66e838477de3) |
-| Score impact | None if E2E evidence accepted; base-stack drift scrape = not always-on |
+| Evidence | Monitoring audit |
 | Fix | Optional scrape job in base prometheus for local demos |
 | Effort | 1 h |
 | Before submit? | Optional |
@@ -178,8 +167,7 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | K8s NP `policyTypes: [Ingress]` only (no egress deny). Terraform node templates use `nat = true`; SG egress 0.0.0.0/0 noted as harden-later. |
 | Location | `k8s/base/networkpolicy.yaml`; `infra/terraform/modules/kubernetes/main.tf`; `modules/network/main.tf` |
-| Evidence | [Infra/CI audit](0e6df3f3-0580-4454-b60e-e22a9e92a611) |
-| Score impact | Folded into Cloud/K8s residual risk; scores unchanged |
+| Evidence | Infra/CI audit |
 | Fix | Egress NetworkPolicy + tighten SG/NAT if cloud apply ever runs |
 | Effort | 2–4 h |
 | Before submit? | Optional (cloud NOT_EXECUTED) |
@@ -190,8 +178,7 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | RF metrics imported from prior project JSON (not re-trained in-repo). MLP early-stop tracks best epoch then scratch-retrains that many epochs on full train (anti-leakage) — final weights ≠ exact best-val checkpoint. |
 | Location | `artifacts/baseline_metrics.json`; `src/nn/train_nn.py` early-stop/retrain loop |
-| Evidence | [ML audit](856377ca-2358-4913-aa9c-b882c6f0db6c) |
-| Score impact | None on TZ model axis if honesty preserved (docs admit historical RF) |
+| Evidence | ML audit |
 | Fix | Optional same-pipeline RF re-run; optional best-state_dict export for research reproducibility |
 | Effort | 2–6 h |
 | Before submit? | No |
@@ -206,7 +193,6 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | Entrypoint defaults local web user password to `admin` when env unset. File comments “NOT production”. |
 | Location | `scripts/airflow/entrypoint.sh` L16–L17 |
-| Score impact | None if framed as local demo |
 | Fix | Require env var without default in any shared environment |
 | Effort | 15 min |
 
@@ -224,7 +210,6 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | Some sections use repetitive verification tables; not proof of AI authorship. Overall honesty about limitations is strong. |
 | Examples | Evidence index tables; repeated `VERIFIED_*` taxonomies |
-| Score impact | None on TZ axes if technically accurate |
 
 ### F-P3-04 — Dead `ENABLE_E2E_LOG_PROBE` env in AB overlay
 
@@ -232,7 +217,7 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | Compose sets env flag ignored by Settings (`extra=ignore`). Probe remains absent from prod API. |
 | Location | `docker-compose.ab.e2e.yml`; `src/api/settings.py` |
-| Evidence | [Monitoring audit](5cd777d1-a2e3-4e52-8ece-66e838477de3) |
+| Evidence | Monitoring audit |
 
 ### F-P3-05 — API/models base images not digest-pinned; Airflow outside Trivy matrix
 
@@ -240,7 +225,7 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 | --- | --- |
 | Description | Frontend/dvc digest-pinned; API/models use floating tags. Airflow image not in `ci-docker` Trivy matrix. |
 | Location | `docker/Dockerfile.api`, `Dockerfile.models`; `.github/workflows/ci-docker.yml` |
-| Evidence | [Infra/CI audit](0e6df3f3-0580-4454-b60e-e22a9e92a611) |
+| Evidence | Infra/CI audit |
 
 ---
 
@@ -248,11 +233,10 @@ Also see `BLOCK10_1_REMEDIATION_REPORT.md`, `FINAL_ACCEPTANCE_REPORT.md`.
 
 | Specialist | ID | Delta absorbed |
 | --- | --- | --- |
-| ML correctness | [ML audit](856377ca-2358-4913-aa9c-b882c6f0db6c) | F-P1-02 nuance, F-P1-03, F-P2-09 |
-| Infra / Docker / TF / GHA | [Infra/CI audit](0e6df3f3-0580-4454-b60e-e22a9e92a611) | F-P1-04, F-P2-08, F-P3-05 |
-| Monitoring / Drift / AB / Airflow | [Monitoring audit](5cd777d1-a2e3-4e52-8ece-66e838477de3) | F-P2-06, F-P2-07, F-P3-04; Block8 **46/46** key files present |
+| ML correctness | ML audit | F-P1-02 nuance, F-P1-03, F-P2-09 |
+| Infra / Docker / TF / GHA | Infra/CI audit | F-P1-04, F-P2-08, F-P3-05 |
+| Monitoring / Drift / AB / Airflow | Monitoring audit | F-P2-06, F-P2-07, F-P3-04; Block8 **46/46** key files present |
 
-**Score after merge:** still **48/50** most likely; status **READY_WITH_MINOR_LIMITATIONS**. No new submission P0.
 
 ---
 

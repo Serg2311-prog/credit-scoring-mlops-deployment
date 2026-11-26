@@ -98,3 +98,7 @@ See `DESTROY_CHECKLIST.md`.
 ## Production
 
 **No production Terraform changes.** Module variable additions are backward-compatible (defaults preserve prior behavior).
+
+## Historical readiness snapshot (merged from CLOUD_READINESS_REPORT)
+
+Pre-apply readiness (Block 11.5–11.7.1) noted: experiment worker fills 4 vCPU / 16 GB / 64 GiB quota; `deploy_policy.max_expansion=0`; public IP / MK8s quotas must be checked in console; state locking on Yandex Object Storage NOT_VERIFIED; experiment subnet planned as `10.40.0.0/24` (ru-central1-a). Authoritative post-destroy status: `FINAL_CLOUD_EXPERIMENT_REPORT.md`.

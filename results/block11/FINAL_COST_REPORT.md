@@ -1,27 +1,29 @@
-# FINAL_COST_REPORT — Block 11.14
+# FINAL_COST_REPORT — Block 11 cloud experiment
 
-## Preliminary operator UI figures
+## Confirmed billing (operator, 2026-11-26)
 
 | Item | Value | Classification |
 |------|------:|----------------|
-| Initial grant | 4000 RUB | Operator-displayed |
-| Remaining grant (displayed) | 3950 RUB | Operator-displayed |
-| Grant consumption (displayed) | 50 RUB | Operator-displayed |
-| Monetary balance (displayed) | 0 RUB | Operator-displayed |
-| Experiment window | Within planned ~4 hours | Operator-confirmed |
+| Platform | Yandex Managed Kubernetes v1.34.1 (experiment) | Confirmed |
+| Infrastructure | Created, verified, destroyed | Confirmed |
+| ML application in cloud | Not deployed | Confirmed |
+| Consumption | **56,34 ₽** | Operator billing confirmation (2026-11-26) |
+| Covered by grant | **56,34 ₽** | Operator billing confirmation (2026-11-26) |
+| Amount due | **0,00 ₽** | Operator billing confirmation (2026-11-26) |
+| Temporary experiment SAs in folder | Absent | Operator-confirmed |
+| Temporary GitHub PAT (classic tokens list) | Absent | Operator-confirmed |
+| Full local credential wipe | **Not confirmed** | Limitation |
 
-## Distinctions (required)
+**Date of confirmation:** 2026-11-26.
 
-1. **Calculated / estimated cost** — planning estimates in `COST_ESTIMATE.md` / historical `docs/cloud_cost_estimate.md` (Stage 3B was 0 RUB because no apply then).
-2. **Displayed grant consumption** — **50 RUB** shown in UI at closure — **preliminary**, not a billing invoice.
-3. **Final accruals / personal charges** — **NOT VERIFIED**. Do not claim final spend = 50 RUB or zero personal billing without a billing statement.
+Absence of **future** accruals is **not** guaranteed (billing lag / residual SKUs outside the verified window).
 
-## Claims intentionally avoided
+## Distinctions
 
-- Final billed amount = 50 RUB
-- No personal monetary charges
-- Exact per-resource cost breakdown from YC billing export
+1. **Planning estimates** — `COST_ESTIMATE.md` and historical `docs/cloud_cost_estimate.md` (Stage 3B recorded 0 ₽ because no apply then).
+2. **Earlier UI snapshot (Block 11.14)** — displayed grant burn ≈ 50 ₽ was **preliminary UI only**, superseded by the 2026-11-26 confirmation above.
+3. **Per-resource YC invoice export** — not attached; do not invent line-item costs.
 
 ## Conclusion
 
-Experiment closed inside the grant-funded timebox with **displayed** grant burn ≈ 50 RUB. Treat as **indicative UI** until billing confirms.
+Experiment closed inside the grant-funded window. Confirmed consumption **56,34 ₽**, fully grant-covered, **0,00 ₽** due as of **2026-11-26**. Treat later billing statements as authoritative if they differ.

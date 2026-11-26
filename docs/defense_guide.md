@@ -74,11 +74,11 @@
 3. **Зачем quant, если не лучше?**
    Размер/latency эксперименты и A/B challenger; не silent replace.
 
-4. **Почему не apply Terraform?**
-   Политика курса/стоимость; код + validate достаточны; apply — отдельное решение.
+4. **Делали ли Terraform apply?**
+   Да, однократно для `cloud-experiment` (Block 11): live Remote State + MK8s v1.34.1, затем **destroy**. Staging/production apply **не** выполнялись.
 
 5. **Есть ли remote state?**
-   Examples есть; live bucket/state **не** создавались.
+   Examples есть. Для эксперимента Object Storage remote state был **живым**, затем bucket удалён вместе с инфраструктурой.
 
 6. **Как доказан CI?**
    GitHub Actions workflows SUCCESS (python/docker/infra/k8s/airflow + orchestrator).
@@ -132,4 +132,4 @@
 **Block 11 CLOUD_INFRA:** Remote State + apply + MK8s v1.34.1 + Ready worker + Calico + Metrics Server — verified; **destroy verified**; SG migration (12 rules) done.
 **CLOUD_APP:** `ABORT_CLOUD_APP` (GHCR login denied + residual API Trivy HIGH + timebox).
 **Still open / not claimed:** cloud inference/HPA/NP enforcement/monitoring/rollback; production apply; GPU cloud nodes; GPU INT8/HTTP; kind NP enforcement; optional Seldon/Istio/Redis; Airflow only local Docker E2E.
-Финальные отчёты: `results/block11/FINAL_*.md`.
+Финальные отчёты: `results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`, `FINAL_COST_REPORT.md`, `FINAL_SECURITY_REVIEW.md`, `FINAL_CLEANUP_REPORT.md`, `FINAL_REGRESSION_REPORT.md`.

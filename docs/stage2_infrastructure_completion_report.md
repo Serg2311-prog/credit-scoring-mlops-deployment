@@ -74,7 +74,7 @@ GPU example workload (not applied): `k8s/examples/gpu-workload/`.
 | NetworkPolicy traffic probes | **BLOCKED** (kindnet + low RAM) |
 | `terraform apply` / live remote | **NOT_EXECUTED** |
 
-See also [`docs/block61_infrastructure_acceptance.md`](block61_infrastructure_acceptance.md).
+> **Historical note:** this Stage 2 / Block 6 completion predates the Block 11 cloud-experiment apply→destroy. Current cloud status: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
 
 ## 5. Remote state honesty
 

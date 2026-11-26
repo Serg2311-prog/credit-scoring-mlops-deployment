@@ -4,7 +4,7 @@
 
 **Не поднимайте одновременно** observability + Airflow + kind на 8 GB.
 
-Baseline: commit `0df191a`.
+Baseline релиза: commit `5527a55` / tag `v1.0.0`.
 
 ---
 
@@ -43,7 +43,7 @@ python -m black --check src tests scripts/ci airflow_home/dags
 python -m flake8 src tests scripts/ci airflow_home/dags
 ```
 
-Ожидание: порядка **231 passed, 2 skipped**.
+Ожидание: **236 passed, 2 skipped**.
 
 ### B. API локально (~1 мин)
 

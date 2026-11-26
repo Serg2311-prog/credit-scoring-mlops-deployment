@@ -1,6 +1,6 @@
 # Docker Deployment — Inference API
 
-**Block 11.15 delivery:** `docker/Dockerfile.api` restored to **exact `main` content** (`python:3.12-slim-bookworm`). The experimental trixie remediation is **not** part of the final delivery; historical scan results remain in [`results/block11/IMAGE_BUILD_REPORT.md`](../results/block11/IMAGE_BUILD_REPORT.md) (53 HIGH / 0 CRITICAL without FixedVersion on the experiment image). Merge-prep Trivy gate (`CRITICAL,HIGH` + `ignore-unfixed`, matching `ci-docker.yml`): API/models/frontend **PASS**. Models image keeps Alpine openssl bump (`Dockerfile.models`). See [`results/block11/MERGE_READINESS_REPORT.md`](../results/block11/MERGE_READINESS_REPORT.md).
+**Delivery image policy:** `docker/Dockerfile.api` is `python:3.12-slim-bookworm` (restored from experiment). Experimental trixie remediation is **not** in the final delivery; historical scan results: [`results/block11/IMAGE_BUILD_REPORT.md`](../results/block11/IMAGE_BUILD_REPORT.md) (53 HIGH / 0 CRITICAL, FixedVersion empty on the experiment image). Merge-prep Trivy gate (`CRITICAL,HIGH` + `ignore-unfixed`, matching `ci-docker.yml`): API/models/frontend **PASS**. Models image keeps Alpine openssl bump (`Dockerfile.models`).
 
 ## Image
 
@@ -52,3 +52,7 @@ Current probes map to:
 - liveness → `GET /health/live`
 - readiness → `GET /health/ready`
 - metrics scrape → `GET /metrics`
+
+## Historical Stage 2 validation snapshot (2026-11-22)
+
+Local FastAPI + Compose smoke PASS on production ONNX FP32; Kubernetes/Terraform/Airflow/cloud were out of scope for that stage report.

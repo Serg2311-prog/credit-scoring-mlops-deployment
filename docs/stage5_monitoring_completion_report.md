@@ -39,3 +39,7 @@
 2. Live Kubernetes cloud monitoring: **NOT_EXECUTED** (no paid cluster); local YAML parse only.
 3. No cloud notification channels (local webhook sink only).
 4. ~~API process still registers unset `ml_data_drift_*` gauges as 0~~ — **fixed in Block 10.1**: API no longer emits drift gauges; exporter is on the base observability stack with `ml_monitoring_artifact_status`.
+
+## Historical Stage 5 validation snapshot (2026-11-22)
+
+Initial observability stack validation (Prometheus/Grafana/Loki/Alloy/Alertmanager) preceded Block 8/8.1 runtime evidence under `results/block8/`.

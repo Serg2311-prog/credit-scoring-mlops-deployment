@@ -65,3 +65,7 @@ Evidence: `results/block8/airflow_trigger_decisions.json` — stable→skipped; 
 | Controlled data drift | `detected=true`, share≈`0.375` |
 | Concept/perf signal | `degradation_signal=true`, `confirmed_concept_drift=false` unless known synthetic C |
 | Offline A/B | challenger comparison; **auto_promote=false** |
+
+## Historical Stage 6 validation snapshot (2026-11-22)
+
+Evidently `0.7.23` + pandas 2.2.x compatibility confirmed; full drift/A/B runtime evidence is in Block 8 (`results/block8/`) and this completion report.

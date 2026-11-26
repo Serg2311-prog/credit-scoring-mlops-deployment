@@ -52,7 +52,7 @@ Both ranges were already allowed together on the node SG, so runtime allowlist r
 ## What was NOT done
 
 - No SG/IAM/VPC/K8s changes in the cloud
-- No state migration (see `STATE_MIGRATION_PLAN.md`)
+- No state migration in this remediation step (migration executed later in experiment; see `BLOCK11_ABORT_AND_CLEANUP.md` for 26-address / 12-rule inventory)
 - No image publish / app deploy
 - No model changes
 
@@ -86,4 +86,4 @@ Intermittent `net/http: TLS handshake timeout` observed on `kubectl` against the
 
 ## Next
 
-Operator runs `scripts/block11/Invoke-SgStateMigration.ps1` per updated `STATE_MIGRATION_PLAN.md`. Apply only after plan gate PASS and separate approval.
+Operator runs `scripts/block11/Invoke-SgStateMigration.ps1` with plan gate PASS and separate approval. Post-migration inventory: `BLOCK11_ABORT_AND_CLEANUP.md`.

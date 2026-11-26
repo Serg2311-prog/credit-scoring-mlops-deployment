@@ -1,7 +1,7 @@
 # Индекс доказательств (Evidence Index)
 
-Относительные ссылки от корня репозитория. Baseline документации: commit `0df191a`.
-Оригинальные GPU/Block 8 evidence **не изменялись** в Block 9.
+Относительные ссылки от корня репозитория. Baseline релиза: commit `5527a55` / tag `v1.0.0`.
+Оригинальные GPU/Block 7–8 machine-readable evidence сохраняются без renormalize.
 
 ---
 
@@ -45,7 +45,7 @@
 | --- | --- | --- | --- | --- | --- |
 | Python quality | pytest/black/flake8 | [`docs/cicd_pipeline.md`](cicd_pipeline.md) | Actions runs | `scripts/ci/check.ps1` | `ci-python` |
 | Docker+Trivy | workflow | stage4 | Actions | push/PR | `ci-docker` |
-| Orchestrator 5/5 | `ci-cd.yml` | stage4 completion | Actions | push main/PR | `ci-cd` |
+| Five primary CI + orchestrator | `ci-*.yml`, `ci-cd.yml` | [`cicd_pipeline.md`](cicd_pipeline.md) | Actions on `5527a55` | push main/PR | `ci-*` |
 | CD dry-run | workflows | stage4/5 | local_cd_verify | `scripts/ci/local_cd_verify.ps1` | `cd-staging` |
 
 ---

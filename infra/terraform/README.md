@@ -56,7 +56,7 @@ terraform -chdir=infra/terraform/modules/kubernetes test
 ```
 
 `cloud-experiment` locks worker size to confirmed quotas (4 vCPU / 16 GB / 64 GiB), forces GPU/autoscaling off, sets `deploy_policy.max_expansion=0`, master min preset `s-c2-m8` (floor, not max), and disables ml-reader/registry-pusher SAs.
-Network SG rules are **rule-resources only** (Block 11.9.1) — do not reintroduce inline+separate dual management. Migration completed in experiment; plan/history: `results/block11/STATE_MIGRATION_PLAN.md`.
+Network SG rules are **rule-resources only** (Block 11.9.1) — do not reintroduce inline+separate dual management. Migration completed in experiment; engineering notes: `results/block11/RUNTIME_REMEDIATION_REPORT.md`, inventory in `results/block11/BLOCK11_ABORT_AND_CLEANUP.md`.
 
 ## Forbidden without explicit approval
 

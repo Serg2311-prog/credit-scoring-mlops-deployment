@@ -112,12 +112,12 @@ cr.yandex/<registry-id>/credit-scoring-models:<model-version>
 ## Terraform state
 
 1. Отдельный private bucket на окружение (staging ≠ production key/bucket).
-2. S3-compatible backend (`storage.yandexcloud.net`) — `backend.tf.example` + `backend.hcl.example` для `terraform init -backend-config=backend.hcl` (example only; live remote **NOT_EXECUTED**).
+2. S3-compatible backend (`storage.yandexcloud.net`) — `backend.tf.example` + `backend.hcl.example` для `terraform init -backend-config=backend.hcl`. **Block 11:** live Object Storage remote state for `cloud-experiment` was used, then the state bucket was **deleted** after destroy. Staging/production live remote state remains **NOT_EXECUTED**.
 3. Отдельный SA только на state bucket (минимум прав); keys via env `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`.
 4. Versioning + SSE/KMS на state bucket (when creating bucket manually).
 5. **Locking:** `use_lockfile` exists in Terraform 1.17 but Yandex compatibility is **NOT_VERIFIED** (not enabled). YDB/dynamodb_table path is deprecated ≥1.11 and not configured. Serialize applies.
 6. Не коммитить `*.tfstate`, `*.tfvars`, `backend.hcl`, `.terraform/`.
-7. Block 6.1 notes: [`docs/block61_infrastructure_acceptance.md`](block61_infrastructure_acceptance.md).
+7. Cloud experiment closeout: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
 
 ## Credentials
 
@@ -154,3 +154,7 @@ $tf = ".\tools\terraform.exe"
 - Node NAT включён для исходящего доступа.
 - Точные цены master MK8s нужно перепроверять в калькуляторе/прайс-листе перед apply.
 - TFLint/Checkov/Trivy не устанавливались без необходимости.
+
+## Historical Stage 3B validation snapshot (2026-11-22)
+
+Terraform v1.17.2 + yandex provider v0.250.0: `fmt`/`validate` PASS; `apply` was not executed in Stage 3B. Live apply→destroy later: Block 11 (`results/block11/`).

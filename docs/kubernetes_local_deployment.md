@@ -133,3 +133,7 @@ kubectl -n credit-scoring port-forward svc/credit-scoring-api 8000:8000
 - Нет Prometheus Operator / Grafana
 - Нет облачных ресурсов
 - Staging/production overlays — позже
+
+## Historical Stage 3A validation snapshot (2026-11-22)
+
+kind v0.29.0 + node v1.33.1 tooling used for local Kustomize/API deployment validation. Ingress/NetworkPolicy follow-ups are covered in Stage 3 completion and this runbook.

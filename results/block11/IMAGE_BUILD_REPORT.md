@@ -3,7 +3,21 @@
 **Owner GHCR:** `ghcr.io/serg2311-prog/...`
 **Publish:** **NOT EXECUTED** (no push; packages scopes missing; API Trivy still FAIL).
 
-> **Block 11.15 delivery note:** Experimental `Dockerfile.api` trixie remediation below is **historical only** and is **not** included in the final merge. Delivery restores `docker/Dockerfile.api` to exact `main` (`python:3.12-slim-bookworm`). `Dockerfile.models` openssl remediation **is** included. Merge-prep Trivy gate (CRITICAL/HIGH + ignore-unfixed) on rebuilt api/models/frontend: **PASS** — see `MERGE_READINESS_REPORT.md`.
+> **Block 11.15 delivery note:** Experimental `Dockerfile.api` trixie remediation below is **historical only** and is **not** included in the final delivery. Delivery restores `docker/Dockerfile.api` to exact `main` (`python:3.12-slim-bookworm`). `Dockerfile.models` openssl remediation **is** included.
+
+## Delivery / merge-prep Trivy (Block 11.15)
+
+**Security gate (unchanged, matches CI):**
+`trivy image --exit-code 1 --severity CRITICAL,HIGH --ignore-unfixed` (same as `.github/workflows/ci-docker.yml`). Gates were **not** weakened.
+
+| Image | Tag | CRITICAL/HIGH (fixable) | Exit |
+|-------|-----|--------------------------:|-----:|
+| `credit-scoring-api` | `merge-prep-1115` | 0 / 0 | **0 PASS** |
+| `credit-scoring-models` | `merge-prep-1115` | 0 / 0 | **0 PASS** |
+| `credit-scoring-frontend` | `merge-prep-1115` | 0 / 0 | **0 PASS** |
+
+Fresh local rebuilds were scanned for merge-prep; prior green CI runs are **not** used as proof.
+**Historical vs delivery:** experiment API image used Debian **trixie** (53 HIGH / 0 CRITICAL, FixedVersion empty) — excluded from delivery. Final API image is **bookworm** from restored `Dockerfile.api` and passes the gate above.
 
 ## Before → After (CRITICAL/HIGH)
 

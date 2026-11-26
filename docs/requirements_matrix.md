@@ -2,9 +2,9 @@
 
 **Актуализация:** 2026-11-26 (Block 11.14 final closure). Исторический baseline docs: Block 9 `0df191a`.
 **Источник требований:** `../ИТОГОВЫЙ ПРОЕКТ.docx` / extract `results/block10/tz_extract.txt` (макс. **50** баллов).
-**Официальную оценку выставляет только ментор** — ниже внутренняя карта реализации/доказательств, не самооценка.
+**Официальную оценку выставляет только ментор** — ниже карта реализации и доказательств (не прогноз балла).
 **Облачный статус:** [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](../results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md).
-**Scorecard:** [`results/block11/FINAL_PROJECT_SCORECARD.md`](../results/block11/FINAL_PROJECT_SCORECARD.md).
+**Биллинг (2026-11-26):** [`results/block11/FINAL_COST_REPORT.md`](../results/block11/FINAL_COST_REPORT.md).
 
 ### Легенда статусов
 
@@ -25,7 +25,7 @@
 
 ## Сводка по этапам ТЗ
 
-| Этап ТЗ | Макс. | Обязательность | Внутренний статус доказательств |
+| Этап ТЗ | Макс. | Обязательность | Статус доказательств |
 | --- | ---: | --- | --- |
 | Подготовка модели | 5 | обязательный | VERIFIED_LOCAL + VERIFIED_GPU (T4) |
 | Cloud Infrastructure | 7 | обязательный | **VERIFIED_CLOUD_INFRA** (apply→destroy Block 11) + VERIFIED_LOCAL (validate); production apply NOT_EXECUTED |
@@ -35,7 +35,7 @@
 | Мониторинг дрифта | 7 | обязательный | VERIFIED_LOCAL (Block 8/8.1) |
 | Автоматизация (Airflow) | 5 | обязательный; scaling OPTIONAL | VERIFIED_LOCAL (Airflow E2E) |
 | Документация | 5 | обязательный | VERIFIED_LOCAL (Block 9 docs) |
-| **Итого** | **50** | | *(оценка ментора)* |
+| **Итого** | **50** | | Официальная оценка — только ментор |
 
 ---
 

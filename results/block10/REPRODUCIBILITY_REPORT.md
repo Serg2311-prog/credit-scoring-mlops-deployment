@@ -7,7 +7,6 @@
 - README installed only `requirements-dev.txt` → clean pytest broken.
 - No production models in Git.
 - Drift exporter only on E2E overlay; API emitted fake-zero drift gauges.
-- Score context: **48/50**.
 
 ### B — After Block 10.1/10.2 remediations (this tree)
 

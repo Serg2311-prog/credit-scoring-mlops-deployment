@@ -31,7 +31,7 @@
 | frontend | PASS | **PASS** |
 | api | FAIL residual 53 HIGH / 0 CRITICAL on **trixie** experiment image | **PASS** on restored `main` bookworm `Dockerfile.api` (CI gate: CRITICAL/HIGH + ignore-unfixed) |
 
-Experimental trixie API remediation is **not** in the final delivery. Do **not** treat the historical 53 HIGH as a current merge blocker. See `IMAGE_BUILD_REPORT.md`, `MERGE_READINESS_REPORT.md`.
+Experimental trixie API remediation is **not** in the final delivery. Do **not** treat the historical 53 HIGH as a current delivery blocker. Merge-prep Trivy on restored bookworm API + models + frontend: **PASS** (CRITICAL/HIGH + `ignore-unfixed`). Details: `IMAGE_BUILD_REPORT.md`.
 
 ## GHCR
 

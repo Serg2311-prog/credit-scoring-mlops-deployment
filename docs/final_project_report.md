@@ -2,8 +2,8 @@
 
 **Название:** Промышленное развёртывание кредитной скоринговой системы с полным MLOps-циклом
 **Репозиторий:** `credit-scoring-mlops-deployment`
-**Документационный baseline:** commit `0df191a`
-**Дата Block 9:** 2026-11-25
+**Документационный baseline релиза:** commit `5527a55` / tag `v1.0.0`
+**Актуализация:** 2026-11-26
 
 Официальную оценку (из 50) выставляет ментор. Ниже — фактические результаты существующих экспериментов.
 
@@ -15,7 +15,7 @@
 
 ## 2. Постановка задачи
 
-Перенести скоринговую модель из учебного контура в промышленно-подобный контур доставки и эксплуатации согласно ТЗ этапов 1–7 + документация, без фиктивных метрик и без скрытых ограничений.
+Перенести скоринговую модель из учебного контура в промышленно-подобный контур доставки и эксплуатации согласно ТЗ этапов 1–7 + документация, с явными ограничениями и подтверждёнными evidence.
 
 ## 3. Исходные данные
 
@@ -126,7 +126,7 @@ Dynamic quantization уменьшает размер; вероятности о�
 
 ## 17. Тестирование
 
-- `pytest -m "not k8s and not e2e"`: **231 passed, 2 skipped** (Block 8.1 на чистом дереве).
+- `pytest -m "not k8s and not e2e"`: **236 passed, 2 skipped** (релизный baseline).
 - Markers отделяют k8s/e2e.
 - Black/Flake8 в CI scope — PASS.
 
@@ -144,7 +144,7 @@ Dynamic quantization уменьшает размер; вероятности о�
 3. GPU node group в облаке — не запускалась.
 4. NetworkPolicy enforcement (kind) — не runtime-подтверждён; Calico в кластере ≠ enforcement конкретных NP.
 5. Периодические TLS handshake timeout к Kubernetes API — наблюдались; причина не установлена.
-6. Experimental API image: Trivy 53 HIGH (Debian OS, FixedVersion empty) — remediation не завершена в рамках эксперимента; gates не ослаблялись.
+6. Historical experimental API image (trixie): Trivy 53 HIGH (FixedVersion empty) — **не** в delivery; delivery bookworm API проходит CI Trivy gate; gates не ослаблялись.
 7. GPU INT8 и GPU HTTP load — не выполнялись.
 8. Online A/B challenger = quantized ONNX (эксперимент).
 9. cAdvisor Docker Desktop — ограничение labels.
@@ -156,4 +156,4 @@ Dynamic quantization уменьшает размер; вероятности о�
 
 ## 20. Заключение
 
-Проект закрывает обязательные этапы ТЗ с локально/CI-подтверждёнными доказательствами и Block 11 cloud-infra runtime (apply → verify → destroy). Cloud application path честно закрыт как `ABORT_CLOUD_APP`. Итоговый scorecard: [`results/block11/FINAL_PROJECT_SCORECARD.md`](../results/block11/FINAL_PROJECT_SCORECARD.md).
+Проект закрывает обязательные этапы ТЗ с локально/CI-подтверждёнными доказательствами и Block 11 cloud-infra runtime (apply → verify → destroy). Cloud application path закрыт как `ABORT_CLOUD_APP`. Биллинг эксперимента подтверждён оператором 2026-11-26: 56,34 ₽ / грант 56,34 ₽ / к оплате 0,00 ₽ (см. `results/block11/FINAL_COST_REPORT.md`). Официальную оценку выставляет ментор.

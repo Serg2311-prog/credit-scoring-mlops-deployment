@@ -55,7 +55,7 @@ Read-only scan. **No secret values are printed in this report.**
 - Five primary CI workflows SUCCESS on `bdb8b43`.
 - Synthetic artifacts generated in CI (does not publish production weights).
 - Node 20 / cache warnings: deprecation noise, not exploitability.
-- **P1:** `ci-python` / `ci-docker` / `ci-kubernetes` / `ci-infrastructure` / `ci-airflow-dag` omit top-level `permissions:` (confirmed by [Infra/CI audit](0e6df3f3-0580-4454-b60e-e22a9e92a611)). CD paths set least-privilege scopes. Recommend `contents: read` (minimal) before shared-org use.
+- **P1:** `ci-python` / `ci-docker` / `ci-kubernetes` / `ci-infrastructure` / `ci-airflow-dag` omit top-level `permissions:` (confirmed by Infra/CI audit). CD paths set least-privilege scopes. Recommend `contents: read` (minimal) before shared-org use.
 
 ### Application controls
 

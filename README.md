@@ -39,7 +39,7 @@
 - CI на `main` (commit [`5527a55`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/5527a55)): quality gates, Docker/Trivy, Terraform validate, Kubernetes **manifest validation** (kubeconform/kustomize); **optional kind smoke** — только `workflow_dispatch` с `run_kind_smoke=true`, по умолчанию **skipped**. Airflow DAG import. Успех пяти основных CI workflows и CI/CD Orchestrator **не означает** облачное развёртывание приложения.
 - Облачная инфраструктура (Yandex Managed Kubernetes **v1.34.1**): создана, runtime-проверена, затем уничтожена. Развёртывание ML-приложения в облаке **не выполнялось**.
 
-Сводный отчёт: [`docs/final_project_report.md`](docs/final_project_report.md). Облако: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md). Scorecard: [`results/block11/FINAL_PROJECT_SCORECARD.md`](results/block11/FINAL_PROJECT_SCORECARD.md).
+Сводный отчёт: [`docs/final_project_report.md`](docs/final_project_report.md). Облако: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md). Матрица ТЗ: [`docs/requirements_matrix.md`](docs/requirements_matrix.md).
 
 ---
 
@@ -153,7 +153,7 @@ python -m pytest -m "not k8s and not e2e" -q
 3. `pytest -m "not k8s and not e2e" -q` — **236 passed, 2 skipped**.
 4. Production-parity: распаковать `instructor_model_pack.zip` в корень репозитория; см. [`docs/instructor_model_pack.md`](docs/instructor_model_pack.md).
 5. Облако: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md) — infra apply→destroy; app не развёртывалось.
-6. Scorecard: [`results/block11/FINAL_PROJECT_SCORECARD.md`](results/block11/FINAL_PROJECT_SCORECARD.md).
+6. Матрица ТЗ: [`docs/requirements_matrix.md`](docs/requirements_matrix.md).
 7. Monitoring / drift / A/B: [`results/block8/`](results/block8/); benchmarks: [`results/block7/`](results/block7/).
 
 ---
@@ -255,7 +255,7 @@ python -m flake8 src tests scripts/ci airflow_home/dags
 | [`docs/defense_guide.md`](docs/defense_guide.md) | Подготовка к защите |
 | [`docs/architecture/overview.md`](docs/architecture/overview.md) | Архитектура |
 | [`docs/instructor_model_pack.md`](docs/instructor_model_pack.md) | Production model pack |
-| [`results/block11/FINAL_PROJECT_SCORECARD.md`](results/block11/FINAL_PROJECT_SCORECARD.md) | Итоговый scorecard |
+| [`docs/requirements_matrix.md`](docs/requirements_matrix.md) | Матрица соответствия ТЗ |
 | [`results/block7/`](results/block7/) | CPU/GPU/API load |
 | [`results/block8/`](results/block8/) | Monitoring / drift / A/B |
 | [`results/block11/`](results/block11/) | Cloud experiment closure |

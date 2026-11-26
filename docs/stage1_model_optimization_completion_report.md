@@ -151,3 +151,7 @@ Utilities: `scripts/block7_eval.py`, `scripts/api_load_test.py`, `tests/nn/*`.
 ## 10. Preliminary score (Stage 1 / 5 pts)
 
 Estimated **5 / 5**: Stage-1 model prep/optimization complete — NN, ONNX, quant, CPU/API benches, and hardened Colab GPU `VERIFIED_GPU`; production artifacts unchanged. Final grade is instructor’s.
+
+## Historical Stage 1 audit snapshot (2026-11-22)
+
+Earlier Stage 1 technical audit recorded leakage/parity/quant/CPU checks as PASS on that date (pytest 35 for NN suite at the time). Canonical metrics and tables: `docs/model_benchmark.md` and `results/block7/`.
