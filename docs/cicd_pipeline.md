@@ -3,7 +3,8 @@
 ## Status
 
 - GitHub Actions workflows under `.github/workflows/` are **live** on [Serg2311-prog/credit-scoring-mlops-deployment](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment).
-- **Release baseline:** [`5527a55`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/5527a55) / tag [v1.0.0](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/releases/tag/v1.0.0) — five primary workflows (**CI Python**, **CI Docker**, **CI Infrastructure**, **CI Kubernetes**, **CI Airflow DAG**) **SUCCESS**. Optional kind smoke remains **skipped** by default. Orchestrator success does **not** mean cloud app deploy.
+- **Current:** branch [`main`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/tree/main) / [Actions](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions). Optional kind smoke remains **skipped** by default. Orchestrator success does **not** mean cloud app deploy.
+- **Historical public release CI** ([`v1.0.0`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/releases/tag/v1.0.0) / [`5527a55`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/5527a55)): five primary workflows (**CI Python**, **CI Docker**, **CI Infrastructure**, **CI Kubernetes**, **CI Airflow DAG**) **SUCCESS**.
 - Historical Stage 4 hosted verification (2026-11-22, commit [`86410e8`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/86410e8dfb7cd39711eb07ac3d88ceb2447b1a67)): Python, Docker+Trivy, Infrastructure, Kubernetes offline, kind E2E (manual), Release Candidate packaging, Staging dry-run — **SUCCESS** (run IDs in the table below).
 - Cloud CD (`terraform apply`, YCR push, Managed K8s app deploy) is **not** executed by these workflows as production delivery.
 - The ML application is **not** deployed to Yandex Cloud.
@@ -99,4 +100,4 @@ Non-critical hosted warnings (do not fail gates): Node.js 20 deprecation notices
 
 ## Historical Stage 4 validation notes (2026-11-22)
 
-Hosted Actions SUCCESS for Python/Docker/Infrastructure/Kubernetes offline, optional kind E2E (manual), RC packaging, and staging dry-run at commit `86410e8`. Cloud apply/push not part of that stage. Current release baseline: `5527a55` / `v1.0.0`.
+Hosted Actions SUCCESS for Python/Docker/Infrastructure/Kubernetes offline, optional kind E2E (manual), RC packaging, and staging dry-run at commit `86410e8`. Cloud apply/push not part of that stage. Historical public release CI: `5527a55` / `v1.0.0`. Current status: branch `main` / [Actions](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions).

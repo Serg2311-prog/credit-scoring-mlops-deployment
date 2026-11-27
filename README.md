@@ -13,9 +13,9 @@
 | | |
 | --- | --- |
 | Репозиторий | [github.com/Serg2311-prog/credit-scoring-mlops-deployment](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment) |
-| Release | [**v1.0.0**](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/releases/tag/v1.0.0) |
-| Финальный commit / CI baseline | [`5527a55`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/5527a55) |
-| CI на `5527a55` | пять основных workflows (**CI Python**, **CI Docker**, **CI Infrastructure**, **CI Kubernetes**, **CI Airflow DAG**) — **success** |
+| Release | [**latest**](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/releases/latest) |
+| Актуальная версия | ветка [`main`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/tree/main) |
+| CI/CD | [GitHub Actions](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions) — пять основных workflows (**CI Python**, **CI Docker**, **CI Infrastructure**, **CI Kubernetes**, **CI Airflow DAG**) |
 | Локальная регрессия | `pytest -m "not k8s and not e2e"` — **236 passed, 2 skipped** |
 | Cloud experiment | MK8s **v1.34.1**: инфраструктура создана, проверена и уничтожена; приложение в облаке **не** развёртывалось |
 | Serving default | ONNX Runtime **CPU FP32** |
@@ -36,7 +36,7 @@
 - RF baseline test ROC-AUC **0.7771**.
 - Dynamic INT8 quantization — экспериментальный артефакт (не auto-champion).
 - Локально: Docker Compose, kind/Kustomize, Prometheus/Grafana/Loki, drift, online A/B, Airflow Docker E2E.
-- CI на `main` (commit [`5527a55`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/5527a55)): quality gates, Docker/Trivy, Terraform validate, Kubernetes **manifest validation** (kubeconform/kustomize); **optional kind smoke** — только `workflow_dispatch` с `run_kind_smoke=true`, по умолчанию **skipped**. Airflow DAG import. Успех пяти основных CI workflows и CI/CD Orchestrator **не означает** облачное развёртывание приложения.
+- CI/CD на [`main`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/tree/main) ([Actions](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions)): quality gates, Docker/Trivy, Terraform validate, Kubernetes **manifest validation** (kubeconform/kustomize); **optional kind smoke** — только `workflow_dispatch` с `run_kind_smoke=true`, по умолчанию **skipped**. Airflow DAG import. Успех пяти основных CI workflows и CI/CD Orchestrator **не означает** облачное развёртывание приложения.
 - Облачная инфраструктура (Yandex Managed Kubernetes **v1.34.1**): создана, runtime-проверена, затем уничтожена. Развёртывание ML-приложения в облаке **не выполнялось**.
 
 Сводный отчёт: [`docs/final_project_report.md`](docs/final_project_report.md). Облако: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md). Матрица ТЗ: [`docs/requirements_matrix.md`](docs/requirements_matrix.md).
@@ -149,7 +149,7 @@ python -m pytest -m "not k8s and not e2e" -q
 ## Быстрая проверка
 
 1. [`docs/quick_review.md`](docs/quick_review.md) и [`docs/requirements_matrix.md`](docs/requirements_matrix.md).
-2. Release [**v1.0.0**](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/releases/tag/v1.0.0); CI badges на `main` / commit [`5527a55`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/5527a55) — пять основных workflows **success**.
+2. Release [**latest**](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/releases/latest); CI badges / [Actions](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/actions) на [`main`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/tree/main).
 3. `pytest -m "not k8s and not e2e" -q` — **236 passed, 2 skipped**.
 4. Production-parity: распаковать `instructor_model_pack.zip` в корень репозитория; см. [`docs/instructor_model_pack.md`](docs/instructor_model_pack.md).
 5. Облако: [`results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md`](results/block11/FINAL_CLOUD_EXPERIMENT_REPORT.md) — infra apply→destroy; app не развёртывалось.

@@ -2,8 +2,9 @@
 
 **Название:** Промышленное развёртывание кредитной скоринговой системы с полным MLOps-циклом
 **Репозиторий:** `credit-scoring-mlops-deployment`
-**Документационный baseline релиза:** commit `5527a55` / tag `v1.0.0`
+**Актуальная версия:** ветка [`main`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/tree/main)
 **Актуализация:** 2026-11-26
+**Исторический публичный релиз:** tag [`v1.0.0`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/releases/tag/v1.0.0) / commit [`5527a55`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/commit/5527a55)
 
 Ниже — фактические результаты существующих экспериментов.
 

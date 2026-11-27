@@ -4,7 +4,7 @@
 
 **Не поднимайте одновременно** observability + Airflow + kind на 8 GB.
 
-Baseline релиза: commit `5527a55` / tag `v1.0.0`.
+Актуальная версия: ветка [`main`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/tree/main).
 
 ---
 
@@ -31,7 +31,7 @@ Baseline релиза: commit `5527a55` / tag `v1.0.0`.
 | Airflow | `airflow_home/dags/`, `docs/stage7_*` |
 | Документация | `README.md`, этот файл, `final_project_report.md` |
 
-Полная матрица требований: [`requirements_matrix.md`](requirements_matrix.md).  
+Полная матрица требований: [`requirements_matrix.md`](requirements_matrix.md).
 Индекс доказательств: [`evidence_index.md`](evidence_index.md).
 
 ---

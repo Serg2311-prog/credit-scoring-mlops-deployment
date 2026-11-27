@@ -1,6 +1,6 @@
 # Индекс доказательств (Evidence Index)
 
-Относительные ссылки от корня репозитория. Baseline релиза: commit `5527a55` / tag `v1.0.0`.
+Относительные ссылки от корня репозитория. Актуальная версия: ветка [`main`](https://github.com/Serg2311-prog/credit-scoring-mlops-deployment/tree/main).
 Оригинальные GPU/Block 7–8 machine-readable evidence сохраняются без renormalize.
 
 ---
